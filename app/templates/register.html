@@ -1,5 +1,3 @@
-<!-- register.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,9 +7,14 @@
 </head>
 <body>
     <h1>Register</h1>
-    <form method="post">
+    <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <label for="user_name">username:</label>
+        <input type="text" id="user_name" name="user_name" required>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="password">password:</label>
+        <input type="password" id="Password" name="password" required>
         <button type="submit">Register</button>
     </form>
 </body>
