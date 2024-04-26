@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import connection
 from .utils import generate_user_id
 from django.http import HttpResponse
+from django.contrib import messages
 import psycopg2
 def runsql(sql_file, cur):
     # Read SQL file
@@ -29,12 +30,24 @@ def register(request):
         user_name = request.POST.get('user_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
-
+        #ALTER USER postgres WITH PASSWORD '1120';      #password = 1120 in pgadmin
+        connection = psycopg2.connect(
+            dbname="mydatabase",
+            user="postgres",
+            password="1120",
+            host="localhost",
+            port="5432"
+        )
         # Execute raw SQL INSERT statement
         with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM \"user\" WHERE email = %s", [email])
+            count = cursor.fetchone()[0]
+            #User with the same email already exists
+            if count > 0:
+                messages.error(request, 'An account with this email already exists.')
+                return redirect('register')
             cursor.execute("INSERT INTO \"user\" (user_id, user_name, password, email) VALUES (%s, %s, %s, %s)", [user_id, user_name, password, email])
-            # Optionally, handle exceptions or validation
-
+            connection.commit()
         return redirect('login')
     else:
         # Render registration form
@@ -53,17 +66,20 @@ def login(request):
         if user_row:
             stored_password = user_row[2]  # Assuming password is stored in the third column
             if password == stored_password:  # Validate password
-                # User authenticated, redirect to home page
+                request.session['user_id'] = user_row[0]
                 return redirect('home')
             else:
-                # Invalid password, handle accordingly
-                pass
+                messages.error(request, 'Invalid password. Please try again.')
         else:
-            # User not found, handle accordingly
-            pass
+            messages.error(request, 'User not found. Please try again.')
 
     # Render login form
     return render(request, 'login.html')
 
 def home(request):
-    return render(request, 'home.html')
+    #request.session.flush() in logout
+    if 'user_id' in request.session:
+        return render(request, 'home.html')
+    else:
+        return redirect('login')
+

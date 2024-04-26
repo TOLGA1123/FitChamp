@@ -1,1 +1,1 @@
-#do not use RMO
+#do not use ORM
