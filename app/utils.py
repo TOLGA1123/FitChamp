@@ -1,5 +1,6 @@
+#change this to count rows 10000000001, 100000000002 etc.
 import uuid
-#change this later, store number of users in db etc.
 def generate_user_id():
-    user_id = str(uuid.uuid4())[:11]  # Generate a UUID and truncate it to 11 characters
-    return user_id          
+        # Generate a unique user_id
+        user_id = str(uuid.uuid4())[:11]
+        return user_id
