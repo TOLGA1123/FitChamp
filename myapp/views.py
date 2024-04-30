@@ -30,7 +30,17 @@ def register(request):
         user_name = request.POST.get('user_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
+        role = request.POST.get('role')
+        if role == 'trainer':
+            #insert new trainer into trainer table (change html fields of trainer/ same ones with user-fields are already filled)
+            return render(request, 'trainer_register.html')
+        elif role == 'trainee':
+            #insert new trainee into trainee table
+            return render(request, 'trainee_register.html')
+        else:
+            return HttpResponse('Invalid role selected.')
         #ALTER USER postgres WITH PASSWORD '1120';      #password = 1120 in pgadmin
+        #insert user after so avoid the possibility of only user part filled and go back
         connection = psycopg2.connect(
             dbname="mydatabase",
             user="postgres",
@@ -52,7 +62,6 @@ def register(request):
     else:
         # Render registration form
         return render(request, 'register.html')
-
 def login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -60,7 +69,7 @@ def login(request):
 
         # Execute raw SQL SELECT statement
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM \"user\" WHERE email = %s", [email])      #email has unique constraint in db
+            cursor.execute("SELECT * FROM \"user\" WHERE email = %s", [email])
             user_row = cursor.fetchone()
 
         if user_row:

@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Register</title>
+    </head>
     {% if messages %}
     {% for message in messages %}
         <div class="alert alert-danger" role="alert">
@@ -8,21 +13,21 @@
     {% endfor %}
 {% endif %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-</head>
-<body>
-    <h1>Register</h1>
-    <form action="{% url 'register' %}" method="post">
-        {% csrf_token %}
-        <label for="user_name">username:</label>
-        <input type="text" id="user_name" name="user_name" required>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <label for="password">password:</label>
-        <input type="password" id="Password" name="password" required>
-        <button type="submit">Register</button>
-    </form>
+        <!-- Default registration form -->
+        <h1>Register</h1>
+        <form action="{% url 'register' %}" method="post">
+            {% csrf_token %}
+            <label for="user_name">Username:</label>
+            <input type="text" id="user_name" name="user_name" required><br><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <select id="role" name="role">
+                <option value="trainer">Trainer</option>
+                <option value="trainee">Trainee</option>
+            </select><br><br>
+            <button type="submit">Register</button>
+        </form>
 </body>
 </html>

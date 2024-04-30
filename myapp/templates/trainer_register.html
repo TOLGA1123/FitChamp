@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Registration</title>
+</head>
+<body>
+    <h1>Trainer Registration</h1>
+    <form action="{% url 'register' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="role" value="trainer">
+        <label for="user_name">Username:</label>
+        <input type="text" id="user_name" name="user_name" required><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <label for="specialization">Specialization:</label>
+        <input type="text" id="specialization" name="specialization" required><br><br>
+        <label for="telephone_number">Telephone Number:</label>
+        <input type="text" id="telephone_number" name="telephone_number" required><br><br>
+        <label for="social_media">Social Media:</label>
+        <input type="text" id="social_media" name="social_media" required><br><br>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>
