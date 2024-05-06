@@ -8,6 +8,9 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TrainerSignUp from './pages/TrainerSignUp';
 import CurrentWorkoutPlans from './pages/CurrentWorkoutPlans';
+import UserProfile from './pages/UserProfile';
+import TrainersPage from './pages/TrainersPage';
+import NewWorkoutPlan from './pages/NewWorkoutPlan';
 
 const theme = createTheme();
 
@@ -20,6 +23,9 @@ const App = () => {
           <Route path="/register" component={RegisterPage} />
           <Route path="/trainer-signup" component={TrainerSignUp} />
           <Route path="/workout-plans" component={CurrentWorkoutPlans} />
+          <Route path="/profile" component={UserProfile} />
+          <Route path="/trainers" component={TrainersPage} />
+          <Route path="/new-workout" component={NewWorkoutPlan} />
           {/* You can add more routes here if you have other pages */}
         </Switch>
       </Router>

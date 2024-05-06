@@ -1,7 +1,15 @@
 // TrainerSignUp.js
+import { Container, TextField, Button } from '@mui/material';
 import React from 'react';
-import { Container, TextField, Button, Box, Typography, Paper } from '@mui/material';
+import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText } from '@mui/material';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useHistory } from 'react-router-dom';
+import { AppBar, Tabs, Tab, IconButton} from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import PersonIcon from '@mui/icons-material/Person';
+import GroupIcon from '@mui/icons-material/Group';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import { green } from '@mui/material/colors';
 
 const TrainerSignUp = () => {
   const history = useHistory();
