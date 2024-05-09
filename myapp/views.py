@@ -30,6 +30,21 @@ def generate_user_id():
     user_id = str(uuid.uuid4())[:11]  # Generate a UUID and truncate it to 11 characters
     return user_id
 
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
+
+def dictfetchone(cursor):
+    "Return one row from a cursor as a dict"
+    desc = cursor.description
+    row = cursor.fetchone()
+    return dict(zip([col[0] for col in desc], row)) if row else None
+
+
 def register(request):
     if request.method == 'POST':
         # Generate unique user_id
@@ -98,7 +113,7 @@ def user_info(request, user_id):
         with connection.cursor() as cursor:
             # Fetch the user
             cursor.execute("SELECT * FROM userf WHERE User_ID = %s", [user_id])
-            user = cursor.fetchone()
+            user = dictfetchone(cursor)
             if not user:
                 raise Http404("User not found")
 
