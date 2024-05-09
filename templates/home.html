@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+</head>
+<body>
+    <h1>Welcome to the Home Page</h1>
+
+    <h2>Registered Users</h2>
+    <ul>
+        {% for user in users %}
+            <li>
+                ID: {{ user.user_id }} - Name: {{ user.user_name }} - Email: {{ user.email }} - Password: {{ user.password }}
+                <!-- User Info Button -->
+                <a href="{% url 'user_info' user_id=user.user_id %}">User Info</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Trainers</h2>
+    <ul>
+        {% for trainer in trainers %}
+            <li>
+                ID: {{ trainer.trainer_id }} - Name: {{ trainer.user_name }} - Email: {{ trainer.email }} - Password: {{ trainer.password }} - Specialization: {{ trainer.specialization }}
+                <!-- Trainer Info Button -->
+                <a href="{% url 'trainer_info' trainer_id=trainer.trainer_id %}">Trainer Info</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

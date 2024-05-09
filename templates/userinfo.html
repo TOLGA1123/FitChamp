@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Information</title>
+</head>
+<body>
+    <h1>User Information</h1>
+    {% if user %}
+        <p>ID: {{ user.user_id }}</p>
+        <p>Name: {{ user.user_name }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Password: {{ user.password }}</p> <!-- Caution with displaying passwords -->
+    {% else %}
+        <p>No user information available.</p>
+    {% endif %}
+
+    <h2>Trainers</h2>
+    <ul>
+        {% for trainer in trainers %}
+            <li>{{ trainer.user_name }} - Specialization: {{ trainer.specialization }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Workout Plans</h2>
+    <ul>
+        {% for plan in workout_plans %}
+            <li>{{ plan.routine_name }} - Difficulty: {{ plan.difficulty_level }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Nutrition Plans</h2>
+    <ul>
+        {% for plan in nutrition_plans %}
+            <li>{{ plan.nutrition_plan_name }} - Calories: {{ plan.total_calories }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Achievements</h2>
+    <ul>
+        {% for achievement in achievements %}
+            <li>{{ achievement.achievement_type }} on {{ achievement.achievement_date }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Progress</h2>
+    <ul>
+        {% for progress in progresses %}
+            <li>{{ progress.date }} - {{ progress.metric_type }}: {{ progress.metric_value }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
