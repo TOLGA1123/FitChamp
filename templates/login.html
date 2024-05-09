@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
@@ -9,8 +16,8 @@
     <h1>Login</h1>
     <form action="{% url 'login' %}" method="post">
         {% csrf_token %}
-        <label for="username">username:</label>
-        <input type="username" id="username" name="username" required>
+        <label for="email">email:</label>
+        <input type="email" id="email" name="email" required>
         <label for="password">password:</label>
         <input type="password" id="password" name="password" required>
         <button type="submit">Login</button>
