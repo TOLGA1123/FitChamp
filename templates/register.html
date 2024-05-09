@@ -27,7 +27,54 @@
                 <option value="trainer">Trainer</option>
                 <option value="trainee">Trainee</option>
             </select><br><br>
-            <button type="submit">Register</button>
+              <!-- Additional fields for trainers -->
+    <div id="trainer_fields" style="display: none;">
+        <label for="trainer_name">Trainer Name:</label>
+        <input type="text" id="trainer_name" name="trainer_name"><br>
+
+        <label for="trainer_specialization">Specialization:</label>
+        <input type="text" id="trainer_specialization" name="trainer_specialization"><br>
+
+        <label for="trainer_telephone_number">Telephone Number:</label>
+        <input type="text" id="trainer_telephone_number" name="trainer_telephone_number"><br>
+
+        <label for="trainer_social_media">Social Media:</label>
+        <input type="text" id="trainer_social_media" name="trainer_social_media"><br>
+        <button type="submit">Register</button>
+    </div>
+
+    <!-- Additional fields for trainees -->
+    <div id="trainee_fields" style="display: none;">
+        <label for="trainee_name">Trainee Name:</label>
+        <input type="text" id="trainee_name" name="trainee_name"><br>
+
+        <label for="trainee_age">Age:</label>
+        <input type="number" id="trainee_age" name="trainee_age"><br>
+
+        <label for="trainee_experience">Experience:</label>
+        <input type="text" id="trainee_experience" name="trainee_experience"><br>
+        <button type="submit">Register</button>
+    </div>
+
+</form>
+
+<script>
+    // Show additional fields based on selected role
+    document.getElementById('role').addEventListener('change', function() {
+        var role = this.value;
+        if (role === 'trainer') {
+            document.getElementById('trainer_fields').style.display = 'block';
+            document.getElementById('trainee_fields').style.display = 'none';
+        } else if (role === 'trainee') {
+            document.getElementById('trainer_fields').style.display = 'none';
+            document.getElementById('trainee_fields').style.display = 'block';
+        } else {
+            document.getElementById('trainer_fields').style.display = 'none';
+            document.getElementById('trainee_fields').style.display = 'none';
+        }
+    });
+</script>
+
         </form>
 </body>
 </html>

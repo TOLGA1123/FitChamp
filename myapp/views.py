@@ -44,7 +44,7 @@ def dictfetchone(cursor):
     row = cursor.fetchone()
     return dict(zip([col[0] for col in desc], row)) if row else None
 
-
+#trainer trainee different register views, first register trainee, go to trainer with button
 def register(request):
     if request.method == 'POST':
         # Generate unique user_id 
@@ -54,13 +54,12 @@ def register(request):
         user_name = request.POST.get('user_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
-        role = request.POST.get('role')
         if role == 'trainer':
             #insert new trainer into trainer table (change html fields of trainer/ same ones with user-fields are already filled)
-            return render(request, 'trainer_register.html')
+            pass
         elif role == 'trainee':
             #insert new trainee into trainee table
-            return render(request, 'trainee_register.html')
+            pass
         else:
             return HttpResponse('Invalid role selected.')
         #ALTER USER postgres WITH PASSWORD '1234';      #password = 1234 in pgadmin
