@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Trainer Registration</h1>
-    <form action="{% url 'register' %}" method="post">
+    <form action="{% url 'trainer_register' %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="role" value="trainer">
         <label for="user_name">Username:</label>

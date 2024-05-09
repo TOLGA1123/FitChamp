@@ -1,80 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Register</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
     {% if messages %}
     {% for message in messages %}
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
-        </div>
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
     {% endfor %}
-{% endif %}
-<head>
-        <!-- Default registration form -->
-        <h1>Register</h1>
-        <form action="{% url 'register' %}" method="post">
-            {% csrf_token %}
-            <label for="user_name">Username:</label>
-            <input type="text" id="user_name" name="user_name" required><br><br>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required><br><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            <select id="role" name="role">
-                <option value="trainer">Trainer</option>
-                <option value="trainee">Trainee</option>
-            </select><br><br>
-              <!-- Additional fields for trainers -->
-    <div id="trainer_fields" style="display: none;">
-        <label for="trainer_name">Trainer Name:</label>
-        <input type="text" id="trainer_name" name="trainer_name"><br>
+    {% endif %}
+    <!-- Default registration form -->
+    <h1>Register</h1>
+    <form action="{% url 'register' %}" method="post">
+        {% csrf_token %}
+        <label for="user_name">Username:</label>
+        <input type="text" id="user_name" name="user_name" required><br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
 
-        <label for="trainer_specialization">Specialization:</label>
-        <input type="text" id="trainer_specialization" name="trainer_specialization"><br>
+        <!-- Additional fields for trainee registration -->
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br><br>
+        <label for="date_of_birth">Date of Birth:</label>
+        <input type="date" id="date_of_birth" name="date_of_birth" required><br><br>
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select><br><br>
+        <label for="weight">Weight (kg):</label>
+        <input type="number" id="weight" name="weight" required><br><br>
+        <label for="height">Height (cm):</label>
+        <input type="number" id="height" name="height" required><br><br>
+        <label for="past_achievements">Past Achievements:</label>
+        <textarea id="past_achievements" name="past_achievements" required></textarea><br><br>
 
-        <label for="trainer_telephone_number">Telephone Number:</label>
-        <input type="text" id="trainer_telephone_number" name="trainer_telephone_number"><br>
-
-        <label for="trainer_social_media">Social Media:</label>
-        <input type="text" id="trainer_social_media" name="trainer_social_media"><br>
-        <button type="submit">Register</button>
-    </div>
-
-    <!-- Additional fields for trainees -->
-    <div id="trainee_fields" style="display: none;">
-        <label for="trainee_name">Trainee Name:</label>
-        <input type="text" id="trainee_name" name="trainee_name"><br>
-
-        <label for="trainee_age">Age:</label>
-        <input type="number" id="trainee_age" name="trainee_age"><br>
-
-        <label for="trainee_experience">Experience:</label>
-        <input type="text" id="trainee_experience" name="trainee_experience"><br>
-        <button type="submit">Register</button>
-    </div>
-
-</form>
-
-<script>
-    // Show additional fields based on selected role
-    document.getElementById('role').addEventListener('change', function() {
-        var role = this.value;
-        if (role === 'trainer') {
-            document.getElementById('trainer_fields').style.display = 'block';
-            document.getElementById('trainee_fields').style.display = 'none';
-        } else if (role === 'trainee') {
-            document.getElementById('trainer_fields').style.display = 'none';
-            document.getElementById('trainee_fields').style.display = 'block';
-        } else {
-            document.getElementById('trainer_fields').style.display = 'none';
-            document.getElementById('trainee_fields').style.display = 'none';
-        }
-    });
-</script>
-
-        </form>
+        <!-- Button to navigate to trainer registration -->
+        <button type="submit" name="role" value="trainee">Register as Trainee</button>
+        <a href="{% url 'trainer_register' %}" class="btn btn-primary">Register as Trainer</a>
+    </form>
 </body>
 </html>

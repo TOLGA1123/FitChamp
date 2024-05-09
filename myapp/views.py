@@ -27,8 +27,50 @@ def schema_view(request):
         return HttpResponse("Failed to apply schema: {}".format(e))
 
 def generate_user_id():
-    user_id = str(uuid.uuid4())[:11]  # Generate a UUID and truncate it to 11 characters
+    # Connect to the database
+    connection = psycopg2.connect(
+        dbname="mydatabase",
+        user="postgres",
+        password="1234",
+        host="localhost",
+        port="5432"
+    )
+
+    # Count the number of existing users
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM userf")
+        num_users = cursor.fetchone()[0]
+
+    # Generate user_id by adding 1 to the count and padding it with zeros
+    user_id = str(1000000000 + num_users + 1)[-11:]
+    
+    # Close the database connection
+    connection.close()
+
     return user_id
+
+def generate_trainer_id():
+    # Connect to the database
+    connection = psycopg2.connect(
+        dbname="mydatabase",
+        user="postgres",
+        password="1234",
+        host="localhost",
+        port="5432"
+    )
+
+    # Count the number of existing trainers
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM trainer")
+        num_trainers = cursor.fetchone()[0]
+
+    # Generate trainer_id by adding 1 to the count and padding it with zeros
+    trainer_id = str(1000000000 + num_trainers + 1)[-11:]
+    
+    # Close the database connection
+    connection.close()
+
+    return trainer_id
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -44,7 +86,7 @@ def dictfetchone(cursor):
     row = cursor.fetchone()
     return dict(zip([col[0] for col in desc], row)) if row else None
 
-#trainer trainee different register views, first register trainee, go to trainer with button
+#trainee register
 def register(request):
     if request.method == 'POST':
         # Generate unique user_id 
@@ -54,14 +96,12 @@ def register(request):
         user_name = request.POST.get('user_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
-        if role == 'trainer':
-            #insert new trainer into trainer table (change html fields of trainer/ same ones with user-fields are already filled)
-            pass
-        elif role == 'trainee':
-            #insert new trainee into trainee table
-            pass
-        else:
-            return HttpResponse('Invalid role selected.')
+        age = request.POST.get('age')
+        date_of_birth = request.POST.get('date_of_birth')
+        gender = request.POST.get('gender')
+        weight = request.POST.get('weight')
+        height = request.POST.get('height')
+        past_achievements = request.POST.get('past_achievements')
         #ALTER USER postgres WITH PASSWORD '1234';      #password = 1234 in pgadmin
         #insert user after so avoid the possibility of only user part filled and go back
         connection = psycopg2.connect(
@@ -80,13 +120,49 @@ def register(request):
                 messages.error(request, 'An account with this email already exists.')
                 return redirect('register')
             cursor.execute("INSERT INTO userf (User_ID, User_name, Password, Email) VALUES (%s, %s, %s, %s)", [user_id, user_name, password, email])
+            cursor.execute("INSERT INTO trainee (User_ID, User_name, Password, Age, Date_of_Birth, Gender, Weight, Height, Past_Achievements) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", [user_id, user_name, password, age, date_of_birth, gender, weight, height, past_achievements])
             connection.commit()
             connection.close()
         return redirect('login')
     else:
         # Render registration form
-        messages.error(request, 'Registration failed')
         return render(request, 'register.html')
+def trainer_register(request):
+    if request.method == 'POST':
+        # Generate unique user_id 
+        user_id = generate_user_id()
+        trainer_id = generate_trainer_id()
+        # Get form data
+        user_name = request.POST.get('user_name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        specialization = request.POST.get('specialization')
+        telephone_number = request.POST.get('telephone_number')
+        social_media = request.POST.get('social_media')
+
+        connection = psycopg2.connect(
+            dbname="mydatabase",
+            user="postgres",
+            password="1234",
+            host="localhost",
+            port="5432"
+        )
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM userf WHERE Email = %s", [email])
+            count = cursor.fetchone()[0]
+            # Check if a user with the same email already exists
+            if count > 0:
+                messages.error(request, 'An account with this email already exists.')
+                return redirect('trainer_register')
+            cursor.execute("INSERT INTO userf (User_ID, User_name, Password, Email) VALUES (%s, %s, %s, %s)", [user_id, user_name, password, email])
+            cursor.execute("INSERT INTO trainer (User_ID, Trainer_ID, User_name, Password, Specialization, Telephone_Number, Social_Media) VALUES (%s, %s, %s, %s, %s, %s, %s)", [user_id, trainer_id, user_name, password, specialization, telephone_number, social_media])
+            connection.commit()
+            connection.close()
+        return redirect('login')
+    else:
+        # Render trainer registration form
+        return render(request, 'trainer_register.html')
+
 def login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -179,6 +255,11 @@ def user_info(request, user_id):
         'progresses': progresses,
     }
     return render(request, 'userinfo.html', context)
+
+
+def trainer_info(request, trainer_id):
+    # Your logic to retrieve trainer information using trainer_id
+    return render(request, 'trainer_info.html', {'trainer_id': trainer_id})
 
 
 
