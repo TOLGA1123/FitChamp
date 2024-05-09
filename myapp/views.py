@@ -8,7 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 import uuid
 
-
+def default(request):
+    return render(request, 'public/index.html')
 
 def runschema(sql_file, cur):
     # Read SQL file
@@ -88,7 +89,7 @@ def login(request):
             pass
 
     # Render login form
-    return render(request, 'login.html')
+    return render(request, 'LoginPage.js')
 
 @login_required(login_url='/login/')
 def home(request):
