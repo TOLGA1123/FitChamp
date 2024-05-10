@@ -61,11 +61,8 @@ const UserProfile = () => {
             value="goals" 
             sx={{ color: 'white', backgroundColor: 'black' }}
           />
-          <Tab 
-            label="Progress" 
-            value="progress" 
-            sx={{ color: 'white', backgroundColor: 'black' }}
-          />
+
+          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
 
