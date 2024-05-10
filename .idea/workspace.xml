@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d262cb-02f3-4655-a451-9a059bba887b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/djangozzzzzz/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/djangozzzzzz/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/myapp/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/myapp/views.py" afterDir="false" />
-    </list>
+    <list default="true" id="29d262cb-02f3-4655-a451-9a059bba887b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,7 +21,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/frontend" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
@@ -41,8 +36,9 @@
     "Django Server.djangozzzzzz.executor": "Run",
     "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "rawd-sql",
-    "last_opened_file_path": "C:/Users/ASUS/PycharmProjects/denemeler(py)",
+    "django.template.preview.state": "SHOW_EDITOR_AND_PREVIEW",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/ASUS/Documents/GitHub/FitChamp",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -54,7 +50,7 @@
 }]]></component>
   <component name="RunManager">
     <configuration name="djangozzzzzz" type="Python.DjangoServer" factoryName="Django server">
-      <module name="rawdog" />
+      <module name="fitchamp" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -105,7 +101,17 @@
       <workItem from="1714421959277" duration="655000" />
       <workItem from="1714743730716" duration="614000" />
       <workItem from="1714744366259" duration="1180000" />
-      <workItem from="1715251792479" duration="8000" />
+      <workItem from="1715249469393" duration="2363000" />
+      <workItem from="1715257628926" duration="29000" />
+      <workItem from="1715278947978" duration="754000" />
+      <workItem from="1715280342245" duration="1636000" />
+      <workItem from="1715284561412" duration="1211000" />
+      <workItem from="1715296209960" duration="640000" />
+      <workItem from="1715326448856" duration="12000" />
+      <workItem from="1715326686626" duration="481000" />
+      <workItem from="1715354320740" duration="278000" />
+      <workItem from="1715354736716" duration="215000" />
+      <workItem from="1715377900627" duration="976000" />
     </task>
     <servers />
   </component>
