@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 import psycopg2
-from django.db import connection
+from django.db import connection, IntegrityError
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -9,10 +9,12 @@ from django.http import HttpResponse, Http404
 import uuid
 
 from django.shortcuts import render
-from rest_framework.views import APIView
+from rest_framework.views import APIView, status
 from .models import *
 from rest_framework.response import Response
 from .serializer import *
+
+from datetime import datetime
 
 
 # Create your views here.
@@ -66,51 +68,35 @@ def dictfetchone(cursor):
     row = cursor.fetchone()
     return dict(zip([col[0] for col in desc], row)) if row else None
 
+def calculate_age(born):
+    today = datetime.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
-def register(request):
-    if request.method == 'POST':
-        # Generate unique user_id
-        user_id = generate_user_id()
-
-        # Get form data
-        user_name = request.POST.get('user_name')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        # Execute raw SQL INSERT statement
-        with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO userf (user_id, user_name, password, email) VALUES (%s, %s, %s, %s)", [user_id, user_name, password, email])
-            # Optionally, handle exceptions or validation
-
-        return redirect('login')
-    else:
-        # Render registration form
-        return render(request, 'register.html')
-
-def login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         # Execute raw SQL SELECT statement
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM userf WHERE User_name = %s", [username])      #email has unique constraint in db
+            cursor.execute("SELECT * FROM userf WHERE User_name = %s", [username])
             user_row = cursor.fetchone()
 
         if user_row:
             stored_password = user_row[2]  # Assuming password is stored in the third column
-            if password == stored_password:  # Validate password
-                # User authenticated, redirect to home page
-                return redirect('home')
+            if password == stored_password:
+                # User authenticated
+                return Response({"message": "Login successful."}, status=status.HTTP_200_OK)
             else:
-                # Invalid password, handle accordingly
-                pass
+                # Invalid password
+                return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            # User not found, handle accordingly
-            pass
+            # User not found
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # Render login form
-    return render(request, 'login.html')
+    def get(self, request):
+        # Optionally provide a message for GET requests
+        return Response({"message": "Please send POST request with username and password."})
 
 @login_required(login_url='/login/')
 def home(request):
