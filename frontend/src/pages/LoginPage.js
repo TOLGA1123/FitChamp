@@ -2,15 +2,37 @@
 import React,{ useState } from 'react';
 import { Container, TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { useHistory } from 'react-router-dom';
+import axios from 'axios';
 
 
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const[formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
   const history = useHistory();
 
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
   const handleLogin = async (e) => {
+    e.preventDefault();
+    axios.post('http://localhost:8000/login/', formData)
+    .then(response => {
+      console.log('Login successful:', response.data);
+      if (response.status === 200) {
+        history.push('/workout-plans'); // Redirect to login page after successful registration
+      }
+    })
+    .catch(error => {
+      console.error('Registration error:', error.response ? error.response.data : 'Server did not respond');
+    });
     /*e.preventDefault();
     try {
       const response = await fetch('http://yourdjangoapi.com/api/token/', {
@@ -32,7 +54,7 @@ const LoginPage = () => {
     } catch (error) {
       console.error('An error occurred:', error);
     }*/
-    history.push('/workout-plans'); // Redirect to the workout plans page
+    //history.push('/workout-plans'); // Redirect to the workout plans page
   };
   return (
     <Container component="main" maxWidth="xs">
@@ -53,11 +75,13 @@ const LoginPage = () => {
               margin="normal"
               required
               fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
               autoFocus
+              value={formData.username}
+              onChange={handleChange}
             />
             <TextField
               margin="normal"
@@ -68,6 +92,8 @@ const LoginPage = () => {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
             />
             <Button
               type="submit"
