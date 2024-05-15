@@ -72,6 +72,47 @@ def calculate_age(born):
     today = datetime.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
+class RegisterView(APIView):
+    def post(self, request):
+        user_id = generate_user_id()
+        user_name = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        date_of_birth = request.data.get('dateOfBirth')
+        gender = request.data.get('gender')
+        weight = request.data.get('weight')
+        height = request.data.get('height')
+        past_achievements = request.data.get('pastAchievements', '')
+
+        # Convert date_of_birth from string to datetime
+        try:
+            date_of_birth_dt = datetime.strptime(date_of_birth, '%Y-%m-%d')
+            age = calculate_age(date_of_birth_dt)
+        except ValueError:
+            return Response({"error": "Invalid date format. Please use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with connection.cursor() as cursor:
+                # Insert into userf table
+                cursor.execute("""
+                    INSERT INTO userf (User_ID, User_name, Password, Email)
+                    VALUES (%s, %s, %s, %s)
+                """, [user_id, user_name, password, email])
+
+                # Insert into trainee table
+                cursor.execute("""
+                    INSERT INTO trainee (User_ID, User_name, Password, Age, Date_of_Birth, Gender, Weight, Height, Past_Achievements)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, [user_id, user_name, password, age, date_of_birth, gender, weight, height, past_achievements])
+                connection.commit()
+            return Response({"message": "Registration successful"}, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            connection.rollback()
+            return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
