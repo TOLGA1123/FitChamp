@@ -51,8 +51,28 @@ def schema_view(request):
         return HttpResponse("Failed to apply schema: {}".format(e))
 
 def generate_user_id():
-    user_id = str(uuid.uuid4())[:11]  # Generate a UUID and truncate it to 11 characters
+    # Count the number of existing users
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM userf")
+        num_users = cursor.fetchone()[0]
+
+    # Generate user_id by adding 1 to the count and padding it with zeros
+    user_id = str(1000000000 + num_users + 1)[-11:]
+
     return user_id
+
+def generate_trainer_id():
+
+    # Count the number of existing trainers
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM trainer")
+        num_trainers = cursor.fetchone()[0]
+
+    # Generate trainer_id by adding 1 to the count and padding it with zeros
+    trainer_id = str(1000000000 + num_trainers + 1)[-11:]
+
+    return trainer_id
+
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -112,7 +132,38 @@ class RegisterView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class TrainerSignupView(APIView):
+    def post(self, request):
+        user_id = generate_user_id()
+        trainer_id = generate_trainer_id()
+        user_name = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        specialization = request.data.get('specialization')
+        phone_number = request.data.get('phone')
+        social_media = request.data.get('socialMedia')
 
+        try:
+            with connection.cursor() as cursor:
+                # Insert into userf table
+                cursor.execute("""
+                    INSERT INTO userf (User_ID, User_name, Password, Email)
+                    VALUES (%s, %s, %s, %s)
+                """, [user_id, user_name, password, email])
+
+                # Insert into trainee table
+                cursor.execute("""
+                    INSERT INTO trainer (User_ID, Trainer_ID, User_name,  Password, Specialization, Telephone_Number, Social_Media)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, [user_id, trainer_id, user_name, password, specialization, phone_number, social_media])
+                connection.commit()
+            return Response({"message": "Registration successful"}, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            connection.rollback()
+            return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
