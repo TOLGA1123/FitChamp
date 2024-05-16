@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 import uuid
-
+from django.contrib.sessions.models import Session
 from django.shortcuts import render
 from rest_framework.views import APIView, status
 from .models import *
@@ -178,6 +178,13 @@ class LoginView(APIView):
             stored_password = user_row[2]  # Assuming password is stored in the third column
             if password == stored_password:
                 # User authenticated
+                # User authenticated, store user details in session
+                request.session['user_id'] = user_row[0]
+                request.session['username'] = user_row[1]
+                request.session['email'] = user_row[3]
+                request.session.save()
+                print("LoginView - Session Key:", request.session.session_key)
+                print('Session data set:', request.session.items())  # Debug statement
                 return Response({"message": "Login successful."}, status=status.HTTP_200_OK)
             else:
                 # Invalid password
@@ -189,6 +196,37 @@ class LoginView(APIView):
     def get(self, request):
         # Optionally provide a message for GET requests
         return Response({"message": "Please send POST request with username and password."})
+class UserProfileView(APIView):
+    def get(self, request):
+       #request.session.save()
+        print("UserProfileView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items())  # Debug statement
+
+        if user_id and username and email:
+            with connection.cursor() as cursor:
+                    # Fetch the trainee details
+                    cursor.execute("SELECT Age, Past_Achievements FROM trainee WHERE User_ID = %s", [user_id])
+                    trainee = dictfetchone(cursor)
+
+                if trainee:
+                    user_details = {
+                        'user_id': user_id,
+                        'username': username,
+                        'email': email,
+                        'age': trainee.get('Age'),
+                        'past_achievements': trainee.get('Past_Achievements')
+                    }
+                    return Response(user_details, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 @login_required(login_url='/login/')
 def home(request):
