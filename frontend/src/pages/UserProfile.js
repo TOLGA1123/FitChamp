@@ -119,32 +119,31 @@ const UserProfile = () => {
             <Typography variant="h6" gutterBottom>
               Age
             </Typography>
-            <Typography>25</Typography>
+            <Typography>{userDetails.trainee.age}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Date of Birth:
             </Typography>
-            <Typography>1995-05-16</Typography>
-
-            <Typography variant="h6" gutterBottom>
-              Phone Number:
-            </Typography>
-            <Typography>+1234567890</Typography>
+            <Typography>{userDetails.trainee.date_of_birth}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Gender
             </Typography>
-            <Typography>Male</Typography>
+            <Typography>{userDetails.trainee.gender}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Weight
             </Typography>
-            <Typography>180 lbs</Typography>
+            <Typography>{userDetails.trainee.weight}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Height
             </Typography>
-            <Typography>6'0"</Typography>
+            <Typography>{userDetails.trainee.height}</Typography>
+            <Typography variant="h6" gutterBottom>
+              Past Achievements
+            </Typography>
+            <Typography>{userDetails.trainee.past_achievements}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={8}>

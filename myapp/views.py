@@ -102,7 +102,7 @@ class RegisterView(APIView):
         gender = request.data.get('gender')
         weight = request.data.get('weight')
         height = request.data.get('height')
-        past_achievements = request.data.get('pastAchievements', '')
+        past_achievements = request.data.get('past_achievements')
 
         # Convert date_of_birth from string to datetime
         try:
@@ -198,7 +198,6 @@ class LoginView(APIView):
         return Response({"message": "Please send POST request with username and password."})
 class UserProfileView(APIView):
     def get(self, request):
-       #request.session.save()
         print("UserProfileView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
@@ -206,18 +205,23 @@ class UserProfileView(APIView):
         print('Session data set:', request.session.items())  # Debug statement
 
         if user_id and username and email:
-            with connection.cursor() as cursor:
+            try:
+                print(user_id)
+                with connection.cursor() as cursor:
                     # Fetch the trainee details
-                    cursor.execute("SELECT Age, Past_Achievements FROM trainee WHERE User_ID = %s", [user_id])
+                    cursor.execute("""
+                        SELECT  Age ,Date_of_Birth, Gender, Weight, Height, Past_Achievements 
+                        FROM trainee 
+                        WHERE User_ID = %s
+                    """, [user_id])
                     trainee = dictfetchone(cursor)
-
+                print(trainee)
                 if trainee:
                     user_details = {
                         'user_id': user_id,
                         'username': username,
                         'email': email,
-                        'age': trainee.get('Age'),
-                        'past_achievements': trainee.get('Past_Achievements')
+                        'trainee': trainee,
                     }
                     return Response(user_details, status=status.HTTP_200_OK)
                 else:
@@ -226,6 +230,7 @@ class UserProfileView(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 @login_required(login_url='/login/')

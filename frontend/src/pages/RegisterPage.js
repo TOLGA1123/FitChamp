@@ -13,7 +13,8 @@ const RegisterPage = () => {
     dateOfBirth: '',
     gender: '',
     weight: '',
-    height: ''
+    height: '',
+    past_achievements: '',
   });
 
   const handleChange = (event) => {
@@ -60,6 +61,7 @@ const handleSubmit = (event) => {
             <TextField margin="normal" required fullWidth name="gender" label="Gender" value={formData.gender} onChange={handleChange} />
             <TextField margin="normal" required fullWidth name="weight" label="Weight" type="number" value={formData.weight} onChange={handleChange} />
             <TextField margin="normal" required fullWidth name="height" label="Height" type="number" value={formData.height} onChange={handleChange} />
+            <TextField margin="normal" required fullWidth name="past_achievements" label="Past_Achievements" value={formData.past_achievements} onChange={handleChange} />
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, bgcolor: 'green' }}>
               Register
             </Button>
