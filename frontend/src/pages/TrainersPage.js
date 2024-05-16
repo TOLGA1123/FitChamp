@@ -17,9 +17,8 @@ const TrainersPage = () => {
     // Add more trainers as needed
   ];
 
-  const handleTrainerSelect = (trainerId) => {
-    console.log('Selected Trainer ID:', trainerId);
-    // Implement navigation to trainer's detail page or another related action
+  const handleSelectTrainer = (trainerId) => {
+    history.push(`/trainer-profile/${trainerId}`);
   };
 
   const handleRouteChange = (event, newValue) => {
@@ -75,11 +74,8 @@ const TrainersPage = () => {
               value="goals" 
               sx={{ color: 'white', backgroundColor: 'black' }}
             />
-            <Tab 
-              label="Progress" 
-              value="progress" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
+
+            <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
           </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
@@ -101,7 +97,7 @@ const TrainersPage = () => {
         <Grid container spacing={2}>
           {trainers.map((trainer) => (
             <Grid item xs={12} sm={6} md={4} key={trainer.id}>
-              <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
+              <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }} onClick={() => handleSelectTrainer(trainer.id)}>
                 <Avatar sx={{ width: 56, height: 56, margin: 'auto' }} />
                 <Typography>{trainer.name}</Typography>
               </Paper>

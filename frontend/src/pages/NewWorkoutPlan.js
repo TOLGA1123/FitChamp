@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
-import { Box, TextField, Typography, Button, Grid, Paper, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, TextField, Typography, Button, Grid, Paper, IconButton, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, RadioGroup, FormControlLabel, Radio, Slider } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-
-import {Avatar, List, ListItem, ListItemText } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab} from '@mui/material';
+import { AppBar, Tabs, Tab } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 
 const NewWorkoutPlan = () => {
@@ -15,8 +11,36 @@ const NewWorkoutPlan = () => {
   const [workoutPlan, setWorkoutPlan] = useState({
     routineName: '',
     duration: '',
-    difficulty: '',
-    description: []
+    description: [],
+    trainee: null,
+    trainer: null,
+    difficulty: 0
+  });
+
+  const [exercises, setExercises] = useState([
+    { name: 'Bah', type: 'Cardio', description: 'Bah', muscleGroup: 'Legs', equipment: 'None', difficulty: 1 },
+    { name: 'Rah', type: 'Cardio', description: 'Rah', muscleGroup: 'Arms', equipment: 'Dumbbells', difficulty: 2 }
+  ]);
+  
+  const [trainees, setTrainees] = useState([
+    { name: 'John Doe' },
+    { name: 'Jane Smith' }
+  ]);
+  
+  const [trainers, setTrainers] = useState([
+    { name: 'Mike Johnson' },
+    { name: 'Sarah Connor' }
+  ]);
+
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newExercise, setNewExercise] = useState({
+    name: '',
+    type: 'Cardio',
+    description: '',
+    muscleGroup: '',
+    equipment: '',
+    difficulty: 1
   });
 
   const handleChange = (event) => {
@@ -26,6 +50,7 @@ const NewWorkoutPlan = () => {
       [name]: value
     }));
   };
+
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
   };
@@ -35,11 +60,17 @@ const NewWorkoutPlan = () => {
   };
 
   const addDescription = () => {
-    // This function would ideally open a modal or another input method to add exercise details
-    setWorkoutPlan((prevPlan) => ({
-      ...prevPlan,
-      description: [...prevPlan.description, "New Exercise Detail"]
-    }));
+    if (selectedExercise) {
+      const newDescription = [...workoutPlan.description, selectedExercise];
+      const newDifficulty = newDescription.reduce((acc, exercise) => acc + exercise.difficulty, 0) / newDescription.length;
+
+      setWorkoutPlan((prevPlan) => ({
+        ...prevPlan,
+        description: newDescription,
+        difficulty: newDifficulty
+      }));
+      setSelectedExercise(null); // Clear the selected exercise
+    }
   };
 
   const handleSubmit = () => {
@@ -48,99 +79,225 @@ const NewWorkoutPlan = () => {
     history.push('/workout-plans'); // Redirect to the workout plans overview
   };
 
+  const handleDialogOpen = () => {
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
+
+  const handleNewExerciseChange = (event) => {
+    const { name, value } = event.target;
+    setNewExercise((prevExercise) => ({
+      ...prevExercise,
+      [name]: value
+    }));
+  };
+
+  const handleSliderChange = (event, newValue) => {
+    setNewExercise((prevExercise) => ({
+      ...prevExercise,
+      difficulty: newValue
+    }));
+  };
+
+  const createNewExercise = () => {
+    console.log('Creating New Exercise:', newExercise);
+    // Implement the exercise creation logic, possibly making a POST request to your backend
+    setExercises((prevExercises) => [...prevExercises, newExercise]);
+    handleDialogClose();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
-    <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-    <Tabs 
-        onChange={handleRouteChange} 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          flexGrow: 1, 
-          backgroundColor: 'black' // Set the background color for the whole tabs container
-        }} 
-        variant="fullWidth"
-      > 
-        <Tab 
-          label="Workouts" 
-          value="workout-plans" 
-          sx={{ 
-            color:'black', 
-            backgroundColor: green[500]  
+      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+        <Tabs
+          onChange={handleRouteChange}
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexGrow: 1,
+            backgroundColor: 'black' // Set the background color for the whole tabs container
           }}
-        />
-        <Tab 
-          label="Trainers" 
-          value="trainers" 
-          sx={{ color: 'white', backgroundColor: 'black' }}
-        />
-        <Tab 
-          label="Nutrition Plans" 
-          value="nutrition" 
-          sx={{ color: 'white', backgroundColor: 'black' }}
-        />
-        <Tab 
-          label="Goals" 
-          value="goals" 
-          sx={{ color: 'white', backgroundColor: 'black' }}
-        />
-        <Tab 
-          label="Progress" 
-          value="progress" 
-          sx={{ color: 'white', backgroundColor: 'black' }}
-        />
-      </Tabs>
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-        <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
-          <PersonIcon />
-        </IconButton>
+          variant="fullWidth"
+        >
+          <Tab
+            label="Workouts"
+            value="workout-plans"
+            sx={{
+              color: 'black',
+              backgroundColor: green[500]
+            }}
+          />
+          <Tab
+            label="Trainers"
+            value="trainers"
+            sx={{ color: 'white', backgroundColor: 'black' }}
+          />
+          <Tab
+            label="Nutrition Plans"
+            value="nutrition"
+            sx={{ color: 'white', backgroundColor: 'black' }}
+          />
+          <Tab
+            label="Goals"
+            value="goals"
+            sx={{ color: 'white', backgroundColor: 'black' }}
+          />
+          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
+        </Tabs>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
+            <PersonIcon />
+          </IconButton>
 
-        <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-          Create a Workout Plan
-        </Typography>
+          <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+            Create a Workout Plan
+          </Typography>
+        </Box>
+      </AppBar>
+      <Box sx={{ p: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Routine Name"
+              name="routineName"
+              value={workoutPlan.routineName}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth
+              label="Duration"
+              name="duration"
+              value={workoutPlan.duration}
+              onChange={handleChange}
+              sx={{ mt: 2 }}
+            />
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6">Description:</Typography>
+              {workoutPlan.description.map((desc, index) => (
+                <Paper key={index} sx={{ p: 1, my: 1 }}>
+                  {desc.name}
+                </Paper>
+              ))}
+              <Autocomplete
+                options={exercises}
+                getOptionLabel={(option) => option.name}
+                value={selectedExercise}
+                onChange={(event, newValue) => {
+                  setSelectedExercise(newValue);
+                }}
+                renderInput={(params) => <TextField {...params} label="Add Exercise" />}
+                sx={{ mt: 2 }}
+              />
+              <IconButton onClick={addDescription} color="primary">
+                <AddCircleOutlineIcon />
+              </IconButton>
+            </Box>
+            <Autocomplete
+              options={trainees}
+              getOptionLabel={(option) => option.name}
+              onChange={(event, newValue) => {
+                setWorkoutPlan((prevPlan) => ({
+                  ...prevPlan,
+                  trainee: newValue ? newValue.name : null
+                }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Select Trainee" />}
+              sx={{ mt: 2 }}
+            />
+            <Autocomplete
+              options={trainers}
+              getOptionLabel={(option) => option.name}
+              onChange={(event, newValue) => {
+                setWorkoutPlan((prevPlan) => ({
+                  ...prevPlan,
+                  trainer: newValue ? newValue.name : null
+                }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Select Trainer" />}
+              sx={{ mt: 2 }}
+            />
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Difficulty: {workoutPlan.difficulty.toFixed(2)}
+            </Typography>
+            <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
+              Submit
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleDialogOpen} sx={{ mt: 2, ml: 2 }}>
+              Create New Exercise
+            </Button>
+          </Grid>
+        </Grid>
       </Box>
-    </AppBar>
-    <Box sx={{ p: 3 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Create New Exercise</DialogTitle>
+        <DialogContent>
           <TextField
             fullWidth
-            label="Routine Name"
-            name="routineName"
-            value={workoutPlan.routineName}
-            onChange={handleChange}
+            label="Name"
+            name="name"
+            value={newExercise.name}
+            onChange={handleNewExerciseChange}
+            sx={{ mb: 2 }}
+          />
+          <RadioGroup
+            name="type"
+            value={newExercise.type}
+            onChange={handleNewExerciseChange}
+            sx={{ mb: 2 }}
+          >
+            <FormControlLabel value="Cardio" control={<Radio />} label="Cardio" />
+            <FormControlLabel value="Hypertrophy" control={<Radio />} label="Hypertrophy" />
+            <FormControlLabel value="Other" control={<Radio />} label="Other" />
+          </RadioGroup>
+          <TextField
+            fullWidth
+            label="Description"
+            name="description"
+            value={newExercise.description}
+            onChange={handleNewExerciseChange}
+            sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Duration"
-            name="duration"
-            value={workoutPlan.duration}
-            onChange={handleChange}
+            label="Muscle Group"
+            name="muscleGroup"
+            value={newExercise.muscleGroup}
+            onChange={handleNewExerciseChange}
+            sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Difficulty"
-            name="difficulty"
-            value={workoutPlan.difficulty}
-            onChange={handleChange}
+            label="Equipment"
+            name="equipment"
+            value={newExercise.equipment}
+            onChange={handleNewExerciseChange}
+            sx={{ mb: 2 }}
           />
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6">Description:</Typography>
-            {workoutPlan.description.map((desc, index) => (
-              <Paper key={index} sx={{ p: 1, my: 1 }}>
-                {desc}
-              </Paper>
-            ))}
-            <IconButton onClick={addDescription} color="primary">
-              <AddCircleOutlineIcon />
-            </IconButton>
-          </Box>
-          <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
+          <Typography gutterBottom>Difficulty</Typography>
+          <Slider
+            value={newExercise.difficulty}
+            onChange={handleSliderChange}
+            step={1}
+            marks
+            min={1}
+            max={5}
+            valueLabelDisplay="auto"
+            sx={{ mb: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={createNewExercise} color="primary" variant="contained">
             Submit
           </Button>
-        </Grid>
-      </Grid>
-    </Box>
+          <Button onClick={handleDialogClose} color="secondary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
