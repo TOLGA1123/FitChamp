@@ -23,7 +23,7 @@ const App = () => {
           <Route path="/register" component={RegisterPage} />
           <Route path="/trainer-signup" component={TrainerSignUp} />
           <Route path="/workout-plans" component={CurrentWorkoutPlans} />
-          <Route path="/profile" component={UserProfile} />
+          <Route path="/profile/:userId" component={UserProfile} />
           <Route path="/trainers" component={TrainersPage} />
           <Route path="/new-workout" component={NewWorkoutPlan} />
           {/* You can add more routes here if you have other pages */}

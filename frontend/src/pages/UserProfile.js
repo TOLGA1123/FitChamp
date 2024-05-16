@@ -1,5 +1,5 @@
 // pages/UserProfile.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useHistory } from 'react-router-dom';
@@ -9,10 +9,42 @@ import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const UserProfile = () => {
-    const history = useHistory();
+  const history = useHistory();
+  const [profileData, setProfileData] = useState({
+      user: {},
+      goals: [],
+      progress: [],
+      trainers: [],
+      workout_plans: [],
+      nutrition_plans: [],
+      achievements: []
+  });
 
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+
+    if (accessToken) {
+        const decodedToken = jwtDecode(accessToken);
+        const userId = decodedToken.user_id;
+        axios.get(`http://localhost:8000/api/profile/${userId}`)
+        .then(response => {
+            setProfileData(response.data);
+        })
+        .catch(error => {
+            console.error('Error fetching profile data:', error);
+        });
+    } else {
+        console.error('No userId found in localStorage');
+    }
+}, []);
+
+  if (!profileData) {
+    return <div>Loading...</div>;  // Handle loading state
+  }
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
   };
@@ -84,42 +116,37 @@ const UserProfile = () => {
             <Typography variant="h6" gutterBottom>
               Username
             </Typography>
-            <Typography>JohnDoe123</Typography>
+            <Typography>{profileData.user.user_name}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Mail
             </Typography>
-            <Typography>johndoe@example.com</Typography>
+            <Typography>{profileData.user.email}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Age
             </Typography>
-            <Typography>25</Typography>
+            <Typography>{profileData.user.age}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Date of Birth:
             </Typography>
-            <Typography>1995-05-16</Typography>
-
-            <Typography variant="h6" gutterBottom>
-              Phone Number:
-            </Typography>
-            <Typography>+1234567890</Typography>
+            <Typography>{profileData.user.date_of_birth}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Gender
             </Typography>
-            <Typography>Male</Typography>
+            <Typography>{profileData.user.gender}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Weight
             </Typography>
-            <Typography>180 lbs</Typography>
+            <Typography>{profileData.user.weight}</Typography>
 
             <Typography variant="h6" gutterBottom>
               Height
             </Typography>
-            <Typography>6'0"</Typography>
+            <Typography>{profileData.user.height}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={8}>
@@ -130,12 +157,11 @@ const UserProfile = () => {
                   Goals
                 </Typography>
                 <List>
-                  <ListItem>
-                    <ListItemText primary="Lose 10 lbs" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Run a marathon" />
-                  </ListItem>
+                  {profileData.goals.map((goal, index) => (
+                    <ListItem key={index}>
+                      <ListItemText primary={goal} />
+                    </ListItem>
+                  ))}
                 </List>
               </Paper>
             </Grid>
@@ -145,13 +171,12 @@ const UserProfile = () => {
                   Progress
                 </Typography>
                 <List>
-                  <ListItem>
-                    <ListItemText primary="Lost 5 lbs" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Half marathon completed" />
-                  </ListItem>
-                </List>
+                                        {profileData.progress.map((progressItem, index) => (
+                                            <ListItem key={index}>
+                                                <ListItemText primary={progressItem} />
+                                            </ListItem>
+                                        ))}
+                                    </List>
               </Paper>
             </Grid>
           </Grid>

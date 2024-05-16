@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-import psycopg2
 from django.db import connection, IntegrityError
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -8,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 import uuid
 
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import render
 from rest_framework.views import APIView, status
 from .models import *
@@ -16,8 +15,12 @@ from .serializer import *
 
 from datetime import datetime
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth.models import AbstractBaseUser
 
-# Create your views here.
+
 
 class ReactView(APIView):
     serializer_class = ReactSerializer
@@ -132,6 +135,7 @@ class RegisterView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
 class TrainerSignupView(APIView):
     def post(self, request):
         user_id = generate_user_id()
@@ -164,6 +168,65 @@ class TrainerSignupView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+class MockUser(AbstractBaseUser):
+    def __init__(self, id, username, password, email):
+        self.id = id
+        self.username = username
+        self.password = password
+        self.email = email
+        self.is_active = True
+
+    USERNAME_FIELD = 'username'
+
+    def __str__(self):
+        return self.username
+    
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        # Log the incoming request data
+        print(f"Received login request: username={username}, password={password}")
+
+        try:
+            # Execute raw SQL SELECT statement to find the user
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM userf WHERE User_name = %s", [username])
+                user_row = cursor.fetchone()
+
+                # Log the SQL query result
+                print(f"SQL query result: {user_row}")
+
+            if user_row:
+                stored_password = user_row[2]  # Assuming password is stored in the third column
+                if password == stored_password:
+                    
+                    user = MockUser(id=user_row[0], username=user_row[1], password=stored_password, email=user_row[3])
+
+                    # Manually create a token pair for the authenticated user
+                    refresh = RefreshToken.for_user(user)
+                    access_token = str(refresh.access_token)
+                    refresh_token = str(refresh)
+
+                    response_data = {
+                        'refresh': refresh_token,
+                        'access': access_token,
+                        'user_id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+'''
 class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
@@ -189,8 +252,10 @@ class LoginView(APIView):
     def get(self, request):
         # Optionally provide a message for GET requests
         return Response({"message": "Please send POST request with username and password."})
+    
+'''
 
-@login_required(login_url='/login/')
+@login_required(login_url='/login/')    
 def home(request):
     with connection.cursor() as cursor:
         # SQL query to retrieve all users
@@ -207,48 +272,56 @@ def home(request):
 
     return render(request, 'home.html', {'users': user_list, 'trainers': trainer_list})
 
-@login_required(login_url='/login/')
-def user_info(request, user_id):
-    try:
-        with connection.cursor() as cursor:
-            # Fetch the user
-            cursor.execute("SELECT * FROM userf WHERE User_ID = %s", [user_id])
-            user = dictfetchone(cursor)
-            if not user:
-                raise Http404("User not found")
 
-            # Fetch trainers associated with the user
-            cursor.execute("SELECT * FROM trainer WHERE User_ID = %s", [user_id])
-            trainers = cursor.fetchall()
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
 
-            # Fetch workout plans associated with the user
-            cursor.execute("SELECT * FROM workout_plan WHERE User_ID = %s", [user_id])
-            workout_plans = cursor.fetchall()
+    def get(self, request, user_id):
+        try:
+            with connection.cursor() as cursor:
+                # Fetch the user with associated trainee data
+                cursor.execute("""
+                    SELECT User_ID, User_name, Password, Email, Age, Date_of_Birth, Gender, Weight, Height 
+                    FROM userf 
+                    JOIN trainee USING (User_ID) 
+                    WHERE User_ID = %s
+                """, [user_id])
+                user = dictfetchone(cursor)
+                if not user:
+                    raise Http404("User not found")
 
-            # Fetch nutrition plans associated with the user
-            cursor.execute("SELECT * FROM nutrition_plan WHERE User_ID = %s", [user_id])
-            nutrition_plans = cursor.fetchall()
+                # Example static data for goals and progress
+                user_goals = ["Lose 10 lbs", "Run a marathon"]
+                user_progress = ["Lost 5 lbs", "Half marathon completed"]
 
-            # Fetch achievements associated with the user
-            cursor.execute("SELECT * FROM achievement WHERE User_ID = %s", [user_id])
-            achievements = cursor.fetchall()
+                # Fetch other related data
+                cursor.execute("SELECT * FROM trainer WHERE User_ID = %s", [user_id])
+                trainers = dictfetchall(cursor)
+                
+                cursor.execute("SELECT * FROM workout_plan WHERE User_ID = %s", [user_id])
+                workout_plans = dictfetchall(cursor)
 
-            # Fetch progress records associated with the user
-            cursor.execute("SELECT * FROM progress WHERE User_ID = %s", [user_id])
-            progresses = cursor.fetchall()
+                cursor.execute("SELECT * FROM nutrition_plan WHERE User_ID = %s", [user_id])
+                nutrition_plans = dictfetchall(cursor)
 
-    except Exception as e:
-        raise Http404("Database error: " + str(e))
+                cursor.execute("SELECT * FROM achievement WHERE User_ID = %s", [user_id])
+                achievements = dictfetchall(cursor)
 
-    context = {
-        'user': user,
-        'trainers': trainers,
-        'workout_plans': workout_plans,
-        'nutrition_plans': nutrition_plans,
-        'achievements': achievements,
-        'progresses': progresses,
-    }
-    return render(request, 'userinfo.html', context)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        # Organize all data into a single response dictionary
+        profile_data = {
+            'user': user,
+            'goals': user_goals,
+            'progress': user_progress,
+            'trainers': trainers,
+            'workout_plans': workout_plans,
+            'nutrition_plans': nutrition_plans,
+            'achievements': achievements,
+        }
+
+        return Response(profile_data)
 
 
 

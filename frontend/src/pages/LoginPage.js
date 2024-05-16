@@ -3,10 +3,11 @@ import React,{ useState } from 'react';
 import { Container, TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
-
+import { jwtDecode } from 'jwt-decode';
 
 
 const LoginPage = () => {
+  
   const[formData, setFormData] = useState({
     username: '',
     password: '',
@@ -23,39 +24,25 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    axios.post('http://localhost:8000/login/', formData)
-    .then(response => {
-      console.log('Login successful:', response.data);
-      if (response.status === 200) {
-        history.push('/workout-plans'); // Redirect to login page after successful registration
-      }
-    })
-    .catch(error => {
-      console.error('Registration error:', error.response ? error.response.data : 'Server did not respond');
-    });
-    /*e.preventDefault();
     try {
-      const response = await fetch('http://yourdjangoapi.com/api/token/', {
-        method: 'POST',
+      const response = await axios.post('http://localhost:8000/login/', formData, {
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+          'Content-Type': 'application/json'
+        }
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token); // Store the token
-        
-      } else {
-        console.error('Login failed');
-        // Handle errors such as invalid credentials
+      if (response.status === 200) {
+        console.log('Login successful:', response.data);
+        localStorage.setItem('accessToken', response.data.access);
+        localStorage.setItem('refreshToken', response.data.refresh);
+        const decodedToken = jwtDecode(response.data.access);
+        localStorage.setItem('userId', decodedToken.user_id);
+        history.push('/workout-plans');
       }
     } catch (error) {
-      console.error('An error occurred:', error);
-    }*/
-    //history.push('/workout-plans'); // Redirect to the workout plans page
+      console.error('Login error:', error.response ? error.response.data : 'Server did not respond');
+    }
   };
+  
   return (
     <Container component="main" maxWidth="xs">
       <Box
