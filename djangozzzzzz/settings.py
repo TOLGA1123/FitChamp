@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "myapp.apps.MyappConfig"
+    "myapp.apps.MyappConfig",
+    'rest_framework',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -48,9 +50,21 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny']}
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+]
 ROOT_URLCONF = 'djangozzzzzz.urls'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 86400  # Two weeks, in seconds
 
 TEMPLATES = [
     {
@@ -80,9 +94,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'mydatabase',
         'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',  # Set to empty string for localhost.
-        'PORT': '5432',  # Set to empty string for default.
+        'PASSWORD': 'alp68ece',
+        'HOST': 'localhost',
+        'PORT': '5433',
     }
 }
 
@@ -129,6 +143,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+'''
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -169,3 +184,4 @@ LOGGING = {
     },
 }
 
+'''

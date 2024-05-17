@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS userf (
   User_ID char(11) PRIMARY KEY,
   User_name varchar(20) NOT NULL,
@@ -34,7 +33,7 @@ CREATE TABLE IF NOT EXISTS trainee (
   Age numeric(2,0),
   Date_of_Birth varchar(20),
   Gender varchar(20),
-  Weight numeric(3,1),
+  Weight numeric(4,1),    --0-999
   Height numeric(3,0),
   Past_Achievements varchar(100),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
