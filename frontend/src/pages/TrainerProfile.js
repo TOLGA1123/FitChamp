@@ -28,7 +28,7 @@ const TrainerProfile = () => {
     history.push('/messages');
   };
   const handleBackClick = () => {
-    history.push('/trainers');
+    history.push('/trainees');
   };
 
   useEffect(() => {
