@@ -33,4 +33,5 @@ urlpatterns = [
     path('goals/', GoalsView.as_view(), name='goals'), 
     path('goal/<int:goal_id>/', GoalDetailView.as_view(), name='goal_detail'), 
     path('new-goal/', NewGoalView.as_view(),name='new-goal'),
+    path('new-trainee/', NewTraineeView.as_view(), name='new-trainee'),
 ]
