@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 
+import LogoutButton from './LogoutButton';
 const TrainerProfile = () => {
   const { trainerId } = useParams();
   const [trainerDetails, setTrainerDetails] = React.useState(null);
@@ -99,6 +100,7 @@ const TrainerProfile = () => {
         <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
           <MessageIcon />
         </IconButton>
+        <LogoutButton />
       </Box>
     </AppBar>
     <Box sx={{ flexGrow: 1, p: 3 }}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, LinearProgress, Paper, Grid } from '@mui/material';
 import moment from 'moment';
-
+import LogoutButton from './LogoutButton';
 const GoalDetailPage = () => {
   const { goalId } = useParams();
   const [goalDetails, setGoalDetails] = useState(null);
@@ -58,6 +58,7 @@ const GoalDetailPage = () => {
           <Typography>{Math.round(calculateProgress(goalDetails.startDate, goalDetails.endDate))}%</Typography>
         </Grid>
       </Grid>
+      <LogoutButton />
     </Box>
   );
 };

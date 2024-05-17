@@ -293,27 +293,99 @@ class UserProfileView(APIView):
             else:
                 return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
-class TrainerProfileView(APIView):
+class LogoutView(APIView):
+    def post(self, request):
+        # Clear all session data
+        request.session.flush()
+        return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
+class TraineeView(APIView):
+    def get(self,request):
+        with connection.cursor() as cursor:
+            # SQL query to retrieve all users
+            cursor.execute("SELECT * FROM trainee")
+            trainees = cursor.fetchall()
+
+            # SQL query to retrieve all trainers
+            #cursor.execute("SELECT * FROM trainer")
+            #trainers = cursor.fetchall()
+
+        # Convert query results into a more manageable format, if necessary
+        trainee_list = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'email': trainee[3]} for trainee in trainees]
+        #trainer_list = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
+
+        return Response(trainee_list, status=status.HTTP_200_OK)
+class UserTrainersView(APIView):
     def get(self, request):
-        print("TrainerProfileView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User ID not found in session"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT trainer.* FROM trains INNER JOIN trainer ON trains.trainer_id = trainer.trainer_id WHERE trains.user_id = %s", [user_id])
+            trainers = cursor.fetchall()
+        
+        trainer_list = [{
+            'trainer_id': trainer[0],
+            'user_id': trainer[1],
+            'user_name': trainer[2],
+            'password': trainer[3],
+            'specialization': trainer[4],
+            'telephone_number': trainer[5],
+            'social_media': trainer[6]
+        } for trainer in trainers]
+        
+        return Response(trainer_list, status=status.HTTP_200_OK)
+class NewTrainerView(APIView):
+    def get(self,request):
+        user_id = request.session.get('user_id')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trains WHERE user_id = %s", [user_id])
+            associated_trainers = cursor.fetchall()
+        # Extract the trainer_ids from the fetched rows
+        associated_trainer_ids = [row[1] for row in associated_trainers]
+        #print(trainer_ids)
+        # Fetch all trainers matched with the given trainer_ids
+        if associated_trainer_ids:
+            associated_trainer_ids_tuple = tuple(associated_trainer_ids)
+            with connection.cursor() as cursor:
+                # Step 2: Fetch the trainers who are not associated with the user
+                cursor.execute(
+                    "SELECT * FROM trainer WHERE trainer_id NOT IN %s", 
+                    [associated_trainer_ids_tuple]
+                )
+                trainers = cursor.fetchall()
+        else:
+            with connection.cursor() as cursor:
+                # Fetch all trainers since the user has no associated trainers
+                cursor.execute("SELECT * FROM trainer")
+                trainers = cursor.fetchall()
+        #trainee_list = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'email': trainee[3]} for trainee in trainees]
+        trainers = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
+        print(trainers)
+        return Response(trainers, status=status.HTTP_200_OK)
+     # POST method to add the selected trainer to a user in the trains table
+    def post(self, request):
+        # Retrieve user ID and trainer ID from request data
+        user_id = request.session.get('user_id')
+        trainer_id = request.data.get('trainer_id')
 
+        # Check if the user and trainer exist
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainee WHERE user_id = %s", [user_id])
+            user_exists = cursor.fetchone()
+            cursor.execute("SELECT * FROM trainer WHERE trainer_id = %s", [trainer_id])
+            trainer_exists = cursor.fetchone()
 
+        if not user_exists:
+            raise NotFound(detail="User not found", code=status.HTTP_404_NOT_FOUND)
+        if not trainer_exists:
+            raise NotFound(detail="Trainer not found", code=status.HTTP_404_NOT_FOUND)
 
-@login_required(login_url='/login/')
-def home(request):
-    with connection.cursor() as cursor:
-        # SQL query to retrieve all users
-        cursor.execute("SELECT * FROM userf")
-        users = cursor.fetchall()
-        # SQL query to retrieve all trainers
-        cursor.execute("SELECT * FROM trainer")
-        trainers = cursor.fetchall()
+        # Insert the entry into the trains table
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO trains (user_id, trainer_id) VALUES (%s, %s)", [user_id, trainer_id])
 
-    # Convert query results into a more manageable format, if necessary
-    user_list = [{'user_id': user[0], 'user_name': user[1], 'password': user[2], 'email': user[3]} for user in users]
-    trainer_list = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
-
-    return render(request, 'home.html', {'users': user_list, 'trainers': trainer_list})
+        return Response({"message": "Trainer added to user successfully."}, status=status.HTTP_201_CREATED)
 
 @login_required(login_url='/login/')
 def user_info(request, user_id):

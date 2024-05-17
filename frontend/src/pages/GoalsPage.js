@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import { green } from '@mui/material/colors';
-
+import LogoutButton from './LogoutButton';
 const GoalsPage = () => {
   const history = useHistory();
   const goals = [
@@ -19,7 +19,7 @@ const GoalsPage = () => {
 
   const handleCreateNewGoal = () => {
     // Navigate to the goal creation page
-    history.push('/create-goal');
+    history.push('/new-goal');
   };
   const handleMSGClick = () => {
     history.push('/messages');
@@ -79,6 +79,7 @@ const GoalsPage = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
+          <LogoutButton />
         </Box>
       </AppBar>
       <Box sx={{ m: 3 }}>
