@@ -4,7 +4,11 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import { green } from '@mui/material/colors';
+
+const darkMintGreen = '#2E8B57'; // Define your dark mint green color
+const darkAshGrey = '#4B4B4B'; // Define your dark ash grey color
+const lila = '#cc99ff';
+const mavi = '#009999';
 
 const NewWorkoutPlan = () => {
   const history = useHistory();
@@ -111,14 +115,14 @@ const NewWorkoutPlan = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+      <AppBar position="static" sx={{ backgroundColor: darkMintGreen }}>
         <Tabs
           onChange={handleRouteChange}
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
             flexGrow: 1,
-            backgroundColor: 'black' // Set the background color for the whole tabs container
+            backgroundColor: darkAshGrey // Set the background color for the whole tabs container
           }}
           variant="fullWidth"
         >
@@ -127,25 +131,25 @@ const NewWorkoutPlan = () => {
             value="workout-plans"
             sx={{
               color: 'black',
-              backgroundColor: green[500]
+              backgroundColor: darkMintGreen
             }}
           />
           <Tab
             label="Trainers"
             value="trainers"
-            sx={{ color: 'white', backgroundColor: 'black' }}
+            sx={{ color: 'white', backgroundColor: darkAshGrey }}
           />
           <Tab
             label="Nutrition Plans"
             value="nutrition"
-            sx={{ color: 'white', backgroundColor: 'black' }}
+            sx={{ color: 'white', backgroundColor: darkAshGrey }}
           />
           <Tab
             label="Goals"
             value="goals"
-            sx={{ color: 'white', backgroundColor: 'black' }}
+            sx={{ color: 'white', backgroundColor: darkAshGrey }}
           />
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
+          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
@@ -157,7 +161,7 @@ const NewWorkoutPlan = () => {
           </Typography>
         </Box>
       </AppBar>
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, mx: 25, backgroundColor: mavi, borderRadius: 2 }}> {/* Added background color and border radius to the Box */}
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -166,6 +170,7 @@ const NewWorkoutPlan = () => {
               name="routineName"
               value={workoutPlan.routineName}
               onChange={handleChange}
+              sx={{ backgroundColor: 'white', borderRadius: 1 }} // To make sure the text fields stand out
             />
             <TextField
               fullWidth
@@ -173,10 +178,10 @@ const NewWorkoutPlan = () => {
               name="duration"
               value={workoutPlan.duration}
               onChange={handleChange}
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, backgroundColor: 'white', borderRadius: 1 }} // To make sure the text fields stand out
             />
             <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">Description:</Typography>
+              <Typography variant="h6" color="white">Description:</Typography> {/* Changed color to white */}
               {workoutPlan.description.map((desc, index) => (
                 <Paper key={index} sx={{ p: 1, my: 1 }}>
                   {desc.name}
@@ -220,7 +225,7 @@ const NewWorkoutPlan = () => {
               renderInput={(params) => <TextField {...params} label="Select Trainer" />}
               sx={{ mt: 2 }}
             />
-            <Typography variant="h6" sx={{ mt: 2 }}>
+            <Typography variant="h6" color="white" sx={{ mt: 2 }}>
               Difficulty: {workoutPlan.difficulty.toFixed(2)}
             </Typography>
             <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
@@ -298,6 +303,24 @@ const NewWorkoutPlan = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <style>
+        {`
+          body {
+            margin: 0;
+            padding: 0;
+            background: repeating-linear-gradient(
+              45deg,
+              ${lila},
+              ${lila} 40px,
+              ${darkAshGrey} 40px,
+              ${darkAshGrey} 50px
+            );
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+          }
+        `}
+      </style>
     </Box>
   );
 };

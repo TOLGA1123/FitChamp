@@ -29,32 +29,13 @@ const LoginPage = () => {
       if (response.status === 200) {
         history.push('/workout-plans'); // Redirect to login page after successful registration
       }
+      if(response.status === 201){
+        history.push('/trainees');
+      }
     })
     .catch(error => {
       console.error('Registration error:', error.response ? error.response.data : 'Server did not respond');
     });
-    /*e.preventDefault();
-    try {
-      const response = await fetch('http://yourdjangoapi.com/api/token/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token); // Store the token
-        
-      } else {
-        console.error('Login failed');
-        // Handle errors such as invalid credentials
-      }
-    } catch (error) {
-      console.error('An error occurred:', error);
-    }*/
-    //history.push('/workout-plans'); // Redirect to the workout plans page
   };
   return (
     <Container component="main" maxWidth="xs">

@@ -14,7 +14,8 @@ import NewWorkoutPlan from './pages/NewWorkoutPlan';
 import TrainerProfile from './pages/TrainerProfile';
 import GoalsPage from './pages/GoalsPage';
 import ProgressAchievements from './pages/ProgressAchievements';
-//import GoalDetailPage from './pages/GoalDetailPage';
+import TraineesPage from './pages/TraineesPage';
+import GoalDetailPage from './pages/GoalDetailPage';
 
 const theme = createTheme();
 
@@ -33,8 +34,10 @@ const App = () => {
           <Route path="/trainer-profile/:trainerId" component={TrainerProfile} />
           <Route path="/goals" component={GoalsPage} />
           <Route path="/achievements" component={ProgressAchievements} />
+          <Route path="/trainees" component={TraineesPage} />
+          <Route path="/goal-detail/:goalId" component={GoalDetailPage} />
           
-          {/*<Route path="/goal-detail/:goalId" component={GoalDetailPage} />
+          {/*
            You can add more routes here if you have other pages */}
         </Switch>
       </Router>
