@@ -7,7 +7,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
-import LogoutButton from './LogoutButton';
+
 // Define a class for workout plans
 class WorkoutPlan {
   constructor(id, title, description) {
@@ -75,7 +75,6 @@ const CurrentWorkoutPlans = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
-          <LogoutButton />
         </Box>
 
       </AppBar>

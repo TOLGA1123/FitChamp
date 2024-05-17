@@ -20,13 +20,13 @@ from django.urls import path, include
 from myapp.views import *
 
 urlpatterns = [
+    path('', schema_view, name='schema'),
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view(), name='login'),
     path('register/', RegisterView.as_view(), name='register'),
     path('trainer-signup/', TrainerSignupView.as_view(), name= 'trainer-signup'),
     path('profile/', UserProfileView.as_view(), name='profile'),
-    path('trainees/', TraineeView.as_view(),name='trainees'),
-    path('new-trainer/', NewTrainerView.as_view(),name='new-trainer'),
-    path('trainers/', UserTrainersView.as_view(), name='trainers'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path('goals/', GoalsView.as_view(), name='goals'),
+    path('goal/<int:goal_id>/', GoalDetailView.as_view(), name='goal_detail'),
+    path('new-goal/', NewGoalView.as_view(),name='new-goal'),
 ]

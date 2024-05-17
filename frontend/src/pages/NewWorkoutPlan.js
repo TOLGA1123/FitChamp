@@ -4,7 +4,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import LogoutButton from './LogoutButton';
+
 const darkMintGreen = '#2E8B57'; // Define your dark mint green color
 const darkAshGrey = '#4B4B4B'; // Define your dark ash grey color
 const lila = '#cc99ff';
@@ -150,7 +150,6 @@ const NewWorkoutPlan = () => {
             sx={{ color: 'white', backgroundColor: darkAshGrey }}
           />
           <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
-          <LogoutButton />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>

@@ -26,10 +26,10 @@ const LoginPage = () => {
     axios.post('http://localhost:8000/login/', formData)
     .then(response => {
       console.log('Login successful:', response.data);
-      if (response.data[0] === 1) {
+      if (response.status === 200) {
         history.push('/workout-plans'); // Redirect to login page after successful registration
       }
-      if(response.data[0] === 2){
+      if(response.status === 201){
         history.push('/trainees');
       }
     })

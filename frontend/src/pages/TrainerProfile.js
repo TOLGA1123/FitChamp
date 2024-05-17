@@ -11,15 +11,10 @@ import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import axios from 'axios';
 
-import LogoutButton from './LogoutButton';
 const TrainerProfile = () => {
   const { trainerId } = useParams();
   const [trainerDetails, setTrainerDetails] = React.useState(null);
-  const [loading, setLoading] = useState(true);
   const history = useHistory();
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
@@ -31,30 +26,16 @@ const TrainerProfile = () => {
     history.push('/trainers');
   };
 
-  useEffect(() => {
-      // Fetch user details from the backend
-      axios.get('http://localhost:8000/profile/')
-        .then(response => {
-          setTrainerDetails(response.data);
-          setLoading(false);
-        })
-        .catch(error => {
-          console.error('Error fetching user details:', error.response ? error.response.data : 'Server did not respond');
-          setLoading(false);
-          // Handle unauthorized access, e.g., redirect to login
-          if (error.response && error.response.status === 401) {
-            history.push('/login');
-          }
-        });
-    }, [history]);
+  React.useEffect(() => {
+    fetchTrainerDetails(trainerId).then(details => {
+      console.log(details);
+      setTrainerDetails(details);
+    });
+  }, [trainerId]);
 
 
 
-  if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
-  }
-  
-  if (!trainerDetails) return <Typography>Error loading data...</Typography>;
+  if (!trainerDetails) return <Typography>Loading...</Typography>;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -100,7 +81,6 @@ const TrainerProfile = () => {
         <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
           <MessageIcon />
         </IconButton>
-        <LogoutButton />
       </Box>
     </AppBar>
     <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -113,13 +93,16 @@ const TrainerProfile = () => {
               <ListItemText primary="Username" secondary={trainerDetails.username} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Specialization" secondary={trainerDetails.trainer.specialization} />
+              <ListItemText primary="Mail" secondary={trainerDetails.email} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Phone Number" secondary={trainerDetails.trainer.telephone_number} />
+              <ListItemText primary="Specialization" secondary={trainerDetails.specialization} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Social Media" secondary={trainerDetails.trainer.social_media} />
+              <ListItemText primary="Phone Number" secondary={trainerDetails.contactInfo?.phone} />
+            </ListItem>
+            <ListItem>
+              <ListItemText primary="Social Media" secondary={trainerDetails.contactInfo?.socialMedia} />
             </ListItem>
           </List>
         </Grid>

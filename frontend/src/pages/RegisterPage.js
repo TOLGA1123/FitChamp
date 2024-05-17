@@ -74,14 +74,6 @@ const handleSubmit = (event) => {
             >
               Sign up as a Trainer
             </Button>
-            <Button  type="button"
-              fullWidth
-              variant="outlined"
-              sx={{ mt: 1, mb: 2 }}
-              onClick={() => history.push('/')}
-            >
-              Log In
-            </Button>
           </Box>
         </Paper>
       </Box>

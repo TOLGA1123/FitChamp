@@ -8,23 +8,14 @@ import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-import LogoutButton from './LogoutButton';
+
 const TrainersPage = () => {
   const history = useHistory();
-  const [trainers, setTrainers] = useState([]);
-
-  useEffect(() => {
-    // Fetch trainers associated with the current user from the backend
-    axios.get('http://localhost:8000/trainers/')
-      .then(response => {
-        setTrainers(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching trainers:', error.response ? error.response.data : 'Server did not respond');
-      });
-  }, []);
+  const trainers = [
+    { id: 1, name: 'Trainer 1' },
+    { id: 2, name: 'Trainer 2' }
+    // Add more trainers as needed
+  ];
 
   const handleSelectTrainer = (trainerId) => {
     history.push(`/trainer-profile/${trainerId}`);
@@ -100,7 +91,6 @@ const TrainersPage = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
-          <LogoutButton />
         </Box>
       </AppBar>
       <Box sx={{ p: 3 }}>
@@ -109,9 +99,7 @@ const TrainersPage = () => {
             <Grid item xs={12} sm={6} md={4} key={trainer.id}>
               <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }} onClick={() => handleSelectTrainer(trainer.id)}>
                 <Avatar sx={{ width: 56, height: 56, margin: 'auto' }} />
-                <Typography variant="h6">{trainer.user_name}</Typography>
-                <Typography variant="body2">{trainer.specialization}</Typography>
-                <Typography variant="body2">{trainer.telephone_number}</Typography>
+                <Typography>{trainer.name}</Typography>
               </Paper>
             </Grid>
           ))}
