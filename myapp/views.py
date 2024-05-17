@@ -524,3 +524,68 @@ class NewGoalView(APIView):
             except Exception as e:
                 connection.rollback()
                 return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+class TraineeView(APIView):
+    def get(self, request, trainee_Id):
+        print("UserProfileView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items())  # Debug statement
+
+        if user_id and username and email:
+            try:
+                print(user_id)
+                with connection.cursor() as cursor:
+                    # Fetch the trainee details
+                    cursor.execute("""
+                        SELECT  * 
+                        FROM trainee 
+                        WHERE User_ID = %s
+                    """, [str(trainee_Id)])
+                    trainee = dictfetchone(cursor)
+                print(trainee)
+                if trainee:
+                    user_details = {
+                        'user_id': user_id,
+                        'username': username,
+                        'email': email,
+                        'trainee': trainee,
+                    }
+                    return Response(user_details, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            
+class NutritionPlanView(APIView):
+    def get(self, request):
+        print("NutritionPlanView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
+
+        if user_id and username and email:
+            try:    
+                with connection.cursor() as cursor:
+                
+                    cursor.execute("""
+                        SELECT *
+                        FROM nutrition_plan
+                        WHERE User_ID = %s
+                    """, [user_id])
+                    nutrition_plans = cursor.fetchall()
+
+                if nutrition_plans:
+                    nutrition_plans_list = [{'name': nutrition_plan[0],'user_id': nutrition_plan[1],'trainer_id': nutrition_plan[2], 'description': nutrition_plan[3], 'total_calories': nutrition_plan[4],'meal_schedule': nutrition_plan[5]} for nutrition_plan in nutrition_plans]
+                    return Response(nutrition_plans_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error':'Nutrition plan does not exist'},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        

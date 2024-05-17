@@ -7,6 +7,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import LogoutButton from './LogoutButton';
 axios.defaults.withCredentials = true;
 
 const TraineesPage = () => {
@@ -38,7 +39,7 @@ const TraineesPage = () => {
   }
 
   const handleTraineeSelect = (traineeId) => {
-    history.push(`/profile/${traineeId}`);
+    history.push(`/trainee/${traineeId}`);
   };
 
   const handleNewClient = () => {
@@ -67,6 +68,7 @@ const TraineesPage = () => {
         >
           <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
           <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: 'black' }} />
+          <LogoutButton />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton onClick={handleProfileClick}>
