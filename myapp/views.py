@@ -186,6 +186,7 @@ class LoginView(APIView):
                     # User authenticated
                     # User authenticated, store user details in session
                     request.session['user_id'] = trainer_row[0]
+                    request.session['trainer_id'] = trainer_row[1]
                     request.session['username'] = trainer_row[2]
                     request.session['email'] = trainer_row[6]
                     request.session['type'] = 2
@@ -298,20 +299,36 @@ class LogoutView(APIView):
         # Clear all session data
         request.session.flush()
         return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
-class TraineeView(APIView):
+class TrainerTraineesView(APIView):
     def get(self,request):
+        trainer_id = request.session.get('trainer_id')
         with connection.cursor() as cursor:
-            # SQL query to retrieve all users
-            cursor.execute("SELECT * FROM trainee")
-            trainees = cursor.fetchall()
+            cursor.execute("SELECT user_id FROM trains WHERE trainer_id = %s", [trainer_id])
+            trainer_trainees = cursor.fetchall()
+        if not trainer_trainees:
+            return Response([], status=status.HTTP_200_OK)
+        trainee_ids = [row[0] for row in trainer_trainees]
+        if trainee_ids:
+            trainee_ids_tuple = tuple(trainee_ids)
+            with connection.cursor() as cursor:
+                query = "SELECT * FROM trainee WHERE user_id IN %s"
+                cursor.execute(query, [trainee_ids_tuple])
+                trainees = cursor.fetchall()
 
-            # SQL query to retrieve all trainers
-            #cursor.execute("SELECT * FROM trainer")
-            #trainers = cursor.fetchall()
-
-        # Convert query results into a more manageable format, if necessary
-        trainee_list = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'email': trainee[3]} for trainee in trainees]
-        #trainer_list = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
+        trainee_list = [
+            {
+                'user_id': trainee[0],
+                'user_name': trainee[1],
+                'password': trainee[2],
+                'age': trainee[3],
+                'date_of_birth': trainee[4],
+                'gender': trainee[5],
+                'weight': trainee[6],
+                'height': trainee[7],
+                'past_achievements': trainee[8]
+            }
+            for trainee in trainees
+        ]
 
         return Response(trainee_list, status=status.HTTP_200_OK)
 class UserTrainersView(APIView):
@@ -386,6 +403,7 @@ class NewTrainerView(APIView):
             cursor.execute("INSERT INTO trains (user_id, trainer_id) VALUES (%s, %s)", [user_id, trainer_id])
 
         return Response({"message": "Trainer added to user successfully."}, status=status.HTTP_201_CREATED)
+
 
 @login_required(login_url='/login/')
 def user_info(request, user_id):

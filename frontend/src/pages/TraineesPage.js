@@ -15,7 +15,7 @@ const TraineesPage = () => {
   const [Trainees, setTrainees] = useState(null);
   useEffect(() => {
     // Fetch user details from the backend
-    axios.get('http://localhost:8000/trainees/')
+    axios.get('http://localhost:8000/trainer-trainees/')
       .then(response => {
         setTrainees(response.data);
         setLoading(false);
