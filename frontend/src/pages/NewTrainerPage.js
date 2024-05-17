@@ -45,8 +45,14 @@ const NewTrainerPage = () => {
 
   const handleConfirmTrainer = () => {
     if (selectedTrainer) {
-      console.log('Selected Trainer:', selectedTrainer);
-      // Add logic to save the selected trainer
+      axios.post('http://localhost:8000/new-trainer/', { trainer_id: selectedTrainer.trainer_id })
+      .then(response => {
+        console.log('Trainer added successfully:', response.data);
+        history.push('/trainers'); // Redirect to trainers page or another relevant page
+      })
+      .catch(error => {
+        console.error('Error adding trainer:', error.response ? error.response.data : 'Server did not respond');
+      });
       history.push('/trainers'); // Redirect to trainers page or another relevant page
     }
   };
