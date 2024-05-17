@@ -123,7 +123,7 @@ const NewWorkoutPlan = () => {
   const handleSliderChange = (event, newValue) => {
     setNewExercise((prevExercise) => ({
       ...prevExercise,
-      difficulty: newValue
+      Difficulty_Level: newValue
     }));
   };
 
@@ -209,7 +209,7 @@ const NewWorkoutPlan = () => {
             </Box>
             <Autocomplete
               options={trainees}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={(option) => option.Exercise_name}
               onChange={(event, newValue) => {
                 setWorkoutPlan((prevPlan) => ({
                   ...prevPlan,
@@ -221,7 +221,7 @@ const NewWorkoutPlan = () => {
             />
             <Autocomplete
               options={trainers}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={(option) => option.Exercise_name}
               onChange={(event, newValue) => {
                 setWorkoutPlan((prevPlan) => ({
                   ...prevPlan,
@@ -249,8 +249,8 @@ const NewWorkoutPlan = () => {
           <TextField
             fullWidth
             label="Name"
-            name="name"
-            value={newExercise.name}
+            name="Exercise_name"
+            value={newExercise.Exercise_name}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -267,30 +267,30 @@ const NewWorkoutPlan = () => {
           <TextField
             fullWidth
             label="Description"
-            name="description"
-            value={newExercise.description}
+            name="Description"
+            value={newExercise.Description}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
             label="Muscle Group"
-            name="muscleGroup"
-            value={newExercise.muscleGroup}
+            name="Muscle_Group_Targeted"
+            value={newExercise.Muscle_Group_Targeted}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
             label="Equipment"
-            name="equipment"
-            value={newExercise.equipment}
+            name="Equipment"
+            value={newExercise.Equipment}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <Typography gutterBottom>Difficulty</Typography>
           <Slider
-            value={newExercise.difficulty}
+            value={newExercise.Difficulty_Level}
             onChange={handleSliderChange}
             step={1}
             marks

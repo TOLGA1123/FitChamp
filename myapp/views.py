@@ -391,12 +391,13 @@ class CreateExerciseView(APIView):
         if not user_id:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        name = request.data.get('name')
+
+        name = request.data.get('Exercise_name')
         exercise_type = request.data.get('type')
-        description = request.data.get('description')
-        muscle_group = request.data.get('muscleGroup')
-        equipment = request.data.get('equipment')
-        difficulty = request.data.get('difficulty')
+        description = request.data.get('Description')
+        muscle_group = request.data.get('Muscle_Group_Targeted')
+        equipment = request.data.get('Equipment')
+        difficulty = request.data.get('Difficulty_Level')
 
         if not name or not exercise_type or not description or not muscle_group or not equipment or not difficulty:
             return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
