@@ -188,6 +188,9 @@ class LoginView(APIView):
                     request.session['user_id'] = trainer_row[0]
                     request.session['username'] = trainer_row[2]
                     request.session['email'] = trainer_row[6]
+                    request.session['type'] = 2
+                    request.session['spe'] = trainer_row[4]
+                    request.session['telephone'] = trainer_row[5]
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
@@ -203,6 +206,7 @@ class LoginView(APIView):
                     request.session['user_id'] = user_row[0]
                     request.session['username'] = user_row[1]
                     request.session['email'] = user_row[3]
+                    request.session['type'] = 1
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
@@ -219,38 +223,79 @@ class LoginView(APIView):
         return Response({"message": "Please send POST request with username and password."})
 class UserProfileView(APIView):
     def get(self, request):
-        print("UserProfileView - Session Key:", request.session.session_key)
-        user_id = request.session.get('user_id')
-        username = request.session.get('username')
-        email = request.session.get('email')
-        print('Session data set:', request.session.items())  # Debug statement
+        if request.session.get('type') == 1:
+            print("UserProfileView - Session Key:", request.session.session_key)
+            user_id = request.session.get('user_id')
+            username = request.session.get('username')
+            email = request.session.get('email')
+            print('Session data set:', request.session.items())  # Debug statement
 
-        if user_id and username and email:
-            try:
-                print(user_id)
-                with connection.cursor() as cursor:
-                    # Fetch the trainee details
-                    cursor.execute("""
-                        SELECT  Age ,Date_of_Birth, Gender, Weight, Height, Past_Achievements 
-                        FROM trainee 
-                        WHERE User_ID = %s
-                    """, [user_id])
-                    trainee = dictfetchone(cursor)
-                print(trainee)
-                if trainee:
-                    user_details = {
-                        'user_id': user_id,
-                        'username': username,
-                        'email': email,
-                        'trainee': trainee,
-                    }
-                    return Response(user_details, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if user_id and username and email:
+                try:
+                    print(user_id)
+                    with connection.cursor() as cursor:
+                        # Fetch the trainee details
+                        cursor.execute("""
+                            SELECT  Age ,Date_of_Birth, Gender, Weight, Height, Past_Achievements 
+                            FROM trainee 
+                            WHERE User_ID = %s
+                        """, [user_id])
+                        trainee = dictfetchone(cursor)
+                    print(trainee)
+                    if trainee:
+                        user_details = {
+                            'user_id': user_id,
+                            'username': username,
+                            'email': email,
+                            'trainee': trainee,
+                        }
+                        return Response(user_details, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+                except Exception as e:
+                    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+            print("hohohohohohohohohohohoho")
+            print("TrainerProfileView - Session Key:", request.session.session_key)
+            user_id = request.session.get('user_id')
+            username = request.session.get('username')
+            email = request.session.get('email')
+            specialization = request.session.get('spe')
+            telephone = request.session.get('telephone')
+            print('Session data set:', request.session.items())  # Debug statement
+
+            if user_id and username and email:
+                try:
+                    print(user_id)
+                    with connection.cursor() as cursor:
+                        # Fetch the trainee details
+                        cursor.execute("""
+                            SELECT  user_name ,specialization, telephone_number, social_media 
+                            FROM trainer 
+                            WHERE User_ID = %s
+                        """, [user_id])
+                        trainer = dictfetchone(cursor)
+                        print("tekli hoh")
+                    print(trainer)
+                    if trainer:
+                        user_details = {
+                            'user_id': user_id,
+                            'username': username,
+                            'trainer': trainer
+                        }
+                        return Response(user_details, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+                except Exception as e:
+                    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+class TrainerProfileView(APIView):
+    def get(self, request):
+        print("TrainerProfileView - Session Key:", request.session.session_key)
 
 
 
@@ -260,7 +305,6 @@ def home(request):
         # SQL query to retrieve all users
         cursor.execute("SELECT * FROM userf")
         users = cursor.fetchall()
-
         # SQL query to retrieve all trainers
         cursor.execute("SELECT * FROM trainer")
         trainers = cursor.fetchall()

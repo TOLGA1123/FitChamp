@@ -11,10 +11,14 @@ import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import axios from 'axios';
 
 const TrainerProfile = () => {
   const { trainerId } = useParams();
   const [trainerDetails, setTrainerDetails] = React.useState(null);
+  const [loading, setLoading] = useState(true);
   const history = useHistory();
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
@@ -26,16 +30,30 @@ const TrainerProfile = () => {
     history.push('/trainers');
   };
 
-  React.useEffect(() => {
-    fetchTrainerDetails(trainerId).then(details => {
-      console.log(details);
-      setTrainerDetails(details);
-    });
-  }, [trainerId]);
+  useEffect(() => {
+      // Fetch user details from the backend
+      axios.get('http://localhost:8000/profile/')
+        .then(response => {
+          setTrainerDetails(response.data);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching user details:', error.response ? error.response.data : 'Server did not respond');
+          setLoading(false);
+          // Handle unauthorized access, e.g., redirect to login
+          if (error.response && error.response.status === 401) {
+            history.push('/login');
+          }
+        });
+    }, [history]);
 
 
 
-  if (!trainerDetails) return <Typography>Loading...</Typography>;
+  if (loading) {
+    return <div>Loading...</div>; // Display a loading state while fetching user details
+  }
+  
+  if (!trainerDetails) return <Typography>Error loading data...</Typography>;
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -93,16 +111,13 @@ const TrainerProfile = () => {
               <ListItemText primary="Username" secondary={trainerDetails.username} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Mail" secondary={trainerDetails.email} />
+              <ListItemText primary="Specialization" secondary={trainerDetails.trainer.specialization} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Specialization" secondary={trainerDetails.specialization} />
+              <ListItemText primary="Phone Number" secondary={trainerDetails.trainer.telephone_number} />
             </ListItem>
             <ListItem>
-              <ListItemText primary="Phone Number" secondary={trainerDetails.contactInfo?.phone} />
-            </ListItem>
-            <ListItem>
-              <ListItemText primary="Social Media" secondary={trainerDetails.contactInfo?.socialMedia} />
+              <ListItemText primary="Social Media" secondary={trainerDetails.trainer.social_media} />
             </ListItem>
           </List>
         </Grid>
