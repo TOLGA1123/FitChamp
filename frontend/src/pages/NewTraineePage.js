@@ -76,11 +76,8 @@ console.log(trainees);
           sx={{ backgroundColor: 'black' }}
           variant="fullWidth"
         >
-          <Tab label="Workouts" value="workout-plans" sx={{ color: 'white' }} />
           <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Nutrition Plans" value="nutrition-plans" sx={{ color: 'white' }} />
-          <Tab label="Goals" value="goals" sx={{ color: 'white' }} />
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white' }} />
+          <Tab label="Group Sessions" value="groupsessions" sx={{ color: 'white' }} />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
