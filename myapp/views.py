@@ -174,21 +174,42 @@ class LoginView(APIView):
             cursor.execute("SELECT * FROM userf WHERE User_name = %s", [username])
             user_row = cursor.fetchone()
 
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainer WHERE user_name = %s", [username])
+            trainer_row = cursor.fetchone()
+
         if user_row:
-            stored_password = user_row[2]  # Assuming password is stored in the third column
-            if password == stored_password:
-                # User authenticated
-                # User authenticated, store user details in session
-                request.session['user_id'] = user_row[0]
-                request.session['username'] = user_row[1]
-                request.session['email'] = user_row[3]
-                request.session.save()
-                print("LoginView - Session Key:", request.session.session_key)
-                print('Session data set:', request.session.items())  # Debug statement
-                return Response({"message": "Login successful."}, status=status.HTTP_200_OK)
+            if trainer_row:
+                stored_password = trainer_row[3]  # Assuming password is stored in the third column
+                print(stored_password)
+                if password == stored_password:
+                    # User authenticated
+                    # User authenticated, store user details in session
+                    request.session['user_id'] = trainer_row[0]
+                    request.session['username'] = trainer_row[2]
+                    request.session['email'] = trainer_row[6]
+                    request.session.save()
+                    print("LoginView - Session Key:", request.session.session_key)
+                    print('Session data set:', request.session.items())  # Debug statement
+                    return Response({2}, status=status.HTTP_200_OK)
+                else:
+                    # Invalid password
+                    return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                # Invalid password
-                return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
+                stored_password = user_row[2]  # Assuming password is stored in the third column
+                if password == stored_password:
+                    # User authenticated
+                    # User authenticated, store user details in session
+                    request.session['user_id'] = user_row[0]
+                    request.session['username'] = user_row[1]
+                    request.session['email'] = user_row[3]
+                    request.session.save()
+                    print("LoginView - Session Key:", request.session.session_key)
+                    print('Session data set:', request.session.items())  # Debug statement
+                    return Response({1}, status=status.HTTP_200_OK)
+                else:
+                    # Invalid password
+                    return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             # User not found
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
