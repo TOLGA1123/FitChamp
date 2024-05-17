@@ -38,7 +38,7 @@ const TrainerSignUp = () => {
       .then(response => {
         console.log('Registration successful:', response.data);
         if (response.status === 201) {
-          history.push('/login'); // Redirect to login page after successful registration
+          history.push('/'); // Redirect to login page after successful registration
         }
       })
       .catch(error => {
@@ -78,6 +78,14 @@ const TrainerSignUp = () => {
               onClick={() => history.push('/register')}
             >
               Sign up as a Trainee
+            </Button>
+            <Button  type="button"
+              fullWidth
+              variant="outlined"
+              sx={{ mt: 1, mb: 2 }}
+              onClick={() => history.push('/')}
+            >
+              Log In
             </Button>
           </Box>
         </Paper>

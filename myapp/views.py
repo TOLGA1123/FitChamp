@@ -250,6 +250,23 @@ class TraineeView(APIView):
 
         return Response(trainee_list, status=status.HTTP_200_OK)
 
+class NewTrainerView(APIView):
+    def get(self,request):
+        with connection.cursor() as cursor:
+            # SQL query to retrieve all users
+            #cursor.execute("SELECT * FROM trainee")
+            #trainees = cursor.fetchall()
+
+            # SQL query to retrieve all trainers
+            cursor.execute("SELECT * FROM trainer")
+            trainers = cursor.fetchall()
+
+        # Convert query results into a more manageable format, if necessary
+        #trainee_list = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'email': trainee[3]} for trainee in trainees]
+        trainer_list = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
+
+        return Response(trainer_list, status=status.HTTP_200_OK)
+
 @login_required(login_url='/login/')
 def user_info(request, user_id):
     try:
