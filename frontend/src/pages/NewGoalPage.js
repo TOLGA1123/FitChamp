@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Grid, Paper, Typography, TextField, Button, Avatar, AppBar, Tabs, Tab,Autocomplete } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import { green } from '@mui/material/colors';
@@ -26,6 +26,17 @@ const NewGoalPage = () => {
     }));
   };
 
+  useEffect(() => {
+    axios.get('http://localhost:8000/trainers/')
+      .then(response => {
+        setTrainers(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching trainers:', error.response ? error.response.data : 'Server did not respond');
+      });
+  }, []);
+
+  
 const handleSubmit = (event) => {
   event.preventDefault();
   axios.post('http://localhost:8000/new-goal/', formData)
@@ -128,6 +139,19 @@ const handleSubmit = (event) => {
 
           </Grid>
         </Grid>
+        <Autocomplete
+              options={trainers}
+              getOptionLabel={(option) => option.user_name}
+              onChange={(event, newValue) => {
+                console.log('Selected Trainer:', newValue);
+                setFormData((prevPlan) => ({
+                  ...prevPlan,
+                  trainer_id: newValue ? newValue.trainer_id : null
+                }));
+              }}
+              renderInput={(params) => <TextField {...params} label="Select Trainer" />}
+              sx={{ mt: 2 }}
+            />
         <Button
           variant="contained"
           color="primary"

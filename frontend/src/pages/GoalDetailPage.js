@@ -64,8 +64,8 @@ const GoalDetailPage = () => {
           <Paper sx={{ p: 2 }}>{goalDetails.end_date}</Paper>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h6">Details:</Typography>
-          <Paper sx={{ p: 2 }}>{goalDetails.details}</Paper>
+          <Typography variant="h6">Trainer:</Typography>
+          <Paper sx={{ p: 2 }}>{goalDetails.trainer_name}</Paper>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">Completion:</Typography>

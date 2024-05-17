@@ -121,6 +121,7 @@ const GoalsPage = () => {
                 <Typography>Start Date: {goal.start_date}</Typography>
                 <Typography>End Date: {goal.end_date}</Typography>
                 <Typography>Status: {goal.status}</Typography>
+                <Typography>Trainer: {goal.trainer_name}</Typography>
               </Paper>
             </Grid>
           ))

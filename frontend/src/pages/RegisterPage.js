@@ -31,7 +31,7 @@ const handleSubmit = (event) => {
     .then(response => {
       console.log('Registration successful:', response.data);
       if (response.status === 201) {
-        history.push('/login'); // Redirect to login page after successful registration
+        history.push('/'); // Redirect to login page after successful registration
       }
     })
     .catch(error => {
