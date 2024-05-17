@@ -49,8 +49,8 @@ const TraineesPage = () => {
     history.push(`/${newValue}`);
   };
 
-  const handleProfileClick = () => {
-    history.push('/Trainer');
+  const handleProfileClick = (trainerId) => {
+    history.push(`/trainer-profile/${trainerId}`);
   };
 
   const handleMSGClick = () => {
