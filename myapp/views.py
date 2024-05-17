@@ -383,7 +383,11 @@ class CreateWorkoutPlanView(APIView):
 
 class CreateExerciseView(APIView):
     def post(self, request):
+        print("CreateExerciseView- Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
         if not user_id:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -404,21 +408,46 @@ class CreateExerciseView(APIView):
                     INSERT INTO Exercise (User_ID, Exercise_name, Description, Muscle_Group_Targeted, Equipment, Difficulty_Level)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """, [user_id, name, description, muscle_group, equipment, difficulty])
-                exercise = dictfetchone(cursor)
+                connection.commit()
 
-                exercise_data = {
-                        'User_ID': exercise['User_ID'],
-                        'Exercise_name': exercise['Exercise_name'],
-                        'Description': exercise['Description'],
-                        'Muscle_Group_Targeted': exercise['Muscle_Group_Targeted'],
-                        'Equipment': exercise['Equipment'],
-                        'Difficulty_Level': exercise['Difficulty_Level'],}
+                return Response({"message": "New workout Plan Created"}, status=status.HTTP_200_OK)
 
-                return Response(exercise_data, status=status.HTTP_200_OK)
-
+        except IntegrityError as e:
+                connection.rollback()
+                return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            connection.rollback()
-            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                connection.rollback()
+                return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class ExercisesView(APIView):
+    def get(self,request):
+        print("ExercisesView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
+
+        if user_id and username and email:
+            try:    
+                with connection.cursor() as cursor:
+                
+                    cursor.execute("""
+                        SELECT *
+                        FROM Exercise
+                        WHERE User_ID = %s
+                    """, [user_id])
+                    exercises = cursor.fetchall()
+
+                if exercises:
+                    exercises_list = [{'user_id': exercise[0],'Exercise_name': exercise[1],'Description': exercise[2], 'Muscle_Group_Targeted': exercise[3], 'Equipment': exercise[4],'Difficulty_Level': exercise[5]}for exercise in exercises]
+                    return Response(exercises_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error':'Exercise does not exist'},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)  
+            
         
         
 

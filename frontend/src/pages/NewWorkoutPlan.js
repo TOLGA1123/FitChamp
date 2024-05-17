@@ -27,38 +27,31 @@ const NewWorkoutPlan = () => {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [newExercise, setNewExercise] = useState({
-    name: '',
+    Exerise_name: '',
     type: '',
-    description: '',
-    muscleGroup: '',
-    equipment: '',
-    difficulty: 1
+    Description: '',
+    Muscle_Group_Targeted: '',
+    Equipment: '',
+    Difficulty_Level: 1
   });
 
   const [selectedTab, setSelectedTab] = useState('workout-plans');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const [exercisesResponse, trainersResponse, traineesResponse] = await Promise.all([
-          axios.get('http://localhost:8000/exercises', { headers: { 'Authorization': `Bearer ${token}` } }),
-          axios.get('http://localhost:8000/trainers', { headers: { 'Authorization': `Bearer ${token}` } }),
-          axios.get('http://localhost:8000/trainees', { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
-        setExercises(exercisesResponse.data);
-        setTrainers(trainersResponse.data);
-        setTrainees(traineesResponse.data);
+    axios.get('http://localhost:8000/exercises/')
+      .then(response => {
+        setExercises(response.data);
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      })
+      .catch(error => {
+        console.error('Error fetching goals:', error.response ? error.response.data : 'Server did not respond');
         setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+        if (error.response && error.response.status === 401) {
+          history.push('/workout-plans');
+        }
+      });
+  }, [history]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -88,7 +81,7 @@ const NewWorkoutPlan = () => {
   const addDescription = () => {
     if (selectedExercise) {
       const newDescription = [...workoutPlan.description, selectedExercise];
-      const newDifficulty = newDescription.reduce((acc, exercise) => acc + exercise.difficulty, 0) / newDescription.length;
+      const newDifficulty = newDescription.reduce((acc, exercise) => acc + exercise.Difficulty_Level, 0) / newDescription.length;
 
       setWorkoutPlan((prevPlan) => ({
         ...prevPlan,
@@ -140,9 +133,9 @@ const NewWorkoutPlan = () => {
     axios.post('http://localhost:8000/create-exercise/', newExercise)
       .then(response => {
         console.log('Exercise Creation:', response);
-        if (response.status === 201) {
-          setExercises((prevExercises) => [...prevExercises, response]);
-          history.push('/login'); // Redirect to login page after successful registration
+        if (response.status === 200) {
+          setExercises((prevExercises) => [...prevExercises, newExercise]);
+          handleDialogClose(); // Redirect to login page after successful registration
         }
       })
       .catch(error => {
@@ -197,12 +190,12 @@ const NewWorkoutPlan = () => {
               <Typography variant="h6">Description:</Typography>
               {workoutPlan.description.map((desc, index) => (
                 <Paper key={index} sx={{ p: 1, my: 1 }}>
-                  {desc.name}
+                  {desc.Exercise_name}
                 </Paper>
               ))}
               <Autocomplete
                 options={exercises}
-                getOptionLabel={(option) => option.name}
+                getOptionLabel={(option) => option.Exercise_name}
                 value={selectedExercise}
                 onChange={(event, newValue) => {
                   setSelectedExercise(newValue);
@@ -257,7 +250,7 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Name"
             name="name"
-            value={newExercise.name}
+            value={newExercise.Exerise_name}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -275,7 +268,7 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Description"
             name="description"
-            value={newExercise.description}
+            value={newExercise.Description}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -283,7 +276,7 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Muscle Group"
             name="muscleGroup"
-            value={newExercise.muscleGroup}
+            value={newExercise.Muscle_Group_Targeted}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -291,13 +284,13 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Equipment"
             name="equipment"
-            value={newExercise.equipment}
+            value={newExercise.Equipment}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <Typography gutterBottom>Difficulty</Typography>
           <Slider
-            value={newExercise.difficulty}
+            value={newExercise.Difficulty_Level}
             onChange={handleSliderChange}
             step={1}
             marks

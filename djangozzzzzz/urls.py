@@ -28,4 +28,5 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('create-exercise/', CreateExerciseView.as_view(), name='create-exercise'),
     path('create-workout-plan/', CreateWorkoutPlanView.as_view(), name='create-workout-plan'),
+    path('exercises/',ExercisesView.as_view(),name='exercises'),
 ]
