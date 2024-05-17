@@ -1,28 +1,44 @@
 import React, { useState } from 'react';
-import { Box, Grid, Paper, Typography, TextField, Button, Avatar, AppBar, Tabs, Tab } from '@mui/material';
+import { Box, Grid, Paper, Typography, TextField, Button, Avatar, AppBar, Tabs, Tab,Autocomplete } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import { green } from '@mui/material/colors';
+import axios from 'axios';
 
 const NewGoalPage = () => {
   const history = useHistory();
-  const [goal, setGoal] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     type: '',
-    value: '',
+    value: 0.0,
     startDate: '',
     endDate: '',
+    status: 'NEW',
+    trainer_id: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setGoal((prevGoal) => ({ ...prevGoal, [name]: value }));
+  const [trainers, setTrainers] = useState([]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
-  const handleSubmit = () => {
-    // Handle goal submission logic here, such as sending data to an API
-    console.log('Goal Submitted:', goal);
-    history.push('/goals'); // Redirect to goals page after submission
-  };
+const handleSubmit = (event) => {
+  event.preventDefault();
+  axios.post('http://localhost:8000/new-goal/', formData)
+    .then(response => {
+      console.log('Goal Submitted:', response.data);
+      if (response.status === 201) {
+        history.push('/goals');
+      }
+    })
+    .catch(error => {
+      console.error('New Goal error:', error.response ? error.response.data : 'Server did not respond');
+    });
+};
 
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
@@ -62,7 +78,7 @@ const NewGoalPage = () => {
               fullWidth
               label="Goal Name"
               name="name"
-              value={goal.name}
+              value={formData.name}
               onChange={handleChange}
             />
           </Grid>
@@ -71,7 +87,7 @@ const NewGoalPage = () => {
               fullWidth
               label="Goal Type"
               name="type"
-              value={goal.type}
+              value={formData.type}
               onChange={handleChange}
             />
           </Grid>
@@ -80,7 +96,7 @@ const NewGoalPage = () => {
               fullWidth
               label="Goal Value"
               name="value"
-              value={goal.value}
+              value={formData.value}
               onChange={handleChange}
             />
           </Grid>
@@ -90,7 +106,7 @@ const NewGoalPage = () => {
               label="Start Date"
               name="startDate"
               type="date"
-              value={goal.startDate}
+              value={formData.startDate}
               onChange={handleChange}
               InputLabelProps={{
                 shrink: true,
@@ -103,12 +119,13 @@ const NewGoalPage = () => {
               label="End Date"
               name="endDate"
               type="date"
-              value={goal.endDate}
+              value={formData.endDate}
               onChange={handleChange}
               InputLabelProps={{
                 shrink: true,
               }}
             />
+
           </Grid>
         </Grid>
         <Button

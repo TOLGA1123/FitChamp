@@ -1,18 +1,39 @@
-import React from 'react';
-import { Grid, Paper, Avatar, Button, AppBar, Tabs, Tab, Box, Typography, IconButton } from '@mui/material';
-import MessageIcon from '@mui/icons-material/Message';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Paper, Grid, List, ListItem, ListItemText,AppBar, Tabs, Tab, IconButton } from '@mui/material';
+import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
+import GroupIcon from '@mui/icons-material/Group';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
-import LogoutButton from './LogoutButton';
+import MessageIcon from '@mui/icons-material/Message';
+axios.defaults.withCredentials = true;
+
 const GoalsPage = () => {
+  const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
   const history = useHistory();
-  const goals = [
-    { id: 1, title: 'Goal 1', description: 'Description of Goal 1' },
-    { id: 2, title: 'Goal 2', description: 'Description of Goal 2' },
-    // You can add more goals here or fetch them from a backend server
-  ];
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/goals/')
+      .then(response => {
+        setGoals(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching goals:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      });
+  }, [history]);
+
+  const handleGoalClick = (goalId) => {
+    history.push(`/goal/${goalId.trim()}`);
+  };
+
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
   };
@@ -29,9 +50,13 @@ const GoalsPage = () => {
     history.push('/profile');
   };
 
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
   return (
-    <Box sx={{ flexGrow: 1 }}>
-<AppBar position="static" sx={{ backgroundColor: green[500] }}>
+    <Box sx={{ flexGrow:1 }}>
+      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
         <Tabs 
             onChange={handleRouteChange} 
             sx={{ 
@@ -79,20 +104,30 @@ const GoalsPage = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
-          <LogoutButton />
         </Box>
       </AppBar>
-      <Box sx={{ m: 3 }}>
-        <Grid container spacing={2}>
-          {goals.map((goal) => (
-            <Grid item xs={12} sm={6} md={4} key={goal.id} onClick={() => history.push(`/goal-detail/${goal.id}`)}>
-              <Paper elevation={2} sx={{ height: 140, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Typography>{goal.title}</Typography>
+
+      <Typography variant="h4" gutterBottom>
+        Your Goals
+      </Typography>
+      <Grid container spacing={2}>
+        {goals.length ? (
+          goals.map((goal) => (
+            <Grid item xs={12} key={goal.id}>
+              <Paper sx={{ p: 2 }} onClick={() => handleGoalClick(goal.id)}>
+                <Typography variant="h6">Goal Name: {goal.name}</Typography>
+                <Typography>Goal Type: {goal.type}</Typography>
+                <Typography>Value: {goal.value}</Typography>
+                <Typography>Start Date: {goal.start_date}</Typography>
+                <Typography>End Date: {goal.end_date}</Typography>
+                <Typography>Status: {goal.status}</Typography>
               </Paper>
             </Grid>
-          ))}
-        </Grid>
-      </Box>
+          ))
+        ) : (
+          <Typography>No goals found.</Typography>
+        )}
+      </Grid>
     </Box>
   );
 };

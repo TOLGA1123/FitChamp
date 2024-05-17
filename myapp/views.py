@@ -73,6 +73,17 @@ def generate_trainer_id():
 
     return trainer_id
 
+def generate_goal_id():
+    # Count the number of existing users
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM fitnessgoal")
+        num_goals = cursor.fetchone()[0]
+
+    # Generate user_id by adding 1 to the count and padding it with zeros
+    goal_id = str(1000000000 + num_goals + 1)[-11:]
+
+    return goal_id
+
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -405,50 +416,111 @@ class NewTrainerView(APIView):
         return Response({"message": "Trainer added to user successfully."}, status=status.HTTP_201_CREATED)
 
 
-@login_required(login_url='/login/')
-def user_info(request, user_id):
-    try:
-        with connection.cursor() as cursor:
-            # Fetch the user
-            cursor.execute("SELECT * FROM userf WHERE User_ID = %s", [user_id])
-            user = dictfetchone(cursor)
-            if not user:
-                raise Http404("User not found")
+class GoalsView(APIView):
+    def get(self,request):
+        print("GoalsView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
 
-            # Fetch trainers associated with the user
-            cursor.execute("SELECT * FROM trainer WHERE User_ID = %s", [user_id])
-            trainers = cursor.fetchall()
+        if user_id and username and email:
+            try:    
+                with connection.cursor() as cursor:
+                
+                    cursor.execute("""
+                        SELECT *
+                        FROM fitnessgoal
+                        WHERE User_ID = %s
+                    """, [user_id])
+                    goals = cursor.fetchall()
 
-            # Fetch workout plans associated with the user
-            cursor.execute("SELECT * FROM workout_plan WHERE User_ID = %s", [user_id])
-            workout_plans = cursor.fetchall()
+                if goals:
+                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8]} for goal in goals]
+                    return Response(goals_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
 
-            # Fetch nutrition plans associated with the user
-            cursor.execute("SELECT * FROM nutrition_plan WHERE User_ID = %s", [user_id])
-            nutrition_plans = cursor.fetchall()
+    
+class GoalDetailView(APIView):
+    def get(self,request,goal_id):
+        goal_id = str(goal_id).strip()
+        print("GoalDetailView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
 
-            # Fetch achievements associated with the user
-            cursor.execute("SELECT * FROM achievement WHERE User_ID = %s", [user_id])
-            achievements = cursor.fetchall()
+        if user_id and username and email:
+            try:    
+                with connection.cursor() as cursor:
+                    
+                    print(f"Executing SQL query with User_ID: {user_id.strip()}, Goal_ID: {goal_id}, wdawedawef")
 
-            # Fetch progress records associated with the user
-            cursor.execute("SELECT * FROM progress WHERE User_ID = %s", [user_id])
-            progresses = cursor.fetchall()
+                    cursor.execute("""
+                        SELECT *
+                        FROM fitnessgoal
+                        WHERE User_ID = %s AND Goal_ID = %s
+                    """, [user_id, goal_id])
+                    goal = cursor.fetchone()
 
-    except Exception as e:
-        raise Http404("Database error: " + str(e))
+                print(f"SQL query result: {goal}")
 
-    context = {
-        'user': user,
-        'trainers': trainers,
-        'workout_plans': workout_plans,
-        'nutrition_plans': nutrition_plans,
-        'achievements': achievements,
-        'progresses': progresses,
-    }
-    return render(request, 'userinfo.html', context)
+                if goal:
+                    goal_data = {
+                        'id': goal[0],
+                        'user_id': goal[1],
+                        'trainer_id': goal[2],
+                        'name': goal[3],
+                        'type': goal[4],
+                        'value': goal[5],
+                        'start_date': goal[6],
+                        'end_date': goal[7],
+                        'status': goal[8]
+                    }
+                    return Response(goal_data, status=status.HTTP_200_OK)
+                else:
+                    print(f"Goal with ID {goal_id} does not exist.")
+                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
+        
+class NewGoalView(APIView):
+    def post(self,request):
+        print("GoalDetailView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
 
+        goal_id = generate_goal_id()
+        trainer_id = '1000000001'
+        goal_name = request.data.get('name')
+        goal_type = request.data.get('type')
+        goal_value = request.data.get('value')
+        start_date = request.data.get('startDate')
+        end_date = request.data.get('endDate')
+        statusg = request.data.get('status')
 
+        if user_id and username and email: 
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                    INSERT INTO fitnessgoal (Goal_ID, User_ID, Trainer_ID, Goal_Name, Goal_Type, Goal_Value, Start_Date, End_Date, Status)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s ,%s ,%s)
+                """,[goal_id, user_id, trainer_id , goal_name, goal_type, goal_value, start_date, end_date, statusg])
 
-
-
+                    connection.commit()
+                return Response({"message": "New Goal Created"}, status=status.HTTP_201_CREATED)
+            except IntegrityError as e:
+                connection.rollback()
+                return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                connection.rollback()
+                return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
