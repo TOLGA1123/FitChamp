@@ -8,7 +8,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
-
+import LogoutButton from './LogoutButton';
 const TrainersPage = () => {
   const history = useHistory();
   const trainers = [
@@ -91,6 +91,7 @@ const TrainersPage = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
+          <LogoutButton />
         </Box>
       </AppBar>
       <Box sx={{ p: 3 }}>

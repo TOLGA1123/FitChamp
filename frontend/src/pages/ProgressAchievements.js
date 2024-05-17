@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import { green } from '@mui/material/colors';
-
+import LogoutButton from './LogoutButton';
 const ProgressAchievements = () => {
   const history = useHistory();
   const [achievements, setAchievements] = useState([]);
@@ -71,6 +71,7 @@ const ProgressAchievements = () => {
               
               sx={{ color: 'black', backgroundColor: green[500]  }}
             />
+            <LogoutButton />
           </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>

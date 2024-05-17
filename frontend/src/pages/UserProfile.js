@@ -8,6 +8,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import LogoutButton from './LogoutButton';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -28,7 +29,7 @@ const UserProfile = () => {
           setLoading(false);
           // Handle unauthorized access, e.g., redirect to login
           if (error.response && error.response.status === 401) {
-            history.push('/login');
+            history.push('/');
           }
         });
     }, [history]);
@@ -42,10 +43,6 @@ const UserProfile = () => {
   if (!userDetails) {
     return <div>Error loading user details</div>; // Display an error message if user details couldn't be fetched
   }
-  const handleProfileClick = () => {
-    history.push('/profile');
-  };
-
   const handleNewWorkout = () => {
     history.push('/new-workout');
   };
@@ -91,6 +88,7 @@ const UserProfile = () => {
             value="progress" 
             sx={{ color: 'white', backgroundColor: 'black' }}
           />
+          <LogoutButton />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
 
