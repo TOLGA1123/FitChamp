@@ -61,7 +61,7 @@ console.log(trainees);
   };
 
   const handleProfileClick = () => {
-    history.push('/profile');
+    history.push('/trainer-profile');
   };
 
   const handleMSGClick = () => {
