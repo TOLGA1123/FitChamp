@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Typography, Button, Grid, Paper, IconButton, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, RadioGroup, FormControlLabel, Radio, Slider } from '@mui/material';
+import { 
+  Box, TextField, Typography, Button, Grid, Paper, IconButton, Autocomplete, 
+  Dialog, DialogTitle, DialogContent, DialogActions, RadioGroup, FormControlLabel, 
+  Radio, Slider, AppBar, Tabs, Tab 
+} from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import { green } from '@mui/material/colors';
+import { useHistory } from 'react-router-dom';
 
 const NewWorkoutPlan = () => {
   const [workoutPlan, setWorkoutPlan] = useState({
@@ -32,33 +35,20 @@ const NewWorkoutPlan = () => {
     difficulty: 1
   });
 
-  // Add a state to manage the active tab value
   const [selectedTab, setSelectedTab] = useState('workout-plans');
-  const [loaded, setloaded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const exercisesResponse = await axios.get('/api/exercises', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const token = localStorage.getItem('token');
+        const [exercisesResponse, trainersResponse, traineesResponse] = await Promise.all([
+          axios.get('http://localhost:8000/exercises', { headers: { 'Authorization': `Bearer ${token}` } }),
+          axios.get('http://localhost:8000/trainers', { headers: { 'Authorization': `Bearer ${token}` } }),
+          axios.get('http://localhost:8000/trainees', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
         setExercises(exercisesResponse.data);
-
-        const trainersResponse = await axios.get('/api/trainers', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
         setTrainers(trainersResponse.data);
-
-        const traineesResponse = await axios.get('/api/trainees', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
         setTrainees(traineesResponse.data);
         setLoading(false);
       } catch (error) {
@@ -69,13 +59,14 @@ const NewWorkoutPlan = () => {
 
     fetchData();
   }, []);
+
   if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
+    return <div>Loading...</div>;
   }
 
-  if (!exercises) {
-    return <div>Error loading user details</div>; // Display an error message if user details couldn't be fetched
-  }
+  /*if (!exercises.length || !trainers.length || !trainees.length) {
+    return <div>Error loading data</div>;
+  }*/
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -104,26 +95,17 @@ const NewWorkoutPlan = () => {
         description: newDescription,
         difficulty: newDifficulty
       }));
-      setSelectedExercise(null); // Clear the selected exercise
+      setSelectedExercise(null);
     }
   };
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('/api/create-workout-plan/', {
-        routineName: workoutPlan.routineName,
-        duration: workoutPlan.duration,
-        description: workoutPlan.description,
-        trainee: workoutPlan.trainee,
-        trainer: workoutPlan.trainer,
-        difficulty: workoutPlan.difficulty
-      }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await axios.post('http://localhost:8000/create-workout-plan/', workoutPlan, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       console.log('Workout plan created:', response.data);
-      history.push('/workout-plans'); // Redirect to the workout plans overview
+      history.push('/workout-plans');
     } catch (error) {
       console.error('Error creating workout plan:', error);
     }
@@ -152,24 +134,24 @@ const NewWorkoutPlan = () => {
     }));
   };
 
-  const createNewExercise = async (e) => {
+  const createNewExercise = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('/api/create-exercise/', newExercise, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+
+    axios.post('http://localhost:8000/create-exercise/', newExercise)
+      .then(response => {
+        console.log('Exercise Creation:', response);
+        if (response.status === 201) {
+          setExercises((prevExercises) => [...prevExercises, response]);
+          history.push('/login'); // Redirect to login page after successful registration
         }
+      })
+      .catch(error => {
+        console.error('Error creating exercise:', error);
       });
-      console.log('Exercise created:', response.data);
-      setWorkoutPlan((prevPlan) => ({
-        ...prevPlan,
-        description: [...prevPlan.description, newExercise]
-      }));
-      handleDialogClose();
-    } catch (error) {
-      console.error('Error creating exercise:', error);
-    }
+
   };
+  
+  
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -192,7 +174,6 @@ const NewWorkoutPlan = () => {
             Current Workout Plans
           </Typography>
         </Box>
-
       </AppBar>
       <Box sx={{ p: 3 }}>
         <Grid container spacing={2}>

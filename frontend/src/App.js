@@ -32,8 +32,7 @@ const App = () => {
           <Route path="/trainer-profile/:trainerId" component={TrainerProfile} />
           <Route path="/goals" component={GoalsPage} />
           <Route path="/achievements" component={ProgressAchievements} />
-          <Route path= "/create-exercise" component= {NewWorkoutPlan}/>
-          <Route path= "/create-workout-plan" component= {NewWorkoutPlan}/>
+          <Route path= "/new-workout" component= {NewWorkoutPlan}/>
           {/*<Route path="/goal-detail/:goalId" component={GoalDetailPage} />
            You can add more routes here if you have other pages */}
         </Switch>

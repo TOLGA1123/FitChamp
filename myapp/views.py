@@ -338,6 +338,7 @@ class UserWorkouts(APIView):
 class CreateWorkoutPlanView(APIView):
     def post(self, request):
         user_id = request.session.get('user_id')
+
         if not user_id:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -403,20 +404,22 @@ class CreateExerciseView(APIView):
                     INSERT INTO Exercise (User_ID, Exercise_name, Description, Muscle_Group_Targeted, Equipment, Difficulty_Level)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """, [user_id, name, description, muscle_group, equipment, difficulty])
-                
-                # Insert into the respective exercise type table
-                if exercise_type.lower() == 'cardio':
-                    cursor.execute("INSERT INTO Cardio (Exercise_name) VALUES (%s)", [name])
-                elif exercise_type.lower() == 'hypertrophy':
-                    cursor.execute("INSERT INTO HyperTrophy (Exercise_name) VALUES (%s)", [name])
-                else:
-                    cursor.execute("INSERT INTO OtherExercises (Exercise_name) VALUES (%s)", [name])
+                exercise = dictfetchone(cursor)
 
-                connection.commit()
-                return Response({"message": "Exercise created successfully."}, status=status.HTTP_201_CREATED)
+                exercise_data = {
+                        'User_ID': exercise['User_ID'],
+                        'Exercise_name': exercise['Exercise_name'],
+                        'Description': exercise['Description'],
+                        'Muscle_Group_Targeted': exercise['Muscle_Group_Targeted'],
+                        'Equipment': exercise['Equipment'],
+                        'Difficulty_Level': exercise['Difficulty_Level'],}
+
+                return Response(exercise_data, status=status.HTTP_200_OK)
+
         except Exception as e:
             connection.rollback()
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
         
 
 

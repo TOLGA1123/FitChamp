@@ -139,21 +139,22 @@ CREATE TABLE IF NOT EXISTS Group_Session (
 );
 
 CREATE TABLE IF NOT EXISTS Group_Sessions (
-  User_ID char(11),
+  User_ID char(11) PRIMARY KEY,
   Group_Session_ID char(11),
-  PRIMARY KEY userf (User_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES Group_Session ( Group_Session_ID),
+  Trainer_ID char(11),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
 );
 
 
 -- 2.14 Exercise
 CREATE TABLE IF NOT EXISTS Exercise (
-  User_ID char(11) PRIMARY KEY,
-  Exercise_name varchar(20) PRIMARY KEY,
+  User_ID char(11),
+  Exercise_name varchar(20) ,
   Description varchar(200) NOT NULL,
   Muscle_Group_Targeted varchar(40) NOT NULL,
   Equipment varchar(40) NOT NULL,
-  Difficulty_Level varchar(20)
+  Difficulty_Level varchar(20),
+  PRIMARY KEY (Exercise_name, User_ID)
 );
 
 -- 2.15 Cardio

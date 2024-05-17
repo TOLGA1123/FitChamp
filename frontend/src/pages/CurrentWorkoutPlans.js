@@ -7,10 +7,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
-
 // Define a class for workout plans
-axios.defaults.withCredentials = true;
-
 class WorkoutPlan {
   constructor(id, title, description) {
     this.id = id;
@@ -19,41 +16,17 @@ class WorkoutPlan {
   }
 }
 
-axios.defaults.withCredentials = true;
-
-    
-  const handleRouteChange = (event, newValue) => {
-    history.push(`/${newValue}`);
-  };
-  if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
-  }
-
-  if (!userDetails) {
-    return <div>Error loading user details</div>; // Display an error message if user details couldn't be fetched
-  }
-
+// Create an array of workout plans
+const workoutPlans = [
+  new WorkoutPlan(1, 'Workout 1', 'Description of Workout 1'),
+  new WorkoutPlan(2, 'Workout 2', 'Description of Workout 2'),
+  new WorkoutPlan(3, 'Workout 3', 'Description of Workout 3')
+];
 
 const CurrentWorkoutPlans = () => {
   const history = useHistory();
   const [selectedTab, setSelectedTab] = useState('');
 
-  useEffect(() => {
-    // Fetch user details from the backend
-    axios.get('http://localhost:8000/workout-plans/')
-      .then(response => {
-        setWorkoutDetails(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
-        setLoading(false);
-        // Handle unauthorized access, e.g., redirect to login
-        if (error.response && error.response.status === 401) {
-          history.push('/login');
-        }
-      });
-  }, [history]);
   const handleRouteChange = (event, newValue) => {
     setSelectedTab(newValue);
     history.push(`/${newValue}`);
@@ -64,7 +37,7 @@ const CurrentWorkoutPlans = () => {
   };
 
   const handleNewWorkout = () => {
-    history.push('/create-new-workout');
+    history.push('/new-workout');
   };
 
   const handleGroupSession = () => {
