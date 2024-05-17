@@ -27,7 +27,7 @@ const NewWorkoutPlan = () => {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [newExercise, setNewExercise] = useState({
-    Exerise_name: '',
+    Exercise_name: '',
     type: '',
     Description: '',
     Muscle_Group_Targeted: '',
@@ -81,7 +81,7 @@ const NewWorkoutPlan = () => {
   const addDescription = () => {
     if (selectedExercise) {
       const newDescription = [...workoutPlan.description, selectedExercise];
-      const newDifficulty = newDescription.reduce((acc, exercise) => acc + exercise.Difficulty_Level, 0) / newDescription.length;
+      const newDifficulty = newDescription.reduce((acc, exercise) => acc + exercise.difficulty, 0) / newDescription.length;
 
       setWorkoutPlan((prevPlan) => ({
         ...prevPlan,
@@ -250,7 +250,7 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Name"
             name="name"
-            value={newExercise.Exerise_name}
+            value={newExercise.name}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -268,7 +268,7 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Description"
             name="description"
-            value={newExercise.Description}
+            value={newExercise.description}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -276,7 +276,7 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Muscle Group"
             name="muscleGroup"
-            value={newExercise.Muscle_Group_Targeted}
+            value={newExercise.muscleGroup}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -284,13 +284,13 @@ const NewWorkoutPlan = () => {
             fullWidth
             label="Equipment"
             name="equipment"
-            value={newExercise.Equipment}
+            value={newExercise.equipment}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <Typography gutterBottom>Difficulty</Typography>
           <Slider
-            value={newExercise.Difficulty_Level}
+            value={newExercise.difficulty}
             onChange={handleSliderChange}
             step={1}
             marks
