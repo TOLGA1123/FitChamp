@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_Value numeric(3,1),
   Start_Date varchar(20),
   End_Date varchar(20),
+  Trainer_ID char(11),
   Status varchar(40),
   PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID),
