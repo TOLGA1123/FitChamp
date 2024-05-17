@@ -232,7 +232,11 @@ class UserProfileView(APIView):
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-
+class LogoutView(APIView):
+    def post(self, request):
+        # Clear all session data
+        request.session.flush()
+        return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
 class TraineeView(APIView):
     def get(self,request):
         with connection.cursor() as cursor:
