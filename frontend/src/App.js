@@ -16,6 +16,7 @@ import GoalsPage from './pages/GoalsPage';
 import ProgressAchievements from './pages/ProgressAchievements';
 import TraineesPage from './pages/TraineesPage';
 import GoalDetailPage from './pages/GoalDetailPage';
+import NewGoalPage from './pages/NewGoalPage';
 
 const theme = createTheme();
 
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="/achievements" component={ProgressAchievements} />
           <Route path="/trainees" component={TraineesPage} />
           <Route path="/goal-detail/:goalId" component={GoalDetailPage} />
+          <Route path="/new-goal" component={NewGoalPage} />
           
           {/*
            You can add more routes here if you have other pages */}

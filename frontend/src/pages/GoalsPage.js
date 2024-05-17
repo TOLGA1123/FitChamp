@@ -19,7 +19,7 @@ const GoalsPage = () => {
 
   const handleCreateNewGoal = () => {
     // Navigate to the goal creation page
-    history.push('/create-goal');
+    history.push('/new-goal');
   };
   const handleMSGClick = () => {
     history.push('/messages');
