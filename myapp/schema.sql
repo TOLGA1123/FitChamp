@@ -139,6 +139,13 @@ CREATE TABLE IF NOT EXISTS Group_Session (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
 );
 
+CREATE TABLE IF NOT EXISTS Group_Sessions (
+  User_ID char(11) PRIMARY KEY,
+  Group_Session_ID char(11),
+  Trainer_ID char(11),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
+);
+
 -- 2.14 Exercise
 CREATE TABLE IF NOT EXISTS Exercise (
   Exercise_name varchar(20) PRIMARY KEY,
