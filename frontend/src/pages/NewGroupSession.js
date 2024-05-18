@@ -36,13 +36,14 @@ const CreateGroupSession = () => {
 
     const formData = new FormData(event.target);
     const data = {
+      name: formData.get('name'),
       location: formData.get('location'),
       startingTime: formData.get('startingTime'),
       endTime: formData.get('endTime'),
       type: formData.get('type'),
       maxParticipants: maxParticipants,
       price: formData.get('price'),
-      trainee_ids: selectedTrainees.map(trainee => trainee.id),
+      trainee_ids: [],
     };
 
     if (selectedTrainees.length > maxParticipants) {
@@ -87,6 +88,15 @@ const CreateGroupSession = () => {
       <Box sx={{ p: 3, mx: 25, borderRadius: 2, textAlign: 'center' }}>
         <Box component="form" onSubmit={handleFormSubmit} sx={{ mt: 2 }}>
           <Grid container spacing={2}>
+          <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Session Name"
+                name="name"
+                variant="filled"
+                sx={{ backgroundColor: 'white', borderRadius: 1 }}
+              />
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -131,15 +141,6 @@ const CreateGroupSession = () => {
                 variant="filled"
                 sx={{ backgroundColor: 'white', borderRadius: 1 }}
                 onChange={(e) => setMaxParticipants(parseInt(e.target.value, 10))}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Price"
-                name="price"
-                variant="filled"
-                sx={{ backgroundColor: 'white', borderRadius: 1 }}
               />
             </Grid>
             <Grid item xs={12}>
