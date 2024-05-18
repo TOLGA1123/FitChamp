@@ -54,13 +54,53 @@ const AdminPage = () => {
   const handleCreateReport = () => {
     history.push('/new-report');
   };
-
+  const handleDeleteTrainer = (trainerId) => {
+    if (window.confirm('Are you sure you want to delete this trainer?')) {
+      axios.delete(`http://localhost:8000/delete-trainer/${trainerId}/`)
+        .then(() => {
+          setTrainers(trainers.filter(trainer => trainer.id !== trainerId));
+          localStorage.setItem('tabIndex', JSON.stringify(tabIndex));
+          
+          // Reload the page
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error('Error deleting trainer:', error.response ? error.response.data : 'Server did not respond');
+        });
+    }
+  };
+  
+  const handleDeleteTrainee = (userId) => {
+    if (window.confirm('Are you sure you want to delete this trainee?')) {
+      axios.delete(`http://localhost:8000/delete-trainee/${userId}/`)
+        .then(() => {
+          setTrainees(trainees.filter(trainee => trainee.id !== userId));
+          // Store the current tab index in local storage
+          localStorage.setItem('tabIndex', JSON.stringify(tabIndex));
+          
+          // Reload the page
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error('Error deleting trainee:', error.response ? error.response.data : 'Server did not respond');
+        });
+    }
+  };
   const customFontStyle = {
     fontFamily: 'Roboto, sans-serif', // Using Roboto font
     fontSize: '18px',
     color: darkAshGrey,
   };
-
+  useEffect(() => {
+    const storedTabIndex = JSON.parse(localStorage.getItem('tabIndex'));
+    if (storedTabIndex !== null) {
+      setTabIndex(storedTabIndex);
+    }
+  
+    if (location.pathname === '/admin' && location.hash === '#reports') {
+      setTabIndex(2);
+    }
+  }, [location]);
   const renderTrainers = () => (
     <Grid container spacing={2}>
       {trainers.map(trainer => (
@@ -71,6 +111,7 @@ const AdminPage = () => {
               <Typography variant="body2"  sx={customFontStyle}>Specialization: {trainer.specialization}</Typography>
               <Typography variant="body2"  sx={customFontStyle}>Telephone Number: {trainer.telephone_number}</Typography>
               <Typography variant="body2"  sx={customFontStyle}>Social Media: {trainer.social_media}</Typography>
+              <Button variant="contained" color="secondary" onClick={() => handleDeleteTrainer(trainer.trainer_id)}>Delete Trainer</Button>
             </CardContent>
           </Card>
         </Grid>
@@ -92,6 +133,7 @@ const AdminPage = () => {
               <Typography variant="body2" sx={customFontStyle}>Weight: {trainee.weight}</Typography>
               <Typography variant="body2" sx={customFontStyle}>Height: {trainee.height}</Typography>
               <Typography variant="body2" sx={customFontStyle}>Past Achievements: {trainee.past_achievements}</Typography>
+              <Button variant="contained" color="secondary" onClick={() => handleDeleteTrainee(trainee.user_id)}>Delete Trainee</Button>
             </CardContent>
           </Card>
         </Grid>

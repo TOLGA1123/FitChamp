@@ -951,3 +951,20 @@ class DeleteUserView(APIView):
                 return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+class DeleteTrainerView(APIView):
+    def delete(self, request, trainer_id):
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute("DELETE FROM trainer WHERE trainer_id = %s", [trainer_id])
+            except Exception as e:
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"message": "Trainer deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+class DeleteTraineeView(APIView):
+    def delete(self, request, user_id):
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute("DELETE FROM trainee WHERE user_id = %s", [user_id])
+            except Exception as e:
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"message": "Trainee deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
