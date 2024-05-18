@@ -3,6 +3,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { Box, Typography, LinearProgress, Paper, Grid, Button  } from '@mui/material';
 import moment from 'moment';
 import axios from 'axios';
+import NavTabs from './NavTabs';
 
 const GoalDetailPage = () => {
   const { goalId } = useParams();
