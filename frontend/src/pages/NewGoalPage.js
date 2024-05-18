@@ -67,7 +67,7 @@ const handleSubmit = (event) => {
           sx={{ backgroundColor: 'black' }}
           variant="fullWidth"
         >
-          <Tab label="Workouts" value="workouts" sx={{ color: 'white' }} />
+          <Tab label="Workouts" value="workout-plans" sx={{ color: 'white' }} />
           <Tab label="Trainers" value="trainers" sx={{ color: 'black', backgroundColor: green[500] }} />
           <Tab label="Nutrition Plans" value="nutrition-plans" sx={{ color: 'white' }} />
           <Tab label="Goals" value="goals" sx={{ color: 'white' }} />

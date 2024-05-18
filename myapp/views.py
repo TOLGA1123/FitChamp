@@ -413,6 +413,7 @@ class UserTrainersView(APIView):
         } for trainer in trainers]
         
         return Response(trainer_list, status=status.HTTP_200_OK)
+    
 class NewTrainerView(APIView):
     def get(self,request):
         user_id = request.session.get('user_id')
@@ -578,3 +579,54 @@ class NewGoalView(APIView):
             except Exception as e:
                 connection.rollback()
                 return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+class SortGoalsView(APIView):
+    def get(self, request):
+        print("SortGoalsView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        sort_criteria = request.query_params.get('sort_by', 'value')
+        print('Session data set:', request.session.items()) 
+
+        if user_id and username and email:
+            try:
+                with connection.cursor() as cursor:
+                    if sort_criteria == 'value':
+                        cursor.execute("""
+                            SELECT fg.*, t.user_name AS trainer_name
+                            FROM fitnessgoal fg
+                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
+                            WHERE fg.user_id = %s
+                            ORDER BY fg.goal_value
+                        """, [user_id])
+                    elif sort_criteria == 'endDate':
+                        cursor.execute("""
+                            SELECT fg.*, t.user_name AS trainer_name
+                            FROM fitnessgoal fg
+                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
+                            WHERE fg.user_id = %s
+                            ORDER BY fg.end_date
+                        """, [user_id])
+                    elif sort_criteria == 'trainerName':
+                        cursor.execute("""
+                            SELECT fg.*, t.user_name AS trainer_name
+                            FROM fitnessgoal fg
+                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
+                            WHERE fg.user_id = %s
+                            ORDER BY t.user_name
+                        """, [user_id])
+                    else:
+                        return Response({"error": "Invalid sort criteria"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    goals = cursor.fetchall()
+
+                if goals:
+                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8], 'trainer_name': goal[9]} for goal in goals]
+                    return Response(goals_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)

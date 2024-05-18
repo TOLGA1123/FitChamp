@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, List, ListItem, ListItemText,AppBar, Tabs, Tab, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Grid, List, ListItem, ListItemText,AppBar, Tabs, Tab, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -14,6 +14,7 @@ const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const history = useHistory();
+  const [sortCriteria, setSortCriteria] = useState('value');
 
   useEffect(() => {
     axios.get('http://localhost:8000/goals/')
@@ -29,6 +30,25 @@ const GoalsPage = () => {
         }
       });
   }, [history]);
+
+  const fetchGoals = (sort_by) => {
+    axios.get('http://localhost:8000/sort-goals/', { params: { sort_by } })
+      .then(response => {
+        setGoals(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching goals:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      });
+  };
+
+  useEffect(() => {
+    fetchGoals(sortCriteria);
+  }, [sortCriteria, history]);
 
   const handleGoalClick = (goalId) => {
     history.push(`/goal/${goalId.trim()}`);
@@ -49,6 +69,26 @@ const GoalsPage = () => {
   const handleProfileClick = () => {
     history.push('/profile');
   };
+
+  const handleSortChange = (event) => {
+    setSortCriteria(event.target.value);
+  };
+
+  const sortGoals = (goals, criteria) => {
+    switch (criteria) {
+      case 'value':
+        return goals.sort((a, b) => a.value - b.value);
+      case 'endDate':
+        return goals.sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
+      case 'trainerName':
+        return goals.sort((a, b) => a.trainer_name.localeCompare(b.trainer_name));
+      default:
+        return goals;
+    }
+  };
+
+  const sortedGoals = sortGoals([...goals], sortCriteria);
+
 
   if (loading) {
     return <Typography>Loading...</Typography>;
@@ -110,6 +150,14 @@ const GoalsPage = () => {
       <Typography variant="h4" gutterBottom>
         Your Goals
       </Typography>
+      <FormControl sx={{ m: 1, minWidth: 120 }}>
+        <InputLabel>Sort By</InputLabel>
+        <Select value={sortCriteria} onChange={handleSortChange} label="Sort By">
+          <MenuItem value="value">Value</MenuItem>
+          <MenuItem value="endDate">End Date</MenuItem>
+          <MenuItem value="trainerName">Trainer Name</MenuItem>
+        </Select>
+      </FormControl>
       <Grid container spacing={2}>
         {goals.length ? (
           goals.map((goal) => (
