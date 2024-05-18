@@ -8,6 +8,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
+import NavTabs from './NavTabs';
 axios.defaults.withCredentials = true;
 
 
@@ -44,44 +45,33 @@ const CurrentNutritionPlans = () => {
     };
 
     if (loading) {
-        return <Typography>Loading...</Typography>;
+        return( 
+        <Box sx={{ flexGrow:1 }}>
+            
+        <AppBar position="static" >
+            <NavTabs activeTab="nutrition" />
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+            <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
+                <PersonIcon />
+            </IconButton>
+            <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+                Your Nutrition Plans
+            </Typography>
+            <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
+                <MessageIcon />
+            </IconButton>
+            </Box>
+        </AppBar>
+        <Typography>Loading...</Typography>;
+        </Box>
+        )
     }
 
     return (
         <Box sx={{ flexGrow:1 }}>
-        <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-            <Tabs 
-                onChange={handleRouteChange} 
-                sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                flexGrow: 1, 
-                backgroundColor: 'black' // Set the background color for the whole tabs container
-                }} 
-                variant="fullWidth"
-            > 
-                <Tab 
-                label="Workouts" 
-                value="workout-plans" 
-                sx={{ color: 'white', backgroundColor: 'black' }}
-                />
-                <Tab 
-                label="Trainers" 
-                value="trainers" 
-                sx={{ color: 'white', backgroundColor: 'black' }}
-                />
-                <Tab 
-                label="Nutrition Plans" 
-                value="nutrition" 
-                sx={{ color: 'white', backgroundColor: green[500] }}
-                />
-                <Tab 
-                label="Goals" 
-                value="goals" 
-                sx={{ color: 'white', backgroundColor: 'black'}}
-                />
-                <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
-            </Tabs>
+            
+        <AppBar position="static" >
+            <NavTabs activeTab="nutrition" />
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
             <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
                 <PersonIcon />

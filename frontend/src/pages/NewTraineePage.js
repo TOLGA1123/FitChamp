@@ -70,7 +70,7 @@ console.log(trainees);
 
   return (
     <Box sx={{ flexGrow: 1, position: 'relative', minHeight: '100vh' }}>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+      <AppBar position="static" >
         <Tabs
           onChange={handleRouteChange}
           sx={{ backgroundColor: 'black' }}

@@ -116,7 +116,7 @@ const NewWorkoutPlan = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ backgroundColor: darkMintGreen }}>
+      <AppBar position="static">
       <NavTabs activeTab="workout-plans" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>

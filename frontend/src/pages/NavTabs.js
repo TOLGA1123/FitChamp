@@ -22,10 +22,16 @@ const NavTabs = ({ activeTab }) => {
           display: 'flex', 
           justifyContent: 'space-between',
           flexGrow: 1, 
-          backgroundColor: 'darkAshGrey',
+          backgroundColor: darkAshGrey,
           '& .MuiTab-root': {
             color: 'white', // Default color for all tabs
             backgroundColor: darkAshGrey, // Default background for all tabs
+            '&:focus, &:active': {
+              color: 'white', // Maintain white color on focus and active
+            },
+            '&:hover': {
+              color: 'white', // Maintain white color on hover
+            },
           },
           '& .Mui-selected': {
             color: 'black', // Color for selected tab
@@ -33,6 +39,7 @@ const NavTabs = ({ activeTab }) => {
           },
           '& .MuiTabs-indicator': {
             backgroundColor: 'transparent', // Hide the default indicator
+            color: 'transparent',
           },
         }} 
         variant="fullWidth"

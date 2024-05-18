@@ -72,7 +72,7 @@ const NewTrainerPage = () => {
 
   return (
     <Box sx={{ flexGrow: 1, position: 'relative', minHeight: '100vh' }}>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+      <AppBar position="static" >
       <NavTabs activeTab="trainers" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>

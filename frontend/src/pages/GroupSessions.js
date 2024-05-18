@@ -34,7 +34,7 @@ const GroupSessions = () => {
 
   const handleNewSessionClick = () => {
     // Add logic to create a new session
-    console.log('New session button clicked');
+    history.push('/create-sessions');
   };
 
   return (
@@ -71,7 +71,7 @@ const GroupSessions = () => {
       <Box sx={{ p: 3, mx: 25, borderRadius: 2, textAlign: 'center' }}>
         <Grid container spacing={2} justifyContent="center">
           {groupSessions.map(session => (
-            <Grid item xs={12} sm={6} key={session.id}>
+            <Grid item xs={12} sm={6} key={session.Session_ID}>
               <Paper sx={{ p: 2 }}>
                 <List>
                   <ListItem>
@@ -80,7 +80,7 @@ const GroupSessions = () => {
                         <GroupIcon sx={{ width: 48, height: 48 }} />
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={session.name} secondary={`Group ${session.id}`} />
+                    <ListItemText primary={session.Session_name} secondary={`Group ${session.id}`} />
                   </ListItem>
                 </List>
               </Paper>

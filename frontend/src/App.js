@@ -27,7 +27,17 @@ import AdminPage from './pages/AdminPage';
 import NewReportPage from './pages/NewReportPage';
 import NewNutritionPlanPage from './pages/NewNutritionPlanPage';
 
-const theme = createTheme();
+const theme = createTheme({
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#2E8B57',
+        },
+      },
+    },
+  },
+});
 
 const App = () => {
   return (

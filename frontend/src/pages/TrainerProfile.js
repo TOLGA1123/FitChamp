@@ -58,7 +58,7 @@ const TrainerProfile = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-    <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+    <AppBar position="static" >
       <Tabs 
           onChange={handleRouteChange} 
           sx={{ 
