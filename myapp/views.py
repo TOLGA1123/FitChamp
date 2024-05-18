@@ -51,6 +51,13 @@ def schema_view(request):
     except Exception as e:
         return HttpResponse("Failed to apply schema: {}".format(e))
 
+def generate_unique_id():
+    # Generate a UUID4 and get the first 11 characters
+    unique_id = str(uuid.uuid4()).replace("-", "")[:11]
+    return unique_id
+
+
+''''
 def generate_user_id():
     # Count the number of existing users
     with connection.cursor() as cursor:
@@ -74,7 +81,7 @@ def generate_trainer_id():
 
     return trainer_id
 
-'''
+
 def generate_goal_id():
     # Count the number of existing users
     with connection.cursor() as cursor:
@@ -86,11 +93,6 @@ def generate_goal_id():
 
     return goal_id
 '''
-
-def generate_goal_id():
-    global base_goal_id
-    base_goal_id += 1
-    return str(base_goal_id)[-11:]
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -112,7 +114,7 @@ def calculate_age(born):
 
 class RegisterView(APIView):
     def post(self, request):
-        user_id = generate_user_id()
+        user_id = generate_unique_id()
         user_name = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
@@ -152,8 +154,8 @@ class RegisterView(APIView):
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 class TrainerSignupView(APIView):
     def post(self, request):
-        user_id = generate_user_id()
-        trainer_id = generate_trainer_id()
+        user_id = generate_unique_id()
+        trainer_id = generate_unique_id()
         user_name = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
@@ -559,7 +561,7 @@ class NewGoalView(APIView):
         email = request.session.get('email')
         print('Session data set:', request.session.items()) 
 
-        goal_id = generate_goal_id()
+        goal_id = generate_unique_id()
         trainer_id = request.data.get('trainer_id')
         goal_name = request.data.get('name')
         goal_type = request.data.get('type')
