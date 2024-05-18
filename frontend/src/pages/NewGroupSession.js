@@ -11,7 +11,7 @@ const CreateGroupSession = () => {
   const history = useHistory();
   const [trainees, setTrainees] = useState([]);
   const [selectedTrainees, setSelectedTrainees] = useState([]);
-  const [maxParticipants, setMaxParticipants] = useState(0);
+  const [maxParticipants, setMaxParticipants] = useState(5); // Initialize to 5
 
   useEffect(() => {
     axios.get('http://localhost:8000/trainer-trainees/')
@@ -34,6 +34,11 @@ const CreateGroupSession = () => {
   const handleFormSubmit = (event) => {
     event.preventDefault();
 
+    if (selectedTrainees.length > maxParticipants) {
+      alert('The number of selected trainees exceeds the maximum allowed participants.');
+      return;
+    }
+
     const formData = new FormData(event.target);
     const data = {
       name: formData.get('name'),
@@ -43,13 +48,8 @@ const CreateGroupSession = () => {
       type: formData.get('type'),
       maxParticipants: maxParticipants,
       price: formData.get('price'),
-      trainee_ids: [],
+      trainee_ids: selectedTrainees.map(trainee => trainee.id),
     };
-
-    if (selectedTrainees.length > maxParticipants) {
-      alert('The number of selected trainees exceeds the maximum allowed participants.');
-      return;
-    }
 
     axios.post('http://localhost:8000/create-session/', data)
       .then(response => {
@@ -88,7 +88,7 @@ const CreateGroupSession = () => {
       <Box sx={{ p: 3, mx: 25, borderRadius: 2, textAlign: 'center' }}>
         <Box component="form" onSubmit={handleFormSubmit} sx={{ mt: 2 }}>
           <Grid container spacing={2}>
-          <Grid item xs={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Session Name"
@@ -138,8 +138,10 @@ const CreateGroupSession = () => {
                 fullWidth
                 label="Max Participants"
                 name="maxParticipants"
+                type="number"
                 variant="filled"
                 sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                value={maxParticipants}
                 onChange={(e) => setMaxParticipants(parseInt(e.target.value, 10))}
               />
             </Grid>
