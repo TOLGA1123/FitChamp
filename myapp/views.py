@@ -62,7 +62,7 @@ def generate_user_id():
     # Count the number of existing users
     with connection.cursor() as cursor:
         cursor.execute("SELECT COUNT(*) FROM userf")
-        num_users = cursor.fetchone()[0]
+        num_users = cursor.()[0]
 
     # Generate user_id by adding 1 to the count and padding it with zeros
     user_id = str(1000000000 + num_users + 1)[-11:]
@@ -761,3 +761,44 @@ class DeleteGoalView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class NewNutritionPlanView(APIView):
+    def post(self,request, trainee_Id):
+        print("NewNutritionPlanView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print(trainee_Id)
+        print('Session data set:', request.session.items()) 
+
+        user_id = str(user_id).strip()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainer WHERE user_id = %s", [user_id])
+            foundTrainer = cursor.fetchone()
+        
+        user_id = foundTrainer[1]
+
+        trainee_id = trainee_Id
+        nutrition_plan_name = request.data.get('name')
+        nutrition_plan_description = request.data.get('description')
+        nutrition_plan_total_calories = request.data.get('total_calories')
+        meal_schedule = request.data.get('meal_schedule')
+
+        print(f"Received Data: user_id={user_id}, trainee_id={trainee_id}, nutrition_plan_name={nutrition_plan_name}, nutrition_plan_description={nutrition_plan_description}, nutrition_plan_total_calories={nutrition_plan_total_calories}, meal_schedule={meal_schedule}")
+
+        if user_id and username and email: 
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                    INSERT INTO nutrition_plan (nutrition_plan_name, user_id, trainer_id, description, total_calories, meal_schedule)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """,[nutrition_plan_name, trainee_id, user_id, nutrition_plan_description, nutrition_plan_total_calories, meal_schedule])
+                    print("hahahahahahahahahahahahahahahhahaha")
+                    connection.commit()
+                return Response({"message": "New Nutrition Plan Created"}, status=status.HTTP_201_CREATED)
+            except IntegrityError as e:
+                connection.rollback()
+                return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                connection.rollback()
+                return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)

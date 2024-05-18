@@ -42,7 +42,7 @@ const TraineeViewPage = () => {
     };
     
     const handleNewNutritionPlan = () => {
-        history.push('/');
+        history.push(`/new-nutrition-plan/${trainee_Id}/`);
     };
 
   if (loading) {
