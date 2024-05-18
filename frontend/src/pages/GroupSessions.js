@@ -34,7 +34,7 @@ const GroupSessions = () => {
 
   const handleNewSessionClick = () => {
     // Add logic to create a new session
-    console.log('New session button clicked');
+    history.push('/create-sessions');
   };
 
   return (
