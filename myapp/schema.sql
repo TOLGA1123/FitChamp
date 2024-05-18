@@ -359,5 +359,42 @@ CREATE TABLE IF NOT EXISTS overview (
   FOREIGN KEY (Report_ID) REFERENCES report (Report_ID)
 );
 
+CREATE OR REPLACE FUNCTION delete_related_data_function()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Delete related tuples with deleted user_id from other tables
+    DELETE FROM adminf WHERE User_ID = OLD.User_ID;
+    DELETE FROM trainer WHERE User_ID = OLD.User_ID;
+    DELETE FROM trainee WHERE User_ID = OLD.User_ID;
+    DELETE FROM trains WHERE User_ID = OLD.User_ID;
+    DELETE FROM progress WHERE User_ID = OLD.User_ID;
+    DELETE FROM fitnessgoal WHERE User_ID = OLD.User_ID;
+    DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
+    DELETE FROM achievement WHERE User_ID = OLD.User_ID;
+    DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
+    DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
+    DELETE FROM chat WHERE User_ID = OLD.User_ID;
+    DELETE FROM message WHERE User_ID = OLD.User_ID;
+    DELETE FROM follows WHERE User_ID = OLD.User_ID;
+    DELETE FROM aims_to WHERE User_ID = OLD.User_ID;
+    DELETE FROM joins WHERE User_ID = OLD.User_ID;
+    DELETE FROM creates_session WHERE User_ID = OLD.User_ID;
+    DELETE FROM sends WHERE User_ID = OLD.User_ID;
+    DELETE FROM receives WHERE User_ID = OLD.User_ID;
+    DELETE FROM made WHERE User_ID = OLD.User_ID;
+    DELETE FROM monitor WHERE User_ID = OLD.User_ID;
+    DELETE FROM contains WHERE User_ID = OLD.User_ID;
+    DELETE FROM adds WHERE User_ID = OLD.User_ID;
+    DELETE FROM creates WHERE User_ID = OLD.User_ID;
+    DELETE FROM creates_report WHERE User_ID = OLD.User_ID;
+    DELETE FROM overview WHERE User_ID = OLD.User_ID;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_related_data
+BEFORE DELETE ON userf
+FOR EACH ROW
+EXECUTE FUNCTION delete_related_data_function();
 
 

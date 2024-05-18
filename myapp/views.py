@@ -938,3 +938,16 @@ class NewNutritionPlanView(APIView):
             except Exception as e:
                 connection.rollback()
                 return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteUserView(APIView):
+    def delete(self, request, user_id):
+        user_id = request.session.get('user_id')
+        with connection.cursor() as cursor:
+            try:
+                # Execute the SQL query to delete the user
+                cursor.execute("DELETE FROM userf WHERE user_id = %s", [user_id])
+            except Exception as e:
+                # Handle any database errors
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)

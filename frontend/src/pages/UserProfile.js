@@ -1,6 +1,6 @@
 // pages/UserProfile.js
 import React from 'react';
-import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText, Button } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab, IconButton} from '@mui/material';
@@ -50,6 +50,17 @@ const UserProfile = () => {
 
   const handleGroupSession = () => {
     history.push('/group-session');
+  };
+  const handleDeleteUser = () => {
+    axios.delete(`http://localhost:8000/delete-user/${userDetails.user_id}/`)
+      .then(response => {
+        console.log('User deleted successfully:', response.data);
+        // Redirect to the login page after successful deletion
+        history.push('/');
+      })
+      .catch(error => {
+        console.error('Error deleting user:', error.response ? error.response.data : 'Server did not respond');
+      });
   };
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -145,6 +156,15 @@ const UserProfile = () => {
         </Grid>
       </Grid>
     </Box>
+    <Box sx={{ p: 3 }}>
+    {/* User profile content here */}
+  </Box>
+
+  <Box sx={{ position: 'relative', textAlign: 'right', marginTop: '10px', paddingRight: '10px' }}>
+    <Button variant="contained" color="error" onClick={handleDeleteUser}>
+      Delete Account
+    </Button>
+  </Box>
     </Box>
   );
 };

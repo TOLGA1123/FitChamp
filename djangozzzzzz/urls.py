@@ -43,5 +43,6 @@ urlpatterns = [
     path('all-trainees/', AllTraineesView.as_view(), name='all_trainees'),
     path('new-report/', NewReportView.as_view(), name='new_report'),
     path('admin-reports/', AdminReportsView.as_view(), name='admin_reports'),
-    path('new-nutrition-plan/<int:trainee_Id>/', NewNutritionPlanView.as_view(), name='new-nutrition-plan')
+    path('new-nutrition-plan/<int:trainee_Id>/', NewNutritionPlanView.as_view(), name='new-nutrition-plan'),
+    path('delete-user/<str:user_id>/', DeleteUserView.as_view(), name='delete_user'),
 ]
