@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Box, AppBar, Tabs, Tab, Grid, Paper } from '@mui/material';
+import { useHistory, useLocation  } from 'react-router-dom';
+import { Typography, Box, AppBar, Tabs, Tab, Grid, Paper, Button } from '@mui/material';
 import axios from 'axios';
 
 const darkMintGreen = '#2E8B57'; // Define your dark mint green color
@@ -10,7 +11,8 @@ const AdminPage = () => {
   const [trainers, setTrainers] = useState([]);
   const [trainees, setTrainees] = useState([]);
   const [reports, setReports] = useState([]);
-
+  const history = useHistory();
+  const location = useLocation();
   useEffect(() => {
     // Fetch all trainers
     axios.get('http://localhost:8000/all-trainers/')
@@ -23,15 +25,23 @@ const AdminPage = () => {
       .catch(error => console.error('Error fetching trainees:', error.response ? error.response.data : 'Server did not respond'));
 
     // Fetch reports
-    axios.get('http://localhost:8000/reports/')
+    axios.get('http://localhost:8000/admin-reports/')
       .then(response => setReports(response.data))
       .catch(error => console.error('Error fetching reports:', error.response ? error.response.data : 'Server did not respond'));
   }, []);
-
+  useEffect(() => {
+    // Set tabIndex to 2 if the URL contains '/admin#reports'
+    if (location.pathname === '/admin' && location.hash === '#reports') {
+      setTabIndex(2);
+    }
+  }, [location]);
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
   };
-  console.log(trainers);
+  const handleCreateReport = () => {
+    history.push('/new-report'); // Redirect to the page for creating a new report
+  };
+  console.log(reports);
   const renderTrainers = () => (
     <Grid container spacing={2}>
       {trainers.map(trainer => (
@@ -46,7 +56,6 @@ const AdminPage = () => {
       ))}
     </Grid>
   );
-  console.log(trainees);
   const renderTrainees = () => (
     <Grid container spacing={2}>
       {trainees.map(trainee => (
@@ -72,7 +81,11 @@ const AdminPage = () => {
       <Typography variant="h6">Reports</Typography>
       <ul>
         {reports.map(report => (
-          <li key={report.id}>{report.title}</li>
+          <li key={report.Report_ID}>
+            <Typography variant="body1">Report ID: {report.Report_ID}</Typography>
+            <Typography variant="body2">Report Type: {report.Report_Type}</Typography>
+            <Typography variant="body2">Content: {report.Content}</Typography>
+          </li>
         ))}
       </ul>
     </Box>
@@ -86,6 +99,11 @@ const AdminPage = () => {
           <Tab label="View All Trainers" />
           <Tab label="View All Trainees" />
           <Tab label="Reports" />
+          {tabIndex === 2 && (
+        <Box sx={{ ml: 'auto' }}>
+          <Button variant="contained" color="primary" onClick={handleCreateReport}>Create New Report</Button>
+        </Box>
+      )}
         </Tabs>
       </AppBar>
       <Box sx={{ p: 3 }}>

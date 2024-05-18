@@ -41,4 +41,6 @@ urlpatterns = [
     path('goal/<str:goal_id>/delete/', DeleteGoalView.as_view(), name='goal_delete'),
     path('all-trainers/', AllTrainersView.as_view(), name='all_trainers'),
     path('all-trainees/', AllTraineesView.as_view(), name='all_trainees'),
+    path('new-report/', NewReportView.as_view(), name='new_report'),
+    path('admin-reports/', AdminReportsView.as_view(), name='admin_reports'),
 ]

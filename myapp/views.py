@@ -56,6 +56,16 @@ def generate_unique_id():
     unique_id = str(uuid.uuid4()).replace("-", "")[:11]
     return unique_id
 
+def generate_report_id():
+    # Count the number of existing reports
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM report")
+        num_reports = cursor.fetchone()[0]
+
+    # Generate report_id by adding 1 to the count and padding it with zeros
+    report_id = str(1000000000 + num_reports + 1)[-11:]
+
+    return report_id
 
 ''''
 def generate_user_id():
@@ -816,3 +826,70 @@ class AllTraineesView(APIView):
 
         return Response(trainee_list, status=status.HTTP_200_OK)
 
+class NewReportView(APIView):
+    def post(self, request):
+        # Retrieve admin ID from the session or request data, adjust this according to your authentication method
+        admin_id = request.session.get('user_id') 
+
+        report_type = request.data.get('report_type')
+        content = request.data.get('content')
+        
+        report_id = generate_report_id()
+        # Perform raw SQL query to insert the report into the database
+        with connection.cursor() as cursor:
+            try:
+                # Execute the SQL query to insert the new report
+                cursor.execute("""
+                    INSERT INTO report (Report_ID, Report_Type, Content) VALUES (%s, %s, %s)
+                    """, [report_id, report_type, content]
+                )
+                # Execute the SQL query to insert into the overview table
+                cursor.execute("""
+                    INSERT INTO overview (User_ID, Report_ID) VALUES (%s, %s)
+                    """, [admin_id, report_id]
+                )
+            except Exception as e:
+                # Handle any database errors
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "Report created successfully."}, status=status.HTTP_201_CREATED)
+class AdminReportsView(APIView):
+    def get(self, request):
+        admin_id = request.session.get('user_id')
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT Report_ID
+                FROM overview
+                WHERE User_ID = %s
+            """, [admin_id])
+            report_ids = cursor.fetchall()
+
+        if not report_ids:
+            return Response([], status=status.HTTP_200_OK)
+        report_id_list = [row[0] for row in report_ids]
+
+        # Convert the list of report IDs into a tuple
+        report_ids_tuple = tuple(report_id_list)
+
+        # Fetch reports from the report table using the retrieved report IDs
+        with connection.cursor() as cursor:
+            query = """
+                SELECT *
+                FROM report
+                WHERE Report_ID IN %s
+            """
+            cursor.execute(query, [report_ids_tuple])
+            reports = cursor.fetchall()
+
+        # Create a list of dictionaries containing report information
+        report_list = [
+            {
+                'Report_ID': report[0],
+                'Report_Type': report[1],
+                'Content': report[2],
+                # Add more fields as needed
+            }
+            for report in reports
+        ]
+
+        return Response(report_list, status=status.HTTP_200_OK)

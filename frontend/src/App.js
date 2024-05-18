@@ -24,6 +24,7 @@ import NewTraineePage from './pages/NewTraineePage';
 import TrainerViewPage from './pages/TrainerViewPage';
 import GroupSessions from './pages/GroupSessions';
 import AdminPage from './pages/AdminPage';
+import NewReportPage from './pages/NewReportPage';
 const theme = createTheme();
 
 const App = () => {
@@ -51,6 +52,7 @@ const App = () => {
           <Route path="/nutrition" component={CurrentNutritionPlans} />
           <Route path="/trainee/:trainee_Id" component={TraineeViewPage} />
           <Route path = "/trainer/:trainer_Id" component={TrainerViewPage} />
+          <Route path = "/new-report" component={NewReportPage} />
           {/*
            You can add more routes here if you have other pages */}
         </Switch>
