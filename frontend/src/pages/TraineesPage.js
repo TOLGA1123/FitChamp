@@ -89,7 +89,7 @@ const TraineesPage = () => {
       <Box sx={{ p: 3 }}>
         <Grid container spacing={2}>
           {Trainees.map((trainee) => (
-            <Grid item xs={12} sm={6} md={4} key={trainee.id} onClick={() => handleTraineeSelect(trainee.id)}>
+            <Grid item xs={12} sm={6} md={4} key={trainee.id} onClick={() => handleTraineeSelect(trainee.user_id)}>
               <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
                 <Avatar sx={{ width: 100, height: 100, margin: 'auto' }} />
                 <Typography>{trainee.user_name}</Typography>
