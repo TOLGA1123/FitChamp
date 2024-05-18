@@ -581,7 +581,7 @@ class NewGoalView(APIView):
             
 class TraineeView(APIView):
     def get(self, request, trainee_Id):
-        print("UserProfileView - Session Key:", request.session.session_key)
+        print("TraineeView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
@@ -605,6 +605,41 @@ class TraineeView(APIView):
                         'username': username,
                         'email': email,
                         'trainee': trainee,
+                    }
+                    return Response(user_details, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+class TrainerView(APIView):
+    def get(self, request, trainer_Id):
+        print("TrainerView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items())  # Debug statement
+
+        if user_id and username and email:
+            try:
+                print(user_id)
+                with connection.cursor() as cursor:
+                    # Fetch the trainee details
+                    cursor.execute("""
+                        SELECT  * 
+                        FROM trainer 
+                        WHERE trainer_ID = %s
+                    """, [str(trainer_Id)])
+                    trainer = dictfetchone(cursor)
+                print(trainer)
+                if trainer:
+                    user_details = {
+                        'user_id': user_id,
+                        'username': username,
+                        'email': email,
+                        'trainer': trainer,
                     }
                     return Response(user_details, status=status.HTTP_200_OK)
                 else:

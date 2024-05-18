@@ -27,7 +27,7 @@ const TrainersPage = () => {
   }, []);
 
   const handleSelectTrainer = (trainerId) => {
-    history.push(`/trainer-profile/${trainerId}`);
+    history.push(`/trainer/${trainerId.trim()}`);
   };
 
   const handleRouteChange = (event, newValue) => {
@@ -107,7 +107,7 @@ const TrainersPage = () => {
         <Grid container spacing={2}>
           {trainers.map((trainer) => (
             <Grid item xs={12} sm={6} md={4} key={trainer.id}>
-              <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }} onClick={() => handleSelectTrainer(trainer.id)}>
+              <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }} onClick={() => handleSelectTrainer(trainer.trainer_id)}>
                 <Avatar sx={{ width: 56, height: 56, margin: 'auto' }} />
                 <Typography variant="h6">{trainer.user_name}</Typography>
                 <Typography variant="body2">{trainer.specialization}</Typography>
