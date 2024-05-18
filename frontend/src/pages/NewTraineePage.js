@@ -60,8 +60,8 @@ console.log(trainees);
     history.push(`/${newValue}`);
   };
 
-  const handleProfileClick = () => {
-    history.push('/trainer-profile');
+  const handleProfileClick = (trainerId) => {
+    history.push(`/trainer-profile/${trainerId}`);
   };
 
   const handleMSGClick = () => {
