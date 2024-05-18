@@ -660,4 +660,196 @@ class DeleteGoalView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+def create_group_session(trainer_id, location, starting_time, end_time, session_type, max_participants, price, trainee_ids):
+    try:
+        with connection.cursor() as cursor:
+            # Check if the user is a trainer
+            cursor.execute("SELECT * FROM trainer WHERE Trainer_ID = %s", [trainer_id])
+            trainer = cursor.fetchone()
+            
+            if not trainer:
+                return {"error": "User is not a trainer."}
+
+            # Generate a unique Group_Session_ID
+            group_session_id = generate_unique_id()
+
+            if(len(trainee_ids) > max_participants):
+                return {"error": "Max paticipant limit is reached."}
+
+            # Insert the new group session into the Group_Session table
+            cursor.execute("""
+            INSERT INTO Group_Session (Group_Session_ID, Trainer_ID, Location, Starting_Time, End_Time, Type, Max_Participants, Price)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, [group_session_id, trainer_id, location, starting_time, end_time, session_type, max_participants, price])
+
+            # Insert the new group session into the Group_Sessions table
+            for trainee_id in trainee_ids:
+                cursor.execute("""
+                    INSERT INTO Group_Sessions (User_ID, Group_Session_ID)
+                    VALUES (%s, %s)
+                """, [trainee_id, group_session_id])
+
+            # The below table should be deleted it is useless
+            cursor.execute("""
+                INSERT INTO creates_session (Trainer_ID, User_ID)
+                VALUES (%s, %s)
+            """, [trainer_id, trainer_id])
+
+            connection.commit()
+            return {"message": "Group session created successfully."}
+    except Exception as e:
+        connection.rollback()
+        return {"error": f"An error occurred: {str(e)}"}
+
+
+class CreateSessionView(APIView):
+
+    #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
+    def post(self, request):
+
+        trainee_ids = request.data.get('trainee_ids')
+        trainer = request.user
+        location = request.data.get('location')
+        starting_time = request.data.get('starting_time')
+        end_time = request.data.get('end_time')
+        session_type = request.data.get('session_type')
+        max_participants = request.data.get('max_participants')
+        price = request.data.get('price')
+
+
+        if not trainer or not trainee_ids:
+            return Response({"error": "trainer_id and trainee are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = create_group_session(trainer, location, starting_time,  end_time, session_type, max_participants, price, trainee_ids)
+
+        if "error" in result:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_201_CREATED)
+    
+
+def display_available_sessions():
+    try:
+        with connection.cursor() as cursor:
+           
+            cursor.execute("""
+                SELECT gs.Group_Session_ID, gs.Trainer_ID, gs.Location, gs.Starting_Time, gs.End_Time, gs.Type, gs.Max_Participants, gs.Price
+                FROM Group_Session gs
+                LEFT JOIN (
+                    SELECT Group_Session_ID, COUNT(*) as participant_count
+                    FROM Group_Sessions
+                    GROUP BY Group_Session_ID
+                ) gs_count ON gs.Group_Session_ID = gs_count.Group_Session_ID
+                WHERE gs_count.participant_count < gs.Max_Participants OR gs_count.participant_count IS NULL
+            """)
+            
+            available_sessions = cursor.fetchall()
+            
+            if not available_sessions:
+                return {"error": "No available group sessions found."}
+            
+            return {"available_sessions": available_sessions}
+    except Exception as e:
+        return {"error": f"An error occurred: {str(e)}"}
+    
+
+class SessionView(APIView):
+
+    #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
+    def get(self, request):
+
+        result = display_available_sessions()
+
+        if "error" in result:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_201_CREATED)
+    
+
+def join_session(user_id, group_session_id):
+    try:
+        with connection.cursor() as cursor:
+          
+            cursor.execute("""
+                SELECT gs.Max_Participants, COALESCE(gs_count.participant_count, 0) as participant_count
+                FROM Group_Session gs
+                LEFT JOIN (
+                    SELECT Group_Session_ID, COUNT(*) as participant_count
+                    FROM Group_Sessions
+                    GROUP BY Group_Session_ID
+                ) gs_count ON gs.Group_Session_ID = gs_count.Group_Session_ID
+                WHERE gs.Group_Session_ID = %s
+            """, [group_session_id])
+            
+            session = cursor.fetchone()
+            
+            if not session:
+                return {"error": "Group session not found."}
+            
+            if session['participant_count'] >= session['Max_Participants']:
+                return {"error": "Group session has already reached its maximum limit."}
+
+            # Check if the user is already in the session
+            cursor.execute("""
+                SELECT * FROM Group_Sessions WHERE User_ID = %s AND Group_Session_ID = %s
+            """, [user_id, group_session_id])
+            
+            if cursor.fetchone():
+                return {"error": "User is already in the session."}
+
+            # Insert the user into the Group_Sessions table
+            cursor.execute("""
+                INSERT INTO Group_Sessions (User_ID, Group_Session_ID)
+                VALUES (%s, %s)
+            """, [user_id, group_session_id])
+
+            connection.commit()
+            return {"message": "User successfully joined the group session."}
+    except Exception as e:
+        connection.rollback()
+        return {"error": f"An error occurred: {str(e)}"}
+    
+class JoinSessionView(APIView):
+
+    #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
+    def post(self, request):
+
+        trainee_ids = request.data.get('trainee_ids')
+        trainer = request.user
+        location = request.data.get('location')
+        starting_time = request.data.get('starting_time')
+        end_time = request.data.get('end_time')
+        session_type = request.data.get('session_type')
+        max_participants = request.data.get('max_participants')
+        price = request.data.get('price')
+
+
+        if not trainer or not trainee_ids:
+            return Response({"error": "trainer_id and trainee are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = join_session(user_id, group_session_id)
+
+        if "error" in result:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_201_CREATED)
+    
+
+def display_workouts(user_id):
+    try:
+        with connection.cursor() as cursor:
+            
+            cursor.execute("""
+                SELECT wp.Routine_Name, wp.Description, wp.Duration, wp.Difficulty_Level
+                FROM workout_plan wp
+                JOIN assigned a ON wp.Routine_Name = a.Routine_name AND wp.Trainer_ID = a.Trainer_ID AND wp.User_ID = a.User_ID
+                WHERE wp.User_ID = %s
+            """, [user_id])
+            
+            workouts = cursor.fetchall()
+            
+            if not workouts:
+                return {"error": "No current workouts found for the user."}
+            
+            return {"workouts": workouts}
+    except Exception as e:
+        return {"error": f"An error occurred: {str(e)}"}
+
 

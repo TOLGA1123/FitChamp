@@ -35,5 +35,7 @@ urlpatterns = [
     path('new-goal/', NewGoalView.as_view(),name='new-goal'),
     path('new-trainee/', NewTraineeView.as_view(), name='new-trainee'),
     path('sort-goals/', SortGoalsView.as_view(), name='sort-goals'),
-    path('goal/<str:goal_id>/delete/', DeleteGoalView.as_view(), name='goal_delete'),
+    path('goal/<int:goal_id>/delete/', DeleteGoalView.as_view(), name='goal_delete'),
+    path('group-sessions/',SessionView.as_view(),name='group-sessions'),
+    path('create-session/',CreateSessionView.as_view(),name='group-sessions'),
 ]
