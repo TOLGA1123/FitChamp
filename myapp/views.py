@@ -56,6 +56,16 @@ def generate_unique_id():
     unique_id = str(uuid.uuid4()).replace("-", "")[:11]
     return unique_id
 
+def generate_report_id():
+    # Count the number of existing reports
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM report")
+        num_reports = cursor.fetchone()[0]
+
+    # Generate report_id by adding 1 to the count and padding it with zeros
+    report_id = str(1000000000 + num_reports + 1)[-11:]
+
+    return report_id
 
 ''''
 def generate_user_id():
@@ -197,7 +207,10 @@ class LoginView(APIView):
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM trainer WHERE user_name = %s", [username])
             trainer_row = cursor.fetchone()
-
+            
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM adminf WHERE user_name = %s", [username])
+            admin_row = cursor.fetchone()
         if user_row:
             if trainer_row:
                 stored_password = trainer_row[3]  # Assuming password is stored in the third column
@@ -216,6 +229,22 @@ class LoginView(APIView):
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
                     return Response({2}, status=status.HTTP_200_OK)
+                else:
+                    # Invalid password
+                    return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
+            elif admin_row:
+                stored_password = admin_row[2]  # Assuming password is stored in the third column for admin
+                if password == stored_password:
+                    # Admin authenticated
+                    # Store admin details in session
+                    request.session['user_id'] = admin_row[0]
+                    request.session['username'] = admin_row[1]
+                    request.session['email'] = admin_row[4]  # Assuming email is in the fourth column
+                    request.session['type'] = 3
+                    request.session.save()
+                    print("LoginView - Session Key:", request.session.session_key)
+                    print('Session data set:', request.session.items())  # Debug statement
+                    return Response({3}, status=status.HTTP_200_OK)
                 else:
                     # Invalid password
                     return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)

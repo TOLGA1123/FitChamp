@@ -32,6 +32,9 @@ const LoginPage = () => {
       if(response.data[0] === 2){
         history.push('/trainees');
       }
+      if (response.data[0] === 3) {
+        history.push('/admin'); // Redirect for admin
+      }
     })
     .catch(error => {
       console.error('Registration error:', error.response ? error.response.data : 'Server did not respond');
