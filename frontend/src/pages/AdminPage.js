@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Typography, Box, AppBar, Tabs, Tab, Grid, Card, CardContent, Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
-
+import LogoutButton from './LogoutButton';
 const darkMintGreen = '#2E8B57';
 const lightMintGreen = '#E0FFE0'; // Lighter mint green for reports
 const darkAshGrey = '#4B4B4B';
@@ -143,6 +143,7 @@ const AdminPage = () => {
           <Tab label="View All Trainers" />
           <Tab label="View All Trainees" />
           <Tab label="Reports" />
+          <LogoutButton />
         </Tabs>
       </AppBar>
       <Box sx={{ p: 3 }}>
