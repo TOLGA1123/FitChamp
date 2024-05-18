@@ -6,6 +6,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import { green } from '@mui/material/colors';
 import LogoutButton from './LogoutButton';
+import NavTabs from './NavTabs';
 const ProgressAchievements = () => {
   const history = useHistory();
   const [achievements, setAchievements] = useState([]);
@@ -34,45 +35,7 @@ const ProgressAchievements = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs 
-            onChange={handleRouteChange} 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              flexGrow: 1, 
-              backgroundColor: 'black' // Set the background color for the whole tabs container
-            }} 
-            variant="fullWidth"
-          > 
-            <Tab 
-              label="Workouts" 
-              value="workout-plans" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-            <Tab 
-              label="Trainers" 
-              value="trainers" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-            <Tab 
-              label="Nutrition Plans" 
-              value="nutrition" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-            <Tab 
-              label="Goals" 
-              value="goals" 
-              
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-            <Tab 
-              label="Achievements" 
-              value="achievements" 
-              
-              sx={{ color: 'black', backgroundColor: green[500]  }}
-            />
-            <LogoutButton />
-          </Tabs>
+      <NavTabs activeTab="achievements" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
             <PersonIcon />

@@ -3,6 +3,7 @@ import { Box, Grid, Paper, Typography, TextField, Button, Avatar, AppBar, Tabs, 
 import { useHistory } from 'react-router-dom';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
+import NavTabs from './NavTabs';
 
 const NewGoalPage = () => {
   const history = useHistory();
@@ -62,17 +63,7 @@ const handleSubmit = (event) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs
-          onChange={handleRouteChange}
-          sx={{ backgroundColor: 'black' }}
-          variant="fullWidth"
-        >
-          <Tab label="Workouts" value="workout-plans" sx={{ color: 'white' }} />
-          <Tab label="Trainers" value="trainers" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Nutrition Plans" value="nutrition-plans" sx={{ color: 'white' }} />
-          <Tab label="Goals" value="goals" sx={{ color: 'white' }} />
-          <Tab label="Progress" value="progress" sx={{ color: 'white' }} />
-        </Tabs>
+      <NavTabs activeTab="goals" />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <Button onClick={handleProfileClick}>
             <Avatar />

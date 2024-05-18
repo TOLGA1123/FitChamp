@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutButton from './LogoutButton';
+import NavTabs from './NavTabs';
 const darkMintGreen = '#2E8B57'; // Define your dark mint green color
 const darkAshGrey = '#4B4B4B'; // Define your dark ash grey color
 const lila = '#cc99ff';
@@ -116,42 +117,7 @@ const NewWorkoutPlan = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: darkMintGreen }}>
-        <Tabs
-          onChange={handleRouteChange}
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            flexGrow: 1,
-            backgroundColor: darkAshGrey // Set the background color for the whole tabs container
-          }}
-          variant="fullWidth"
-        >
-          <Tab
-            label="Workouts"
-            value="workout-plans"
-            sx={{
-              color: 'black',
-              backgroundColor: darkMintGreen
-            }}
-          />
-          <Tab
-            label="Trainers"
-            value="trainers"
-            sx={{ color: 'white', backgroundColor: darkAshGrey }}
-          />
-          <Tab
-            label="Nutrition Plans"
-            value="nutrition"
-            sx={{ color: 'white', backgroundColor: darkAshGrey }}
-          />
-          <Tab
-            label="Goals"
-            value="goals"
-            sx={{ color: 'white', backgroundColor: darkAshGrey }}
-          />
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
-          <LogoutButton />
-        </Tabs>
+      <NavTabs activeTab="workout-plans" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
             <PersonIcon />
