@@ -197,7 +197,10 @@ class LoginView(APIView):
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM trainer WHERE user_name = %s", [username])
             trainer_row = cursor.fetchone()
-
+            
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM adminf WHERE user_name = %s", [username])
+            admin_row = cursor.fetchone()
         if user_row:
             if trainer_row:
                 stored_password = trainer_row[3]  # Assuming password is stored in the third column
@@ -216,6 +219,22 @@ class LoginView(APIView):
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
                     return Response({2}, status=status.HTTP_200_OK)
+                else:
+                    # Invalid password
+                    return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
+            elif admin_row:
+                stored_password = admin_row[2]  # Assuming password is stored in the third column for admin
+                if password == stored_password:
+                    # Admin authenticated
+                    # Store admin details in session
+                    request.session['user_id'] = admin_row[0]
+                    request.session['username'] = admin_row[1]
+                    request.session['email'] = admin_row[4]  # Assuming email is in the fourth column
+                    request.session['type'] = 3
+                    request.session.save()
+                    print("LoginView - Session Key:", request.session.session_key)
+                    print('Session data set:', request.session.items())  # Debug statement
+                    return Response({3}, status=status.HTTP_200_OK)
                 else:
                     # Invalid password
                     return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -760,4 +779,40 @@ class DeleteGoalView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class AllTrainersView(APIView):
+    def get(self, request):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainer")
+            trainers = cursor.fetchall()
+
+        trainer_list = [{
+            'user_id': trainer[0],
+            'trainer_id': trainer[1],
+            'user_name': trainer[2],
+            'password': trainer[3],
+            'specialization': trainer[4],
+            'telephone_number': trainer[5],
+            'social_media': trainer[6]
+        } for trainer in trainers]
+
+        return Response(trainer_list, status=status.HTTP_200_OK)
+class AllTraineesView(APIView):
+    def get(self, request):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainee")
+            trainees = cursor.fetchall()
+
+        trainee_list = [{
+            'user_id': trainee[0],
+            'user_name': trainee[1],
+            'password': trainee[2],
+            'age': trainee[3],
+            'date_of_birth': trainee[4],
+            'gender': trainee[5],
+            'weight': trainee[6],
+            'height': trainee[7],
+            'past_achievements': trainee[8],
+        } for trainee in trainees]
+
+        return Response(trainee_list, status=status.HTTP_200_OK)
 

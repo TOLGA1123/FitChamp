@@ -23,7 +23,7 @@ import TraineeViewPage from './pages/TraineeViewPage'
 import NewTraineePage from './pages/NewTraineePage';
 import TrainerViewPage from './pages/TrainerViewPage';
 import GroupSessions from './pages/GroupSessions';
-
+import AdminPage from './pages/AdminPage';
 const theme = createTheme();
 
 const App = () => {
@@ -47,7 +47,7 @@ const App = () => {
           <Route path="/new-trainer" component={NewTrainerPage} />
           <Route path = "/new-trainee" component={NewTraineePage} />
           <Route path="/group-sessions" component={GroupSessions} />
-          
+          <Route path="/admin" component={AdminPage} />
           <Route path="/nutrition" component={CurrentNutritionPlans} />
           <Route path="/trainee/:trainee_Id" component={TraineeViewPage} />
           <Route path = "/trainer/:trainer_Id" component={TrainerViewPage} />
