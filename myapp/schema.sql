@@ -127,13 +127,14 @@ CREATE TABLE IF NOT EXISTS workout_plan (
 CREATE TABLE IF NOT EXISTS Group_Session (
   Trainer_ID char(11),
   User_ID char(11),
+  Group_Session_ID varchar(11),
+  Session_name varchar(11) NOT NULL,
   Location varchar(40) NOT NULL,
   Starting_Time varchar(40) NOT NULL,
   End_Time varchar(40) NOT NULL,
   Type varchar(20),
   Max_Participants numeric(3,0) NOT NULL,
-  Price varchar(20) NOT NULL,
-  PRIMARY KEY (Trainer_ID, User_ID),
+  PRIMARY KEY (Trainer_ID, User_ID,Group_Session_ID),
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
 );
