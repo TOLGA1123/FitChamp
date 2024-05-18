@@ -11,6 +11,7 @@ import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import LogoutButton from './LogoutButton';
+import NavTabs from './NavTabs';
 const TrainersPage = () => {
   const history = useHistory();
   const [trainers, setTrainers] = useState([]);
@@ -53,39 +54,7 @@ const TrainersPage = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs 
-            onChange={handleRouteChange} 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              flexGrow: 1, 
-              backgroundColor: 'black' // Set the background color for the whole tabs container
-            }} 
-            variant="fullWidth"
-          > 
-            <Tab 
-              label="Workouts" 
-              value="workout-plans" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-            <Tab 
-              label="Trainers" 
-              value="trainers" 
-              sx={{ color: 'black', backgroundColor: green[500]  }}
-            />
-            <Tab 
-              label="Nutrition Plans" 
-              value="nutrition" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-            <Tab 
-              label="Goals" 
-              value="goals" 
-              sx={{ color: 'white', backgroundColor: 'black' }}
-            />
-
-            <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
-          </Tabs>
+      <NavTabs activeTab="trainers" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
             <PersonIcon />

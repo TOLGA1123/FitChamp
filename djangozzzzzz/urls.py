@@ -31,10 +31,12 @@ urlpatterns = [
     path('trainers/', UserTrainersView.as_view(), name='trainers'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('goals/', GoalsView.as_view(), name='goals'), 
-    path('goal/<int:goal_id>/', GoalDetailView.as_view(), name='goal_detail'), 
+    path('goal/<str:goal_id>/', GoalDetailView.as_view(), name='goal_detail'), 
     path('new-goal/', NewGoalView.as_view(),name='new-goal'),
     path('new-trainee/', NewTraineeView.as_view(), name='new-trainee'),
     path('nutrition/', NutritionPlanView.as_view(), name='nutrition_plan'),
     path('trainee/<int:trainee_Id>/', TraineeView.as_view(), name='trainee_view'),
     path('trainer/<int:trainer_Id>/', TrainerView.as_view(), name='trainer_view')
+    path('sort-goals/', SortGoalsView.as_view(), name='sort-goals'),
+    path('goal/<str:goal_id>/delete/', DeleteGoalView.as_view(), name='goal_delete'),
 ]

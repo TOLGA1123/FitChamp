@@ -7,6 +7,7 @@ import MessageIcon from '@mui/icons-material/Message';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect} from 'react';
+import NavTabs from './NavTabs';
 axios.defaults.withCredentials = true;
 
 const NewTrainerPage = () => {
@@ -72,17 +73,7 @@ const NewTrainerPage = () => {
   return (
     <Box sx={{ flexGrow: 1, position: 'relative', minHeight: '100vh' }}>
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs
-          onChange={handleRouteChange}
-          sx={{ backgroundColor: 'black' }}
-          variant="fullWidth"
-        >
-          <Tab label="Workouts" value="workout-plans" sx={{ color: 'white' }} />
-          <Tab label="Trainers" value="trainers" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Nutrition Plans" value="nutrition-plans" sx={{ color: 'white' }} />
-          <Tab label="Goals" value="goals" sx={{ color: 'white' }} />
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white' }} />
-        </Tabs>
+      <NavTabs activeTab="trainers" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
             <PersonIcon />

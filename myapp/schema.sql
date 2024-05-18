@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS progress (
 CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_ID char(11),
   User_ID char(11),
-                                                                    Goal_Name varchar(20),
+  Goal_Name varchar(20),
   Goal_Type varchar(20),
   Goal_Value numeric(3,1),
   Start_Date varchar(20),

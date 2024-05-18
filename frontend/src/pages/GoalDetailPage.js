@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Box, Typography, LinearProgress, Paper, Grid } from '@mui/material';
+import { useParams, useHistory } from 'react-router-dom';
+import { Box, Typography, LinearProgress, Paper, Grid, Button  } from '@mui/material';
 import moment from 'moment';
 import axios from 'axios';
+import NavTabs from './NavTabs';
 
 const GoalDetailPage = () => {
   const { goalId } = useParams();
   const [goalDetails, setGoalDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const history = useHistory();
 
   useEffect(() => {
     // Fetch the goal details from the backend
@@ -22,6 +24,18 @@ const GoalDetailPage = () => {
         setLoading(false);
       });
   }, [goalId]);
+
+  const handleDelete = () => {
+    axios.delete(`http://localhost:8000/goal/${goalId.trim()}/delete/`, { withCredentials: true })
+      .then(response => {
+        if (response.status === 204) {
+          history.push('/goals');
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting goal:', error.response ? error.response.data : 'Server did not respond');
+      });
+  };
 
   const calculateProgress = (start, end) => {
     const startDate = moment(start);
@@ -72,6 +86,9 @@ const GoalDetailPage = () => {
           <LinearProgress variant="determinate" value={calculateProgress(goalDetails.start_date, goalDetails.end_date)} />
           <Typography>{Math.round(calculateProgress(goalDetails.start_date, goalDetails.end_date))}%</Typography>
         </Grid>
+        <Button variant="contained" color="secondary" onClick={handleDelete}>
+            Delete Goal
+        </Button>
       </Grid>
     </Box>
   );

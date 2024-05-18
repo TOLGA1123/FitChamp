@@ -8,6 +8,7 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
 import LogoutButton from './LogoutButton';
+import NavTabs from './NavTabs';
 // Define a class for workout plans
 class WorkoutPlan {
   constructor(id, title, description) {
@@ -28,10 +29,6 @@ const CurrentWorkoutPlans = () => {
   const history = useHistory();
   const [selectedTab, setSelectedTab] = useState('');
 
-  const handleRouteChange = (event, newValue) => {
-    setSelectedTab(newValue);
-    history.push(`/${newValue}`);
-  };
 
   const handleProfileClick = () => {
     history.push('/profile');
@@ -51,18 +48,7 @@ const CurrentWorkoutPlans = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs 
-          value={selectedTab}
-          onChange={handleRouteChange} 
-          sx={{ display: 'flex', justifyContent: 'space-between', flexGrow: 1, backgroundColor: 'black' }} 
-          variant="fullWidth"
-        >
-          <Tab label="Workouts" value="workout-plans" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Trainers" value="trainers" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <Tab label="Nutrition Plans" value="nutrition" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <Tab label="Goals" value="goals" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
-        </Tabs>
+        <NavTabs activeTab="workout-plans" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}><PersonIcon /></IconButton>
           <IconButton sx={{ position: 'absolute', left: 150 }} onClick={handleGroupSession}><GroupIcon /></IconButton>

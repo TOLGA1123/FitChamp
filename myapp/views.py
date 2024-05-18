@@ -16,6 +16,7 @@ from .serializer import *
 from rest_framework.exceptions import NotFound
 from datetime import datetime
 
+base_goal_id = 3000000000
 
 # Create your views here.
 
@@ -50,6 +51,13 @@ def schema_view(request):
     except Exception as e:
         return HttpResponse("Failed to apply schema: {}".format(e))
 
+def generate_unique_id():
+    # Generate a UUID4 and get the first 11 characters
+    unique_id = str(uuid.uuid4()).replace("-", "")[:11]
+    return unique_id
+
+
+''''
 def generate_user_id():
     # Count the number of existing users
     with connection.cursor() as cursor:
@@ -73,6 +81,7 @@ def generate_trainer_id():
 
     return trainer_id
 
+
 def generate_goal_id():
     # Count the number of existing users
     with connection.cursor() as cursor:
@@ -83,7 +92,7 @@ def generate_goal_id():
     goal_id = str(1000000000 + num_goals + 1)[-11:]
 
     return goal_id
-
+'''
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -105,7 +114,7 @@ def calculate_age(born):
 
 class RegisterView(APIView):
     def post(self, request):
-        user_id = generate_user_id()
+        user_id = generate_unique_id()
         user_name = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
@@ -145,8 +154,8 @@ class RegisterView(APIView):
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 class TrainerSignupView(APIView):
     def post(self, request):
-        user_id = generate_user_id()
-        trainer_id = generate_trainer_id()
+        user_id = generate_unique_id()
+        trainer_id = generate_unique_id()
         user_name = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
@@ -413,6 +422,7 @@ class UserTrainersView(APIView):
         } for trainer in trainers]
         
         return Response(trainer_list, status=status.HTTP_200_OK)
+    
 class NewTrainerView(APIView):
     def get(self,request):
         user_id = request.session.get('user_id')
@@ -551,7 +561,7 @@ class NewGoalView(APIView):
         email = request.session.get('email')
         print('Session data set:', request.session.items()) 
 
-        goal_id = generate_goal_id()
+        goal_id = generate_unique_id()
         trainer_id = request.data.get('trainer_id')
         goal_name = request.data.get('name')
         goal_type = request.data.get('type')
@@ -678,3 +688,76 @@ class NutritionPlanView(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
+            
+class SortGoalsView(APIView):
+    def get(self, request):
+        print("SortGoalsView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        sort_criteria = request.query_params.get('sort_by', 'value')
+        print('Session data set:', request.session.items()) 
+
+        if user_id and username and email:
+            try:
+                with connection.cursor() as cursor:
+                    if sort_criteria == 'value':
+                        cursor.execute("""
+                            SELECT fg.*, t.user_name AS trainer_name
+                            FROM fitnessgoal fg
+                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
+                            WHERE fg.user_id = %s
+                            ORDER BY fg.goal_value
+                        """, [user_id])
+                    elif sort_criteria == 'endDate':
+                        cursor.execute("""
+                            SELECT fg.*, t.user_name AS trainer_name
+                            FROM fitnessgoal fg
+                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
+                            WHERE fg.user_id = %s
+                            ORDER BY fg.end_date
+                        """, [user_id])
+                    elif sort_criteria == 'trainerName':
+                        cursor.execute("""
+                            SELECT fg.*, t.user_name AS trainer_name
+                            FROM fitnessgoal fg
+                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
+                            WHERE fg.user_id = %s
+                            ORDER BY t.user_name
+                        """, [user_id])
+                    else:
+                        return Response({"error": "Invalid sort criteria"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    goals = cursor.fetchall()
+
+                if goals:
+                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8], 'trainer_name': goal[9]} for goal in goals]
+                    return Response(goals_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class DeleteGoalView(APIView):
+    def delete(self, request, goal_id):
+        goal_id = str(goal_id).strip()
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM fitnessgoal
+                    WHERE user_id = %s AND goal_id = %s
+                """, [user_id, goal_id])
+                connection.commit()
+
+            return Response({"message": "Goal deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
