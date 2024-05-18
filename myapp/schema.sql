@@ -362,33 +362,42 @@ CREATE TABLE IF NOT EXISTS overview (
 CREATE OR REPLACE FUNCTION delete_related_data_function()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Delete related tuples with deleted user_id from other tables
-    DELETE FROM adminf WHERE User_ID = OLD.User_ID;
-    DELETE FROM trains WHERE User_ID = OLD.User_ID;
-    DELETE FROM progress WHERE User_ID = OLD.User_ID;
-    DELETE FROM fitnessgoal WHERE User_ID = OLD.User_ID;
-    DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
-    DELETE FROM achievement WHERE User_ID = OLD.User_ID;
-    DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
-    DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
-    DELETE FROM chat WHERE User_ID = OLD.User_ID;
-    DELETE FROM message WHERE User_ID = OLD.User_ID;
-    DELETE FROM follows WHERE User_ID = OLD.User_ID;
-    DELETE FROM aims_to WHERE User_ID = OLD.User_ID;
-    DELETE FROM joins WHERE User_ID = OLD.User_ID;
-    DELETE FROM creates_session WHERE User_ID = OLD.User_ID;
-    DELETE FROM sends WHERE User_ID = OLD.User_ID;
-    DELETE FROM receives WHERE User_ID = OLD.User_ID;
-    DELETE FROM made WHERE User_ID = OLD.User_ID;
-    DELETE FROM monitor WHERE User_ID = OLD.User_ID;
-    DELETE FROM contains WHERE User_ID = OLD.User_ID;
-    DELETE FROM adds WHERE User_ID = OLD.User_ID;
-    DELETE FROM creates WHERE User_ID = OLD.User_ID;
-    DELETE FROM creates_report WHERE User_ID = OLD.User_ID;
-    DELETE FROM overview WHERE User_ID = OLD.User_ID;
+    -- Check if the trigger event is caused by a direct deletion of a user from the userf table
+    IF TG_TABLE_NAME = 'userf' THEN
+        -- Delete related tuples with deleted user_id from other tables
+        DELETE FROM adminf WHERE User_ID = OLD.User_ID;
+        DELETE FROM trains WHERE User_ID = OLD.User_ID;
+        DELETE FROM progress WHERE User_ID = OLD.User_ID;
+        DELETE FROM fitnessgoal WHERE User_ID = OLD.User_ID;
+        DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
+        DELETE FROM achievement WHERE User_ID = OLD.User_ID;
+        DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
+        DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
+        DELETE FROM chat WHERE User_ID = OLD.User_ID;
+        DELETE FROM message WHERE User_ID = OLD.User_ID;
+        DELETE FROM follows WHERE User_ID = OLD.User_ID;
+        DELETE FROM aims_to WHERE User_ID = OLD.User_ID;
+        DELETE FROM joins WHERE User_ID = OLD.User_ID;
+        DELETE FROM creates_session WHERE User_ID = OLD.User_ID;
+        DELETE FROM sends WHERE User_ID = OLD.User_ID;
+        DELETE FROM receives WHERE User_ID = OLD.User_ID;
+        DELETE FROM made WHERE User_ID = OLD.User_ID;
+        DELETE FROM monitor WHERE User_ID = OLD.User_ID;
+        DELETE FROM contains WHERE User_ID = OLD.User_ID;
+        DELETE FROM adds WHERE User_ID = OLD.User_ID;
+        DELETE FROM creates WHERE User_ID = OLD.User_ID;
+        DELETE FROM creates_report WHERE User_ID = OLD.User_ID;
+        DELETE FROM overview WHERE User_ID = OLD.User_ID;
+    ELSE
+        -- Delete trainers and trainees if the deletion is not direct
+        DELETE FROM trainer WHERE User_ID = OLD.User_ID;
+        DELETE FROM trainee WHERE User_ID = OLD.User_ID;
+    END IF;
+    
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE TRIGGER delete_related_data
 BEFORE DELETE ON userf
