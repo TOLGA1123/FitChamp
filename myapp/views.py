@@ -759,6 +759,113 @@ class DeleteGoalView(APIView):
             return Response({"message": "Goal deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class AllTrainersView(APIView):
+    def get(self, request):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainer")
+            trainers = cursor.fetchall()
+
+        trainer_list = [{
+            'user_id': trainer[0],
+            'trainer_id': trainer[1],
+            'user_name': trainer[2],
+            'password': trainer[3],
+            'specialization': trainer[4],
+            'telephone_number': trainer[5],
+            'social_media': trainer[6]
+        } for trainer in trainers]
+
+        return Response(trainer_list, status=status.HTTP_200_OK)
+class AllTraineesView(APIView):
+    def get(self, request):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM trainee")
+            trainees = cursor.fetchall()
+
+        trainee_list = [{
+            'user_id': trainee[0],
+            'user_name': trainee[1],
+            'password': trainee[2],
+            'age': trainee[3],
+            'date_of_birth': trainee[4],
+            'gender': trainee[5],
+            'weight': trainee[6],
+            'height': trainee[7],
+            'past_achievements': trainee[8],
+        } for trainee in trainees]
+
+        return Response(trainee_list, status=status.HTTP_200_OK)
+
+class NewReportView(APIView):
+    def post(self, request):
+        # Retrieve admin ID from the session or request data, adjust this according to your authentication method
+        admin_id = request.session.get('user_id') 
+
+        report_type = request.data.get('report_type')
+        content = request.data.get('content')
+        
+        report_id = generate_report_id()
+        # Perform raw SQL query to insert the report into the database
+        with connection.cursor() as cursor:
+            try:
+                # Execute the SQL query to insert the new report
+                cursor.execute("""
+                    INSERT INTO report (Report_ID, Report_Type, Content) VALUES (%s, %s, %s)
+                    """, [report_id, report_type, content]
+                )
+                # Execute the SQL query to insert into the overview table
+                cursor.execute("""
+                    INSERT INTO overview (User_ID, Report_ID) VALUES (%s, %s)
+                    """, [admin_id, report_id]
+                )
+            except Exception as e:
+                # Handle any database errors
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "Report created successfully."}, status=status.HTTP_201_CREATED)
+class AdminReportsView(APIView):
+    def get(self, request):
+        admin_id = request.session.get('user_id')
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT Report_ID
+                FROM overview
+                WHERE User_ID = %s
+            """, [admin_id])
+            report_ids = cursor.fetchall()
+
+        if not report_ids:
+            return Response([], status=status.HTTP_200_OK)
+        report_id_list = [row[0] for row in report_ids]
+
+        # Convert the list of report IDs into a tuple
+        report_ids_tuple = tuple(report_id_list)
+
+        # Fetch reports from the report table using the retrieved report IDs
+        with connection.cursor() as cursor:
+            query = """
+                SELECT *
+                FROM report
+                WHERE Report_ID IN %s
+            """
+            cursor.execute(query, [report_ids_tuple])
+            reports = cursor.fetchall()
+
+        # Create a list of dictionaries containing report information
+        report_list = [
+            {
+                'Report_ID': report[0],
+                'Report_Type': report[1],
+                'Content': report[2],
+                # Add more fields as needed
+            }
+            for report in reports
+        ]
+
+        return Response(report_list, status=status.HTTP_200_OK)
+
 
 
 class NewNutritionPlanView(APIView):
