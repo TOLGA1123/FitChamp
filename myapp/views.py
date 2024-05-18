@@ -16,6 +16,7 @@ from .serializer import *
 from rest_framework.exceptions import NotFound
 from datetime import datetime
 
+base_goal_id = 3000000000
 
 # Create your views here.
 
@@ -73,6 +74,7 @@ def generate_trainer_id():
 
     return trainer_id
 
+'''
 def generate_goal_id():
     # Count the number of existing users
     with connection.cursor() as cursor:
@@ -83,7 +85,12 @@ def generate_goal_id():
     goal_id = str(1000000000 + num_goals + 1)[-11:]
 
     return goal_id
+'''
 
+def generate_goal_id():
+    global base_goal_id
+    base_goal_id += 1
+    return str(base_goal_id)[-11:]
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -630,3 +637,25 @@ class SortGoalsView(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class DeleteGoalView(APIView):
+    def delete(self, request, goal_id):
+        goal_id = str(goal_id).strip()
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    DELETE FROM fitnessgoal
+                    WHERE user_id = %s AND goal_id = %s
+                """, [user_id, goal_id])
+                connection.commit()
+
+            return Response({"message": "Goal deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
