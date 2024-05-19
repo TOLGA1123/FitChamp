@@ -36,6 +36,7 @@ const SetGoals = () => {
     axios.post('http://localhost:8000/new-goal/', payload)
       .then(response => {
         console.log('Goals set:', response.data);
+        history.push('/goals')
       })
       .catch(error => {
         console.error('Error setting goals:', error.response ? error.response.data : 'Server did not respond');
