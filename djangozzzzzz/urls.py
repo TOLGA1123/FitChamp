@@ -53,4 +53,5 @@ urlpatterns = [
     path('create-workout-plan/', CreateWorkoutPlanView.as_view(), name='create-workout-plan'),
     path('exercises/',ExercisesView.as_view(),name='exercises'),
     path('complete-exercises/', CompleteExercisesView.as_view(), name='complete-exercises'),
+    path('change-trainer-details/<str:trainer_id>/', ChangeTrainerDetailsView.as_view(), name='change_trainer_details'),
 ]
