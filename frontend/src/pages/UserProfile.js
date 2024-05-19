@@ -2,6 +2,7 @@
 import React from 'react';
 import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText, Button } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { Link } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab, IconButton} from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -64,7 +65,7 @@ const UserProfile = () => {
   };
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
       <NavTabs activeTab="" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
 
@@ -159,7 +160,14 @@ const UserProfile = () => {
     <Box sx={{ p: 3 }}>
     {/* User profile content here */}
   </Box>
-
+  <Button
+    type="button"
+    variant="contained"
+    color="primary"
+    onClick={() => history.push('/change-details')}
+>
+    Change Details
+</Button>
   <Box sx={{ position: 'relative', textAlign: 'right', marginTop: '10px', paddingRight: '10px' }}>
     <Button variant="contained" color="error" onClick={handleDeleteUser}>
       Delete Account

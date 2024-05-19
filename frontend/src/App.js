@@ -26,6 +26,7 @@ import GroupSessions from './pages/GroupSessions';
 import AdminPage from './pages/AdminPage';
 import NewReportPage from './pages/NewReportPage';
 import NewNutritionPlanPage from './pages/NewNutritionPlanPage';
+import ChangeDetails from './pages/ChangeDetails';
 
 const theme = createTheme({
   components: {
@@ -66,6 +67,7 @@ const App = () => {
           <Route path = "/trainer/:trainer_Id" component={TrainerViewPage} />
           <Route path = "/new-report" component={NewReportPage} />
           <Route path="/new-nutrition-plan/:trainee_Id" component={NewNutritionPlanPage} />
+          <Route path="/change-details" component={ChangeDetails} />
           {/*
            You can add more routes here if you have other pages */}
         </Switch>

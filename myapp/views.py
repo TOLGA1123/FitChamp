@@ -968,3 +968,23 @@ class DeleteTraineeView(APIView):
             except Exception as e:
                 return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"message": "Trainee deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+class ChangeUserDetailsView(APIView):
+    def put(self, request, user_id):
+        # Get the updated user details from the request data
+        updated_details = request.data
+        print(updated_details)
+        # Ensure that user_id is provided in the URL or session
+        if not user_id:
+            return Response({"message": "User ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            try:
+                # Execute the SQL query to update user details in trainee table
+                cursor.execute("UPDATE trainee SET Age = %s, Date_of_Birth = %s, Gender = %s, Weight = %s, Height = %s, Past_Achievements = %s WHERE User_ID = %s",
+                               [updated_details.get('age'), updated_details.get('date_of_birth'), 
+                                updated_details.get('gender'), updated_details.get('weight'), updated_details.get('height'), updated_details.get('past_achievements'), user_id])
+            except Exception as e:
+                # Handle any database errors
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "User details updated successfully."}, status=status.HTTP_200_OK)
