@@ -40,7 +40,7 @@ class GoalsView(APIView):
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("""
-                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, ,current_value, target_value, Start_Date, End_Date, achieved
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value ,current_value, target_value, Start_Date, End_Date, achieved
                         FROM fitnessgoal
                         WHERE User_ID = %s
                     """, [user_id])
@@ -142,7 +142,7 @@ class NewGoalView(APIView):
                 with connection.cursor() as cursor:
                     if goal_type.lower() in ['weight loss', 'muscle gain']:
                         # Fetch the user's current weight
-                        cursor.execute("SELECT weight FROM userf WHERE User_ID = %s", [user_id])
+                        cursor.execute("SELECT Weight FROM trainee WHERE User_ID = %s", [user_id])
                         result = cursor.fetchone()
                         if result:
                             current_value = result[0]  # Set current_value to the user's weight

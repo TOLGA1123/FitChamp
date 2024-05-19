@@ -29,7 +29,7 @@ const GoalsPage = () => {
       });
   }, [history]);
 
-  const fetchGoals = (sort_by) => {
+  /*const fetchGoals = (sort_by) => {
     axios.get('http://localhost:8000/sort-goals/', { params: { sort_by } })
       .then(response => {
         setGoals(response.data);
@@ -46,7 +46,7 @@ const GoalsPage = () => {
 
   useEffect(() => {
     fetchGoals(sortCriteria);
-  }, [sortCriteria, history]);
+  }, [sortCriteria, history]); */
 
   const handleGoalClick = (goalId) => {
     history.push(`/goal/${goalId.trim()}`);
@@ -149,7 +149,7 @@ const GoalsPage = () => {
               <Paper sx={{ p: 2 }} onClick={() => handleGoalClick(goal.goal_id)}>
                 <Typography variant="h6">Goal Name: {goal.goal_name}</Typography>
                 <Typography>Goal Type: {goal.goal_type}</Typography>
-                <Typography>Initial Value: {goal.initial_value}</Typography>
+                <Typography>Current Value: {goal.current_value}</Typography>
                 <Typography>Target Value: {goal.target_value}</Typography>
                 <Typography>Start Date: {goal.start_date}</Typography>
                 <Typography>End Date: {goal.end_date}</Typography>
