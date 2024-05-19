@@ -391,20 +391,18 @@ class LogoutView(APIView):
         request.session.flush()
         return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
 class TrainerTraineesView(APIView):
-    def get(self,request):
+    def get(self, request):
         trainer_id = request.session.get('trainer_id')
         with connection.cursor() as cursor:
-            cursor.execute("SELECT user_id FROM trains WHERE trainer_id = %s", [trainer_id])
-            trainer_trainees = cursor.fetchall()
-        if not trainer_trainees:
-            return Response([], status=status.HTTP_200_OK)
-        trainee_ids = [row[0] for row in trainer_trainees]
-        if trainee_ids:
-            trainee_ids_tuple = tuple(trainee_ids)
-            with connection.cursor() as cursor:
-                query = "SELECT * FROM trainee WHERE user_id IN %s"
-                cursor.execute(query, [trainee_ids_tuple])
-                trainees = cursor.fetchall()
+            cursor.execute("""
+                SELECT trainee.user_id, trainee.user_name, trainee.password, trainee.age, trainee.date_of_birth, 
+                       trainee.gender, trainee.weight, trainee.height, trainee.past_achievements, userf.profile_picture
+                FROM trains
+                INNER JOIN trainee ON trains.user_id = trainee.user_id
+                INNER JOIN userf ON trainee.user_id = userf.user_id
+                WHERE trains.trainer_id = %s
+            """, [trainer_id])
+            trainees = cursor.fetchall()
 
         trainee_list = [
             {
@@ -416,12 +414,14 @@ class TrainerTraineesView(APIView):
                 'gender': trainee[5],
                 'weight': trainee[6],
                 'height': trainee[7],
-                'past_achievements': trainee[8]
+                'past_achievements': trainee[8],
+                'profile_picture': base64.b64encode(trainee[9]).decode('utf-8') if trainee[9] else None
             }
             for trainee in trainees
         ]
 
         return Response(trainee_list, status=status.HTTP_200_OK)
+
 class NewTraineeView(APIView):
     def get(self,request):
         trainer_id = request.session.get('trainer_id')
@@ -479,7 +479,13 @@ class UserTrainersView(APIView):
             return Response({"error": "User ID not found in session"}, status=status.HTTP_400_BAD_REQUEST)
         
         with connection.cursor() as cursor:
-            cursor.execute("SELECT trainer.* FROM trains INNER JOIN trainer ON trains.trainer_id = trainer.trainer_id WHERE trains.user_id = %s", [user_id])
+            cursor.execute("""
+                SELECT trainer.*, userf.profile_picture
+                FROM trains 
+                INNER JOIN trainer ON trains.trainer_id = trainer.trainer_id 
+                INNER JOIN userf ON trainer.user_id = userf.user_id
+                WHERE trains.user_id = %s
+            """, [user_id])
             trainers = cursor.fetchall()
         
         trainer_list = [{
@@ -489,7 +495,8 @@ class UserTrainersView(APIView):
             'password': trainer[3],
             'specialization': trainer[4],
             'telephone_number': trainer[5],
-            'social_media': trainer[6]
+            'social_media': trainer[6],
+            'profile_picture': base64.b64encode(trainer[7]).decode('utf-8') if trainer[7] else None
         } for trainer in trainers]
         
         return Response(trainer_list, status=status.HTTP_200_OK)
