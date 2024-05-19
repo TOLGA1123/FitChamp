@@ -106,19 +106,14 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_ID char(11),
   User_ID char(11),
   Goal_Name varchar(20),
-  Trainer_ID char(11),
   Goal_Type varchar(20),
-  Goal_Value numeric(3,1),
+  initial_value numeric(6,1),
+  target_value numeric(6,1),
   Start_Date varchar(20),
   End_Date varchar(20),
-  Status varchar(40),
-  Routine_Name varchar(20),
-  Nutrition_Plan_Name varchar(40),
-  PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
+  achieved boolean DEFAULT FALSE,
+  PRIMARY KEY (Goal_ID, User_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Routine_Name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
-  FOREIGN KEY (Nutrition_Plan_Name) REFERENCES nutrition_plan (Nutrition_Plan_Name) ON DELETE CASCADE
 );
 
 
