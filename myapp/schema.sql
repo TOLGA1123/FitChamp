@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS userf (
   User_ID char(11) PRIMARY KEY,
   User_name varchar(20) NOT NULL,
   Password varchar(20) NOT NULL,
-  Email varchar(40) NOT NULL
+  Email varchar(40) NOT NULL,
+  Profile_Picture bytea
 );
 
 CREATE TABLE IF NOT EXISTS adminf (

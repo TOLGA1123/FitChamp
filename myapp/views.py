@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-import psycopg2
+import psycopg2, base64
 from django.db import connection, IntegrityError
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -215,6 +215,10 @@ class LoginView(APIView):
             cursor.execute("SELECT * FROM adminf WHERE user_name = %s", [username])
             admin_row = cursor.fetchone()
         if user_row:
+            if user_row[4]:  # Check if profile picture data exists
+                profile_picture_base64 = base64.b64encode(user_row[4]).decode('utf-8')
+            else:
+                profile_picture_base64 = None
             if trainer_row:
                 stored_password = trainer_row[3]  # Assuming password is stored in the third column
                 print(stored_password)
@@ -228,6 +232,7 @@ class LoginView(APIView):
                     request.session['type'] = 2
                     request.session['spe'] = trainer_row[4]
                     request.session['telephone'] = trainer_row[5]
+                    request.session['profile_picture'] = profile_picture_base64
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
@@ -243,6 +248,7 @@ class LoginView(APIView):
                     request.session['user_id'] = admin_row[0]
                     request.session['username'] = admin_row[1]
                     request.session['email'] = admin_row[4]  # Assuming email is in the fourth column
+                    request.session['profile_picture'] = profile_picture_base64
                     request.session['type'] = 3
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
@@ -260,6 +266,7 @@ class LoginView(APIView):
                     request.session['username'] = user_row[1]
                     request.session['email'] = user_row[3]
                     request.session['type'] = 1
+                    request.session['profile_picture'] = profile_picture_base64
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
@@ -281,10 +288,24 @@ class UserProfileView(APIView):
             user_id = request.session.get('user_id')
             username = request.session.get('username')
             email = request.session.get('email')
+            profile_picture = request.session.get('profile_picture')
+            print('profile picture:', profile_picture)
             print('Session data set:', request.session.items())  # Debug statement
 
             if user_id and username and email:
                 try:
+                    with connection.cursor() as cursor:
+                        # Fetch the profile picture from the userf table
+                        cursor.execute("""
+                            SELECT profile_picture FROM userf WHERE user_id = %s
+                        """, [user_id])
+                        user_row = cursor.fetchone()
+
+                    if not user_row:
+                        return Response({"error": "User details not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                    profile_picture_base64 = base64.b64encode(user_row[0]).decode('utf-8') if user_row[0] else None
+
                     print(user_id)
                     with connection.cursor() as cursor:
                         # Fetch the trainee details
@@ -300,6 +321,7 @@ class UserProfileView(APIView):
                             'user_id': user_id,
                             'username': username,
                             'email': email,
+                            'profile_picture': profile_picture_base64,
                             'trainee': trainee,
                         }
                         return Response(user_details, status=status.HTTP_200_OK)
@@ -336,7 +358,8 @@ class UserProfileView(APIView):
                         user_details = {
                             'user_id': user_id,
                             'username': username,
-                            'trainer': trainer
+                            'trainer': trainer,
+                            'profile_picture': profile_picture,
                         }
                         return Response(user_details, status=status.HTTP_200_OK)
                     else:
@@ -1245,13 +1268,21 @@ class ChangeUserDetailsView(APIView):
     def put(self, request, user_id):
         # Get the updated user details from the request data
         updated_details = request.data
-        print(updated_details)
+        profile_picture = request.FILES.get('profile_picture')  # Retrieve the profile picture from request
+
         # Ensure that user_id is provided in the URL or session
         if not user_id:
             return Response({"message": "User ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         with connection.cursor() as cursor:
             try:
+                # Update the profile picture if provided
+                if profile_picture:
+                    # Convert the uploaded file into binary data
+                    binary_data = profile_picture.read()
+                    # Execute the SQL query to update profile picture in userf table
+                    cursor.execute("UPDATE userf SET Profile_Picture = %s WHERE User_ID = %s",
+                                   [binary_data, user_id])
                 # Execute the SQL query to update user details in trainee table
                 cursor.execute("UPDATE trainee SET Age = %s, Date_of_Birth = %s, Gender = %s, Weight = %s, Height = %s, Past_Achievements = %s WHERE User_ID = %s",
                                [updated_details.get('age'), updated_details.get('date_of_birth'), 
