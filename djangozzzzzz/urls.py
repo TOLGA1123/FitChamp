@@ -14,16 +14,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
 
-from myapp import views
+from django.contrib import admin
+from django.urls import path, include
+from myapp.views import *
 
 urlpatterns = [
+    path('', schema_view, name='schema'),
     path('admin/', admin.site.urls),
-    path('', views.schema_view, name='default'),
-    path('login/', views.login, name='login'),
-    path('register/', views.register, name='register'),
-    path('home/', views.home, name='home'),
-    path('user/<str:user_id>/', views.user_info, name='user_info'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('trainer-signup/', TrainerSignupView.as_view(), name= 'trainer-signup'),
+    path('profile/', UserProfileView.as_view(), name='profile'),
+    path('trainer-trainees/', TrainerTraineesView.as_view(), name='trainer-trainees'),
+    path('new-trainer/', NewTrainerView.as_view(),name='new-trainer'),
+    path('trainers/', UserTrainersView.as_view(), name='trainers'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('goals/', GoalsView.as_view(), name='goals'), 
+    path('goal/<str:goal_id>/', GoalDetailView.as_view(), name='goal_detail'), 
+    path('new-goal/', NewGoalView.as_view(),name='new-goal'),
+    path('new-trainee/', NewTraineeView.as_view(), name='new-trainee'),
+    path('sort-goals/', SortGoalsView.as_view(), name='sort-goals'),
+    path('goal/<str:goal_id>/delete/', DeleteGoalView.as_view(), name='goal_delete'),
+    path('workout-plans/', UserWorkouts.as_view(), name = 'workout-plans'),
+    path('create-exercise/', CreateExerciseView.as_view(), name='create-exercise'),
+    path('create-workout-plan/', CreateWorkoutPlanView.as_view(), name='create-workout-plan'),
+    path('exercises/',ExercisesView.as_view(),name='exercises'),
+    path('complete-exercises/', CompleteExercisesView.as_view(), name='complete-exercises'),
 ]
