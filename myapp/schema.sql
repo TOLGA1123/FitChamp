@@ -1,5 +1,3 @@
-
-
 CREATE TABLE IF NOT EXISTS userf (
   User_ID char(11) PRIMARY KEY,
   User_name varchar(20) NOT NULL,
@@ -113,7 +111,7 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   End_Date varchar(20),
   achieved boolean DEFAULT FALSE,
   PRIMARY KEY (Goal_ID, User_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
 

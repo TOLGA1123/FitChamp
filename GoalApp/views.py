@@ -107,7 +107,7 @@ class GoalDetailView(APIView):
 
 
 class NewGoalView(APIView):
-    def post(self,request):
+    def post(self, request):
         print("GoalDetailView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
@@ -115,25 +115,23 @@ class NewGoalView(APIView):
         print('Session data set:', request.session.items()) 
 
         goal_id = generate_unique_id()
-        trainer_id = request.data.get('trainer_id')
         goal_name = request.data.get('name')
         goal_type = request.data.get('type')
-        goal_value = request.data.get('value')
+        initial_value = request.data.get('initial_value')
+        target_value = request.data.get('target_value')
         start_date = request.data.get('startDate')
         end_date = request.data.get('endDate')
-        statusg = request.data.get('status')
-        routine_name = request.data.get('Routine_Name')
+        achieved = request.data.get('achieved', False)
 
-        print(f"Received Data: goal_id={goal_id}, user_id={user_id}, trainer_id={trainer_id}, goal_name={goal_name}, goal_type={goal_type}, goal_value={goal_value}, start_date={start_date}, end_date={end_date}, status={statusg}, Routine_Name = {routine_name}")
+        print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, initial_value={initial_value}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
 
         if user_id and username and email: 
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("""
-                    INSERT INTO fitnessgoal (Goal_ID, User_ID, Trainer_ID, Goal_Name, Goal_Type, Goal_Value, Start_Date, End_Date, Status, Routine_Name)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s ,%s ,%s,%s)
-                """,[goal_id, user_id, trainer_id , goal_name, goal_type, goal_value, start_date, end_date, statusg, routine_name])
-
+                        INSERT INTO fitnessgoal (Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, target_value, Start_Date, End_Date, achieved)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, [goal_id, user_id, goal_name, goal_type, initial_value, target_value, start_date, end_date, achieved])
                     connection.commit()
                 return Response({"message": "New Goal Created"}, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
@@ -142,6 +140,8 @@ class NewGoalView(APIView):
             except Exception as e:
                 connection.rollback()
                 return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
                           
 class SortGoalsView(APIView):
     def get(self, request):
