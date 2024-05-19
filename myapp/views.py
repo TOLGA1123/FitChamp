@@ -322,7 +322,7 @@ class UserProfileView(APIView):
                     with connection.cursor() as cursor:
                         # Fetch the trainee details
                         cursor.execute("""
-                            SELECT  user_name ,specialization, telephone_number, social_media 
+                            SELECT  Trainer_ID, user_name ,specialization, telephone_number, social_media 
                             FROM trainer 
                             WHERE User_ID = %s
                         """, [user_id])
@@ -988,3 +988,22 @@ class ChangeUserDetailsView(APIView):
                 return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "User details updated successfully."}, status=status.HTTP_200_OK)
+class ChangeTrainerDetailsView(APIView):
+    def put(self, request, trainer_id):
+        # Get the updated trainer details from the request data
+        updated_details = request.data
+        print(updated_details)
+        # Ensure that trainer_id is provided in the URL or session
+        if not trainer_id:
+            return Response({"message": "Trainer ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            try:
+                # Execute the SQL query to update trainer details in trainer table
+                cursor.execute("UPDATE trainer SET Specialization = %s, Telephone_Number = %s, Social_Media = %s WHERE Trainer_ID = %s",
+                               [updated_details.get('specialization'), updated_details.get('telephone_number'),  updated_details.get('social_media'), trainer_id])
+            except Exception as e:
+                # Handle any database errors
+                return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "Trainer details updated successfully."}, status=status.HTTP_200_OK)

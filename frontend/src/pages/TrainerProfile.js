@@ -55,7 +55,9 @@ const TrainerProfile = () => {
   }
   
   if (!trainerDetails) return <Typography>Error loading data...</Typography>;
-
+  const handleChangeDetails = () => {
+    history.push('/trainer-change-details');
+  };
   return (
     <Box sx={{ flexGrow: 1 }}>
     <AppBar position="static" >
@@ -120,6 +122,9 @@ const TrainerProfile = () => {
             </ListItem>
             <ListItem>
               <ListItemText primary="Social Media" secondary={trainerDetails.trainer.social_media} />
+            </ListItem>
+            <ListItem>
+              <Button variant="contained" onClick={handleChangeDetails}>Change Trainer Details</Button> {/* Added button to change trainer details */}
             </ListItem>
           </List>
         </Grid>

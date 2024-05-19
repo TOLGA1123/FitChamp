@@ -48,4 +48,5 @@ urlpatterns = [
     path('delete-trainer/<str:trainer_id>/', DeleteTrainerView.as_view(), name='delete_trainer'),
     path('delete-trainee/<str:user_id>/', DeleteTraineeView.as_view(), name='delete_trainee'),
     path('change-user-details/<str:user_id>/', ChangeUserDetailsView.as_view(), name='change_user_details'),
+    path('change-trainer-details/<str:trainer_id>/', ChangeTrainerDetailsView.as_view(), name='change_trainer_details'),
 ]
