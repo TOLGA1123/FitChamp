@@ -764,36 +764,47 @@ def create_group_session(trainer_id, name, location, starting_time, end_time, se
     try:
         with connection.cursor() as cursor:
             # Check if the user is a trainer
+            print("ff1")
+            
             cursor.execute("SELECT * FROM trainer WHERE Trainer_ID = %s", [trainer_id])
             trainer = cursor.fetchone()
             
+            print("ff2")
             if not trainer:
                 return {"error": "User is not a trainer."}
 
+            print("check")
             # Generate a unique Group_Session_ID
             group_session_id = generate_unique_id()
+            print("check2")
 
-            if(len(trainee_ids) > max_participants):
-                return {"error": "Max paticipant limit is reached."}
+            for trainee_id in trainee_ids:
+                print(trainee_id)
 
+            
+            print(trainer_id, group_session_id, name, location, starting_time, end_time, session_type, max_participants)
             # Insert the new group session into the Group_Session table
             cursor.execute("""
-            INSERT INTO Group_Session (Group_Session_ID, Trainer_ID, Session_name, Location, Starting_Time, End_Time, Type, Max_Participants)
+            INSERT INTO Group_Session (Trainer_ID, Group_Session_ID, Session_name, Location, Starting_Time, End_Time, Type, Max_Participants)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, [group_session_id, trainer_id, name, location, starting_time, end_time, session_type, max_participants])
+            """, [trainer_id, group_session_id, name, location, starting_time, end_time, session_type, max_participants])
+
+            
+
+            print("ff3")
 
             # Insert the new group session into the Group_Sessions table
             for trainee_id in trainee_ids:
                 cursor.execute("""
-                    INSERT INTO Group_Sessions (User_ID, Group_Session_ID)
-                    VALUES (%s, %s)
-                """, [trainee_id, group_session_id])
+                    INSERT INTO Group_Sessions (User_ID, Group_Session_ID, trainer_id)
+                    VALUES (%s, %s, %s)
+                """, [trainee_id, group_session_id, trainer_id])
+
+            print("ff4")
 
             # The below table should be deleted it is useless
-            cursor.execute("""
-                INSERT INTO creates_session (Trainer_ID, User_ID)
-                VALUES (%s, %s)
-            """, [trainer_id, trainer_id])
+
+            print("ff5")
 
             connection.commit()
             return {"message": "Group session created successfully."}
@@ -805,7 +816,7 @@ class CreateSessionView(APIView):
 
     #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
     def post(self, request):
-        print("TrainerView - Session Key:", request.session.session_key)
+        print("CreateSessionView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
@@ -815,10 +826,10 @@ class CreateSessionView(APIView):
         trainee_ids = request.data.get('trainee_ids')
         name = request.data.get('name')
         location = request.data.get('location')
-        starting_time = request.data.get('starting_time')
-        end_time = request.data.get('end_time')
-        session_type = request.data.get('session_type')
-        max_participants = request.data.get('max_participants')
+        starting_time = request.data.get('startingTime')
+        end_time = request.data.get('endTime')
+        session_type = request.data.get('type')
+        max_participants = request.data.get('maxParticipants')
         
 
 
@@ -832,37 +843,67 @@ class CreateSessionView(APIView):
         return Response(result, status=status.HTTP_201_CREATED)
     
 
-def display_available_sessions():
+def display_available_sessions(trainer_id):
     try:
         with connection.cursor() as cursor:
            
-            cursor.execute("""
-                SELECT gs.Group_Session_ID, gs.Trainer_ID, gs.Location, gs.Starting_Time, gs.End_Time, gs.Type, gs.Max_Participants, gs.Price
-                FROM Group_Session gs
-                LEFT JOIN (
-                    SELECT Group_Session_ID, COUNT(*) as participant_count
-                    FROM Group_Sessions
-                    GROUP BY Group_Session_ID
-                ) gs_count ON gs.Group_Session_ID = gs_count.Group_Session_ID
-                WHERE gs_count.participant_count < gs.Max_Participants OR gs_count.participant_count IS NULL
-            """)
+            #cursor.execute("""
+            #    SELECT gs.Group_Session_ID, gs.Trainer_ID, gs.Location, gs.Starting_Time, gs.End_Time, gs.Type, gs.Max_Participants, gs.Price
+            #    FROM Group_Session gs
+            #    LEFT JOIN (
+            #        SELECT Group_Session_ID, COUNT(*) as participant_count
+            #        FROM Group_Sessions
+            #        GROUP BY Group_Session_ID
+            #    ) gs_count ON gs.Group_Session_ID = gs_count.Group_Session_ID
+            #    WHERE gs_count.participant_count < gs.Max_Participants OR gs_count.participant_count IS NULL
+            #""")
+
+            cursor.execute("SELECT * FROM group_session WHERE trainer_id = %s", [trainer_id])
             
             available_sessions = cursor.fetchall()
-            
-            if not available_sessions:
-                return {"error": "No available group sessions found."}
-            
-            return {"available_sessions": available_sessions}
+
+            print(available_sessions)
+
+            if available_sessions:
+                session_list = [{"trainer_id": session[0], "group_session_id": session[1], "session_name": session[2], "location": session[3], "starting_time": session[4], "end_time": session[5], "session_type": session[6], "max_participants": str(session[7])} for session in available_sessions]
+
+            print(session_list)
+            return Response(session_list, status=status.HTTP_200_OK)
     except Exception as e:
         return {"error": f"An error occurred: {str(e)}"}
     
 
 class SessionView(APIView):
-
     #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
     def get(self, request):
+        trainer_id = request.session.get('trainer_id')
+        try:
+            with connection.cursor() as cursor:
+           
+                #cursor.execute("""
+                #    SELECT gs.Group_Session_ID, gs.Trainer_ID, gs.Location, gs.Starting_Time, gs.End_Time, gs.Type, gs.Max_Participants, gs.Price
+                #    FROM Group_Session gs
+                #    LEFT JOIN (
+                #        SELECT Group_Session_ID, COUNT(*) as participant_count
+                #        FROM Group_Sessions
+                #        GROUP BY Group_Session_ID
+                #    ) gs_count ON gs.Group_Session_ID = gs_count.Group_Session_ID
+                #    WHERE gs_count.participant_count < gs.Max_Participants OR gs_count.participant_count IS NULL
+                #""")
 
-        result = display_available_sessions()
+                cursor.execute("SELECT * FROM group_session WHERE trainer_id = %s", [trainer_id])
+            
+                available_sessions = cursor.fetchall()
+
+                print(available_sessions)
+
+                if available_sessions:
+                    session_list = [{"trainer_id": session[0], "group_session_id": session[1], "session_name": session[2], "location": session[3], "starting_time": session[4], "end_time": session[5], "session_type": session[6], "max_participants": str(session[7])} for session in available_sessions]
+
+            print(session_list)
+            return Response(session_list, status=status.HTTP_200_OK)
+        except Exception as e:
+            return {"error": f"An error occurred: {str(e)}"}
 
         if "error" in result:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)

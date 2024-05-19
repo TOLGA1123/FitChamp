@@ -126,7 +126,6 @@ CREATE TABLE IF NOT EXISTS workout_plan (
 -- 2.13 Group_Session
 CREATE TABLE IF NOT EXISTS Group_Session (
   Trainer_ID char(11),
-  User_ID char(11),
   Group_Session_ID varchar(11),
   Session_name varchar(11) NOT NULL,
   Location varchar(40) NOT NULL,
@@ -134,16 +133,19 @@ CREATE TABLE IF NOT EXISTS Group_Session (
   End_Time varchar(40) NOT NULL,
   Type varchar(20),
   Max_Participants numeric(3,0) NOT NULL,
-  PRIMARY KEY (Trainer_ID, User_ID,Group_Session_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
+  PRIMARY KEY (Trainer_ID, Group_Session_ID),
+  UNIQUE (Group_Session_ID),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
 );
 
 CREATE TABLE IF NOT EXISTS Group_Sessions (
-  User_ID char(11) PRIMARY KEY,
+  User_ID char(11),
   Group_Session_ID char(11),
   Trainer_ID char(11),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
+  PRIMARY KEY (User_ID, Group_Session_ID, Trainer_ID),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
+  FOREIGN KEY (User_ID) REFERENCES trainee (User_ID),
+  FOREIGN KEY (Group_Session_ID) REFERENCES Group_Session (Group_Session_ID)
 );
 
 -- 2.14 Exercise

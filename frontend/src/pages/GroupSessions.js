@@ -22,7 +22,7 @@ const GroupSessions = () => {
       .catch(error => {
         console.error('Error fetching GroupSessions:', error.response ? error.response.data : 'Server did not respond');
       });
-  }, []);
+  }, [history]);
 
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
@@ -71,7 +71,7 @@ const GroupSessions = () => {
       <Box sx={{ p: 3, mx: 25, borderRadius: 2, textAlign: 'center' }}>
         <Grid container spacing={2} justifyContent="center">
           {groupSessions.map(session => (
-            <Grid item xs={12} sm={6} key={session.id}>
+            <Grid item xs={12} sm={6} key={session.group_session_id}>
               <Paper sx={{ p: 2 }}>
                 <List>
                   <ListItem>
@@ -80,7 +80,7 @@ const GroupSessions = () => {
                         <GroupIcon sx={{ width: 48, height: 48 }} />
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={session.name} secondary={`Group ${session.id}`} />
+                    <ListItemText primary={session.session_name} />
                   </ListItem>
                 </List>
               </Paper>
