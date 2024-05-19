@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Typography, Box, AppBar, Tabs, Tab, Grid, Card, CardContent, Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Typography, Box, AppBar, Tabs, Tab, Grid, Card, CardContent, Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Avatar, Paper} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
 import LogoutButton from './LogoutButton';
@@ -40,7 +40,12 @@ const AdminPage = () => {
       setLoading(false);
     });
   }, []);
-
+  /*useEffect(() => {
+    console.log(trainers); // Check the structure of trainers
+    trainers.forEach(trainer => {
+      console.log(trainer.profile_picture);
+    });
+  }, [trainers]);*/
   useEffect(() => {
     if (location.pathname === '/admin' && location.hash === '#reports') {
       setTabIndex(2);
@@ -104,13 +109,14 @@ const AdminPage = () => {
   const renderTrainers = () => (
     <Grid container spacing={2}>
       {trainers.map(trainer => (
-        <Grid item xs={12} sm={6} md={4} key={trainer.id}>
+        <Grid item xs={12} sm={6} md={4} key={trainer.trainer_id}>
           <Card sx={{ maxWidth: 345, backgroundColor: trainerCardBg }}>
-            <CardContent>
-              <Typography variant="h6"  sx={customFontStyle}>{trainer.user_name}</Typography>
-              <Typography variant="body2"  sx={customFontStyle}>Specialization: {trainer.specialization}</Typography>
-              <Typography variant="body2"  sx={customFontStyle}>Telephone Number: {trainer.telephone_number}</Typography>
-              <Typography variant="body2"  sx={customFontStyle}>Social Media: {trainer.social_media}</Typography>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${trainer.profile_picture}`} sx={{ width: 150, height: 150, mb: 2 }} />
+              <Typography variant="h6" sx={customFontStyle}>{trainer.user_name}</Typography>
+              <Typography variant="body2" sx={customFontStyle}>Specialization: {trainer.specialization}</Typography>
+              <Typography variant="body2" sx={customFontStyle}>Telephone Number: {trainer.telephone_number}</Typography>
+              <Typography variant="body2" sx={customFontStyle}>Social Media: {trainer.social_media}</Typography>
               <Button variant="contained" color="secondary" onClick={() => handleDeleteTrainer(trainer.trainer_id)}>Delete Trainer</Button>
             </CardContent>
           </Card>
@@ -118,13 +124,17 @@ const AdminPage = () => {
       ))}
     </Grid>
   );
+  
+  
+  
 
   const renderTrainees = () => (
     <Grid container spacing={2}>
       {trainees.map(trainee => (
-        <Grid item xs={12} sm={6} md={4} key={trainee.id}>
+        <Grid item xs={12} sm={6} md={4} key={trainee.user_id}>
           <Card sx={{ maxWidth: 345, backgroundColor: traineeCardBg }}>
-            <CardContent>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${trainee.profile_picture}`} sx={{ width: 150, height: 150, mb: 2 }} />
               <Typography variant="h6" sx={{ color: darkAshGrey }}>{trainee.user_name}</Typography>
               <Typography variant="body2" sx={customFontStyle}>User ID: {trainee.user_id}</Typography>
               <Typography variant="body2" sx={customFontStyle}>Age: {trainee.age}</Typography>
@@ -140,6 +150,7 @@ const AdminPage = () => {
       ))}
     </Grid>
   );
+  
 
   const renderReports = () => (
     <Box>

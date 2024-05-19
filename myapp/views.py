@@ -837,9 +837,13 @@ class DeleteGoalView(APIView):
 class AllTrainersView(APIView):
     def get(self, request):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM trainer")
+            cursor.execute("""
+                SELECT trainer.user_id, trainer.trainer_id, trainer.user_name, trainer.password, trainer.specialization, trainer.telephone_number, trainer.social_media, userf.profile_picture
+                FROM trainer
+                INNER JOIN userf ON trainer.user_id = userf.user_id
+            """)
             trainers = cursor.fetchall()
-
+        print(trainers)
         trainer_list = [{
             'user_id': trainer[0],
             'trainer_id': trainer[1],
@@ -847,14 +851,23 @@ class AllTrainersView(APIView):
             'password': trainer[3],
             'specialization': trainer[4],
             'telephone_number': trainer[5],
-            'social_media': trainer[6]
+            'social_media': trainer[6],
+            'profile_picture': base64.b64encode(trainer[7]).decode('utf-8') if trainer[7] else None
         } for trainer in trainers]
 
         return Response(trainer_list, status=status.HTTP_200_OK)
+
+
+
 class AllTraineesView(APIView):
     def get(self, request):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM trainee")
+            cursor.execute("""
+                SELECT trainee.user_id, trainee.user_name, trainee.password, trainee.age, trainee.date_of_birth, trainee.gender, 
+                       trainee.weight, trainee.height, trainee.past_achievements, userf.profile_picture
+                FROM trainee
+                INNER JOIN userf ON trainee.user_id = userf.user_id
+            """)
             trainees = cursor.fetchall()
 
         trainee_list = [{
@@ -867,6 +880,7 @@ class AllTraineesView(APIView):
             'weight': trainee[6],
             'height': trainee[7],
             'past_achievements': trainee[8],
+            'profile_picture': base64.b64encode(trainee[9]).decode('utf-8') if trainee[9] else None
         } for trainee in trainees]
 
         return Response(trainee_list, status=status.HTTP_200_OK)
