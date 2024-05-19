@@ -1,43 +1,41 @@
-import React, { useState } from 'react';
-import { Box, Grid, Paper, Avatar, Typography, Button, AppBar, Tabs, Tab, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Grid, Paper, Avatar, Typography, Button, AppBar, IconButton } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import MessageIcon from '@mui/icons-material/Message';
-import { green } from '@mui/material/colors';
 import axios from 'axios';
-import { useEffect} from 'react';
 import NavTabs from './NavTabs';
 axios.defaults.withCredentials = true;
 
 const NewTrainerPage = () => {
   const history = useHistory();
   const [selectedTrainer, setSelectedTrainer] = useState(null);
-
   const [loading, setLoading] = useState(true);
-  const [Trainers, setTrainers] = useState(null);
+  const [trainers, setTrainers] = useState([]);
+
   useEffect(() => {
-    // Fetch user details from the backend
+    // Fetch trainers from the backend
     axios.get('http://localhost:8000/new-trainer/')
       .then(response => {
         setTrainers(response.data);
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error fetching user details:', error.response ? error.response.data : 'Server did not respond');
+        console.error('Error fetching trainers:', error.response ? error.response.data : 'Server did not respond');
         setLoading(false);
         // Handle unauthorized access, e.g., redirect to login
         if (error.response && error.response.status === 401) {
-          //history.push('/login');
+          // history.push('/login');
         }
       });
   }, [history]);
+
   if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
+    return <div>Loading...</div>; // Display a loading state while fetching trainers
   }
 
-  if (!Trainers) {
-    return <div>Error loading user details</div>; // Display an error message if user details couldn't be fetched
+  if (!trainers) {
+    return <div>Error loading trainers</div>; // Display an error message if trainers couldn't be fetched
   }
 
   const handleSelectTrainer = (trainer) => {
@@ -47,13 +45,13 @@ const NewTrainerPage = () => {
   const handleConfirmTrainer = () => {
     if (selectedTrainer) {
       axios.post('http://localhost:8000/new-trainer/', { trainer_id: selectedTrainer.trainer_id })
-      .then(response => {
-        console.log('Trainer added successfully:', response.data);
-        history.push('/trainers'); // Redirect to trainers page or another relevant page
-      })
-      .catch(error => {
-        console.error('Error adding trainer:', error.response ? error.response.data : 'Server did not respond');
-      });
+        .then(response => {
+          console.log('Trainer added successfully:', response.data);
+          history.push('/trainers'); // Redirect to trainers page or another relevant page
+        })
+        .catch(error => {
+          console.error('Error adding trainer:', error.response ? error.response.data : 'Server did not respond');
+        });
       history.push('/trainers'); // Redirect to trainers page or another relevant page
     }
   };
@@ -73,7 +71,7 @@ const NewTrainerPage = () => {
   return (
     <Box sx={{ flexGrow: 1, position: 'relative', minHeight: '100vh' }}>
       <AppBar position="static" >
-      <NavTabs activeTab="trainers" />
+        <NavTabs activeTab="trainers" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
             <PersonIcon />
@@ -88,13 +86,13 @@ const NewTrainerPage = () => {
       </AppBar>
       <Box sx={{ p: 3 }}>
         <Grid container spacing={2}>
-          {Trainers.map((Trainer) => (
-            <Grid item xs={12} sm={6} md={4} key={Trainer.trainer_id} onClick={() => handleSelectTrainer(Trainer)}>
-              <Paper elevation={3} sx={{ p: 2, textAlign: 'center', cursor: 'pointer', border: selectedTrainer?.id === Trainer.id ? '2px solid blue' : 'none' }}>
-                <Avatar sx={{ width: 56, height: 56, margin: 'auto' }} />
-                <Typography>Username: {Trainer.user_name}</Typography>
-                <Typography>Specialization: {Trainer.specialization}</Typography>
-                <Typography>Social Media: {Trainer.social_media}</Typography>
+          {trainers.map((trainer) => (
+            <Grid item xs={12} sm={6} md={4} key={trainer.trainer_id} onClick={() => handleSelectTrainer(trainer)}>
+              <Paper elevation={3} sx={{ p: 2, textAlign: 'center', cursor: 'pointer', border: selectedTrainer?.id === trainer.id ? '2px solid blue' : 'none' }}>
+              <Avatar src={`data:image/jpeg;base64,${trainer.profile_picture}`} sx={{ width: 56, height: 56, margin: 'auto' }} />
+                <Typography>Username: {trainer.user_name}</Typography>
+                <Typography>Specialization: {trainer.specialization}</Typography>
+                <Typography>Social Media: {trainer.social_media}</Typography>
               </Paper>
             </Grid>
           ))}

@@ -423,30 +423,47 @@ class TrainerTraineesView(APIView):
         return Response(trainee_list, status=status.HTTP_200_OK)
 
 class NewTraineeView(APIView):
-    def get(self,request):
+    def get(self, request):
         trainer_id = request.session.get('trainer_id')
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM trains WHERE trainer_id = %s", [trainer_id])
             associated_trainees = cursor.fetchall()
-        # Extract the trainer_ids from the fetched rows
+
         associated_trainee_ids = [row[0] for row in associated_trainees]
-        print(associated_trainee_ids)
+
         if associated_trainee_ids:
             associated_trainee_ids_tuple = tuple(associated_trainee_ids)
             with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT * FROM trainee WHERE user_id NOT IN %s", 
-                    [associated_trainee_ids_tuple]
-                )
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainee AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id
+                    WHERE t.user_id NOT IN %s
+                """, [associated_trainee_ids_tuple])
                 trainees = cursor.fetchall()
         else:
             with connection.cursor() as cursor:
-                # Fetch all trainees since the user has no associated trainees
-                cursor.execute("SELECT * FROM trainee")
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainee AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id
+                """)
                 trainees = cursor.fetchall()
-        trainees = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'age': trainee[3], 'date_of_birth': trainee[4], 'gender': trainee[5], 'weight': trainee[6], 'height': trainee[7], 'past_achievements': trainee[8]} for trainee in trainees]
-        #print(trainees)
-        return Response(trainees, status=status.HTTP_200_OK)
+
+        trainees_data = [{
+            'user_id': trainee[0],
+            'user_name': trainee[1],
+            'password': trainee[2],
+            'age': trainee[3],
+            'date_of_birth': trainee[4],
+            'gender': trainee[5],
+            'weight': trainee[6],
+            'height': trainee[7],
+            'past_achievements': trainee[8],
+            'profile_picture': base64.b64encode(trainee[9]).decode('utf-8') if trainee[9] else None
+        } for trainee in trainees]
+
+        return Response(trainees_data, status=status.HTTP_200_OK)
      # POST method to add the selected trainee to a trainer in the trains table
     def post(self, request):
         # Retrieve user ID and trainer ID from request data
@@ -502,33 +519,44 @@ class UserTrainersView(APIView):
         return Response(trainer_list, status=status.HTTP_200_OK)
     
 class NewTrainerView(APIView):
-    def get(self,request):
+    def get(self, request):
         user_id = request.session.get('user_id')
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM trains WHERE user_id = %s", [user_id])
             associated_trainers = cursor.fetchall()
-        # Extract the trainer_ids from the fetched rows
         associated_trainer_ids = [row[1] for row in associated_trainers]
-        #print(trainer_ids)
-        # Fetch all trainers matched with the given trainer_ids
+
         if associated_trainer_ids:
             associated_trainer_ids_tuple = tuple(associated_trainer_ids)
             with connection.cursor() as cursor:
-                # Step 2: Fetch the trainers who are not associated with the user
-                cursor.execute(
-                    "SELECT * FROM trainer WHERE trainer_id NOT IN %s", 
-                    [associated_trainer_ids_tuple]
-                )
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainer AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id 
+                    WHERE t.trainer_id NOT IN %s
+                """, [associated_trainer_ids_tuple])
                 trainers = cursor.fetchall()
         else:
             with connection.cursor() as cursor:
-                # Fetch all trainers since the user has no associated trainers
-                cursor.execute("SELECT * FROM trainer")
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainer AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id
+                """)
                 trainers = cursor.fetchall()
-        #trainee_list = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'email': trainee[3]} for trainee in trainees]
-        trainers = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
-        print(trainers)
-        return Response(trainers, status=status.HTTP_200_OK)
+
+        trainers_data = [{
+            'user_id': trainer[0],
+            'trainer_id': trainer[1],
+            'user_name': trainer[2],
+            'password': trainer[3],
+            'specialization': trainer[4],
+            'telephone_number': trainer[5],
+            'social_media': trainer[6],
+            'profile_picture': base64.b64encode(trainer[7]).decode('utf-8') if trainer[7] else None
+        } for trainer in trainers]
+
+        return Response(trainers_data, status=status.HTTP_200_OK)
      # POST method to add the selected trainer to a user in the trains table
     def post(self, request):
         # Retrieve user ID and trainer ID from request data
@@ -553,7 +581,6 @@ class NewTrainerView(APIView):
 
         return Response({"message": "Trainer added to user successfully."}, status=status.HTTP_201_CREATED)
     
-import base64
 
 class TraineeView(APIView):
     def get(self, request, trainee_Id):
