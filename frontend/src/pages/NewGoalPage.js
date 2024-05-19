@@ -33,7 +33,7 @@ const SetGoals = () => {
       start_date: startDate,
     };
 
-    axios.post('http://localhost:8000/set-goals/', payload)
+    axios.post('http://localhost:8000/new-goal/', payload)
       .then(response => {
         console.log('Goals set:', response.data);
       })

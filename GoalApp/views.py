@@ -115,12 +115,12 @@ class NewGoalView(APIView):
         print('Session data set:', request.session.items()) 
 
         goal_id = generate_unique_id()
-        goal_name = request.data.get('name')
-        goal_type = request.data.get('type')
+        goal_name = request.data.get('goal_name')
+        goal_type = request.data.get('goal_type')
         initial_value = request.data.get('initial_value')
         target_value = request.data.get('target_value')
-        start_date = request.data.get('startDate')
-        end_date = request.data.get('endDate')
+        start_date = request.data.get('start_date')
+        end_date = request.data.get('end_date')
         achieved = request.data.get('achieved', False)
 
         print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, initial_value={initial_value}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
