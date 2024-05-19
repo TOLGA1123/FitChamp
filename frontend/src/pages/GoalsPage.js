@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, List, ListItem, ListItemText,AppBar, Tabs, Tab, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Paper, Grid, AppBar, Tabs, Tab, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
 import NavTabs from './NavTabs';
 axios.defaults.withCredentials = true;
@@ -15,7 +12,7 @@ const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const history = useHistory();
-  const [sortCriteria, setSortCriteria] = useState('value');
+  const [sortCriteria, setSortCriteria] = useState('endDate');
 
   useEffect(() => {
     axios.get('http://localhost:8000/goals/')
@@ -60,9 +57,9 @@ const GoalsPage = () => {
   };
 
   const handleCreateNewGoal = () => {
-    // Navigate to the goal creation page
     history.push('/new-goal');
   };
+
   const handleMSGClick = () => {
     history.push('/messages');
   };
@@ -76,20 +73,19 @@ const GoalsPage = () => {
   };
 
   const sortGoals = (goals, criteria) => {
-    switch (criteria) {
+/*    switch (criteria) {
       case 'value':
-        return goals.sort((a, b) => a.value - b.value);
+        return goals.sort((a, b) => a.target_value - b.target_value);
       case 'endDate':
         return goals.sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
       case 'trainerName':
         return goals.sort((a, b) => a.trainer_name.localeCompare(b.trainer_name));
-      default:
+      default:*/
         return goals;
-    }
+    //}
   };
 
   const sortedGoals = sortGoals([...goals], sortCriteria);
-
 
   if (loading) {
     return( 
@@ -147,17 +143,18 @@ const GoalsPage = () => {
         </Select>
       </FormControl>
       <Grid container spacing={2}>
-        {goals.length ? (
-          goals.map((goal) => (
-            <Grid item xs={12} key={goal.id}>
-              <Paper sx={{ p: 2 }} onClick={() => handleGoalClick(goal.id)}>
-                <Typography variant="h6">Goal Name: {goal.name}</Typography>
-                <Typography>Goal Type: {goal.type}</Typography>
-                <Typography>Value: {goal.value}</Typography>
+        {sortedGoals.length ? (
+          sortedGoals.map((goal) => (
+            <Grid item xs={12} key={goal.goal_id}>
+              <Paper sx={{ p: 2 }} onClick={() => handleGoalClick(goal.goal_id)}>
+                <Typography variant="h6">Goal Name: {goal.goal_name}</Typography>
+                <Typography>Goal Type: {goal.goal_type}</Typography>
+                <Typography>Initial Value: {goal.initial_value}</Typography>
+                <Typography>Target Value: {goal.target_value}</Typography>
                 <Typography>Start Date: {goal.start_date}</Typography>
                 <Typography>End Date: {goal.end_date}</Typography>
-                <Typography>Status: {goal.status}</Typography>
-                <Typography>Trainer: {goal.trainer_name}</Typography>
+                <Typography>Status: {goal.achieved ? 'Achieved' : 'Not Achieved'}</Typography>
+                {goal.trainer_name && <Typography>Trainer: {goal.trainer_name}</Typography>}
               </Paper>
             </Grid>
           ))
