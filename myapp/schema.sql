@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS workout_plan (
 CREATE TABLE IF NOT EXISTS Group_Session (
   Group_Session_ID char(11),
   Trainer_ID char(11),
+  User_ID char(11),
   Location varchar(40) NOT NULL,
   Starting_Time varchar(40) NOT NULL,
   End_Time varchar(40) NOT NULL,

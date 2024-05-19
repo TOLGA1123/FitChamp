@@ -16,7 +16,7 @@ const CurrentWorkoutPlans = () => {
   const [workoutDetails, setWorkoutDetails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('');
-  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);  
   const [completedExercises, setCompletedExercises] = useState({});
   const [open, setOpen] = useState(false);
 
@@ -58,7 +58,22 @@ const CurrentWorkoutPlans = () => {
 
   const handleOpen = (workout) => {
     setSelectedWorkout(workout);
-    setCompletedExercises(workout.Exercises.reduce((acc, exercise) => ({ ...acc, [exercise]: false }), {}));
+    axios.get(`http://localhost:8000/completed-exercises/${workout.Routine_Name.trim()}/`)
+    .then(response => {
+      const completed = response.data.reduce((acc, exercise) => {
+        acc[exercise.Exercise_name] = true;
+        return acc;
+      }, {});
+      setCompletedExercises(completed);
+      setLoading(false);
+    })
+    .catch(error => {
+      console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
+      setLoading(false);
+      if (error.response && error.response.status === 401) {
+        history.push('/login');
+      }
+    });
     setOpen(true);
   };
 
@@ -67,7 +82,9 @@ const CurrentWorkoutPlans = () => {
   };
 
   const handleCheckboxChange = (exercise) => {
-    setCompletedExercises(prev => ({ ...prev, [exercise]: !prev[exercise] }));
+    if (!completedExercises[exercise]) {
+      setCompletedExercises(prev => ({ ...prev, [exercise]: !prev[exercise] }));
+    }
   };
 
   const handleSubmitCompletedExercises = () => {
@@ -77,10 +94,8 @@ const CurrentWorkoutPlans = () => {
       routineName: selectedWorkout.Routine_Name,
       trainerId: selectedWorkout.Trainer_ID,
     };
-    console.log(payload);
     axios.post('http://localhost:8000/complete-exercises/', payload)
       .then(response => {
-        console.log('Completed exercises submitted:', response.data);
         handleClose();
       })
       .catch(error => {
@@ -176,9 +191,10 @@ const CurrentWorkoutPlans = () => {
                       key={idx}
                       control={
                         <Checkbox
-                          checked={completedExercises[exercise]}
+                          checked={!!completedExercises[exercise]}
                           onChange={() => handleCheckboxChange(exercise)}
                           name={exercise}
+                          disabled={completedExercises[exercise]}
                         />
                       }
                       label={exercise}

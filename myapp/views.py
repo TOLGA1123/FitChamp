@@ -942,8 +942,39 @@ class CreateGroupSesh(APIView):
             connection.commit()
 
             return {"message": "Group session created successfully."}
+
+class CompletedExercisesView(APIView):
+    def get(self, request, routine_name):
+        print("CompletedExercisesView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
+        print(routine_name)
+
+        if user_id and username and email:
+            try:    
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT Exercise_name
+                        FROM Forms
+                        WHERE User_ID = %s AND Routine_name = %s AND Completed = TRUE
+                    """, [user_id, routine_name])
+                    completed_exercises = cursor.fetchall()
+
+                if completed_exercises:
+                    exercises_list = [{'Exercise_name': exercise[0]} for exercise in completed_exercises]
+                    print('BBB: ', exercises_list)
+                    return Response(exercises_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'No completed exercises found for this routine'}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
         
 class CompleteExercisesView(APIView):
+
 
     def post(self, request):
         user_id = request.session.get('user_id')
