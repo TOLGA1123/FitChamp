@@ -40,7 +40,7 @@ class GoalsView(APIView):
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("""
-                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, target_value, Start_Date, End_Date, achieved
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, ,current_value, target_value, Start_Date, End_Date, achieved
                         FROM fitnessgoal
                         WHERE User_ID = %s
                     """, [user_id])
@@ -54,10 +54,11 @@ class GoalsView(APIView):
                             'goal_name': goal[2],
                             'goal_type': goal[3],
                             'initial_value': goal[4],
-                            'target_value': goal[5],
-                            'start_date': goal[6],
-                            'end_date': goal[7],
-                            'achieved': goal[8]
+                            'current_value': goal[5],
+                            'target_value': goal[6],
+                            'start_date': goal[7],
+                            'end_date': goal[8],
+                            'achieved': goal[9]
                         } 
                         for goal in goals
                     ]
@@ -85,7 +86,7 @@ class GoalDetailView(APIView):
                     print(f"Executing SQL query with User_ID: {user_id.strip()}, Goal_ID: {goal_id}")
 
                     cursor.execute("""
-                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, target_value, Start_Date, End_Date, achieved
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
                         FROM fitnessgoal
                         WHERE User_ID = %s AND Goal_ID = %s
                     """, [user_id, goal_id])
@@ -100,10 +101,11 @@ class GoalDetailView(APIView):
                         'goal_name': goal[2],
                         'goal_type': goal[3],
                         'initial_value': goal[4],
-                        'target_value': goal[5],
-                        'start_date': goal[6],
-                        'end_date': goal[7],
-                        'achieved': goal[8]
+                        'current_value': goal[5],
+                        'target_value': goal[6],
+                        'start_date': goal[7],
+                        'end_date': goal[8],
+                        'achieved': goal[9]
                     }
                     return Response(goal_data, status=status.HTTP_200_OK)
                 else:
@@ -131,16 +133,24 @@ class NewGoalView(APIView):
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         achieved = request.data.get('achieved', False)
+        current_value = initial_value  # Default to initial value
 
         print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, initial_value={initial_value}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
 
         if user_id and username and email: 
             try:
                 with connection.cursor() as cursor:
+                    if goal_type.lower() in ['weight loss', 'muscle gain']:
+                        # Fetch the user's current weight
+                        cursor.execute("SELECT weight FROM userf WHERE User_ID = %s", [user_id])
+                        result = cursor.fetchone()
+                        if result:
+                            current_value = result[0]  # Set current_value to the user's weight
+
                     cursor.execute("""
-                        INSERT INTO fitnessgoal (Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, target_value, Start_Date, End_Date, achieved)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, [goal_id, user_id, goal_name, goal_type, initial_value, target_value, start_date, end_date, achieved])
+                        INSERT INTO fitnessgoal (Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, [goal_id, user_id, goal_name, goal_type, initial_value, current_value, target_value, start_date, end_date, achieved])
                     connection.commit()
                 return Response({"message": "New Goal Created"}, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
