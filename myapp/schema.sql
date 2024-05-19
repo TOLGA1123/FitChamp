@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_Name varchar(20),
   Goal_Type varchar(20),
   initial_value numeric(6,1),
+  current_value numeric(6,1),
   target_value numeric(6,1),
   Start_Date varchar(20),
   End_Date varchar(20),
