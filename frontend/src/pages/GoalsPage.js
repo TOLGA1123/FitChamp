@@ -29,7 +29,7 @@ const GoalsPage = () => {
       });
   }, [history]);
 
-  /*const fetchGoals = (sort_by) => {
+  const fetchGoals = (sort_by) => {
     axios.get('http://localhost:8000/sort-goals/', { params: { sort_by } })
       .then(response => {
         setGoals(response.data);
@@ -46,7 +46,7 @@ const GoalsPage = () => {
 
   useEffect(() => {
     fetchGoals(sortCriteria);
-  }, [sortCriteria, history]); */
+  }, [sortCriteria, history]); 
 
   const handleGoalClick = (goalId) => {
     history.push(`/goal/${goalId.trim()}`);
@@ -73,16 +73,16 @@ const GoalsPage = () => {
   };
 
   const sortGoals = (goals, criteria) => {
-/*    switch (criteria) {
-      case 'value':
-        return goals.sort((a, b) => a.target_value - b.target_value);
+    switch (criteria) {
+      case 'startDate':
+        return goals.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
       case 'endDate':
         return goals.sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
-      case 'trainerName':
-        return goals.sort((a, b) => a.trainer_name.localeCompare(b.trainer_name));
-      default:*/
+      case 'GoalName':
+        return goals.sort((a, b) => a.goal_name.localeCompare(b.goal_name));
+      default:
         return goals;
-    //}
+    }
   };
 
   const sortedGoals = sortGoals([...goals], sortCriteria);
@@ -137,16 +137,16 @@ const GoalsPage = () => {
       <FormControl sx={{ m: 1, minWidth: 120 }}>
         <InputLabel>Sort By</InputLabel>
         <Select value={sortCriteria} onChange={handleSortChange} label="Sort By">
-          <MenuItem value="value">Value</MenuItem>
+          <MenuItem value="startDate">Start Date</MenuItem>
           <MenuItem value="endDate">End Date</MenuItem>
-          <MenuItem value="trainerName">Trainer Name</MenuItem>
+          <MenuItem value="GoalName">Goal Name</MenuItem>
         </Select>
       </FormControl>
       <Grid container spacing={2}>
         {sortedGoals.length ? (
           sortedGoals.map((goal) => (
-            <Grid item xs={12} key={goal.goal_id}>
-              <Paper sx={{ p: 2 }} onClick={() => handleGoalClick(goal.goal_id)}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={goal.goal_id}>
+              <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', margin: '8px' }} onClick={() => handleGoalClick(goal.goal_id)}>
                 <Typography variant="h6">Goal Name: {goal.goal_name}</Typography>
                 <Typography>Goal Type: {goal.goal_type}</Typography>
                 <Typography>Current Value: {goal.current_value}</Typography>
