@@ -1,3 +1,4 @@
+
 """
 URL configuration for djangozzzzzz project.
 
@@ -54,4 +55,9 @@ urlpatterns = [
     path('exercises/',ExercisesView.as_view(),name='exercises'),
     path('complete-exercises/', CompleteExercisesView.as_view(), name='complete-exercises'),
     path('change-trainer-details/<str:trainer_id>/', ChangeTrainerDetailsView.as_view(), name='change_trainer_details'),
+    path('group-sessions/',SessionView.as_view(),name='group-sessions'),
+    path('create-session/',CreateSessionView.as_view(),name='group-sessions'),
+    path('completed-exercises/<str:routine_name>/', CompletedExercisesView.as_view(), name='completed-exercises'),
+    path('delete-workout/', DeleteWorkoutView.as_view(), name='delete-workout'),
+
 ]

@@ -6,6 +6,7 @@ import axios from 'axios';
 import NavTabs from './NavTabs';
 
 const GoalDetailPage = () => {
+
   const { goalId } = useParams();
   const [goalDetails, setGoalDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ const GoalDetailPage = () => {
         setError(error.response ? error.response.data : 'Server did not respond');
         setLoading(false);
       });
+      
   }, [goalId]);
 
   const handleDelete = () => {

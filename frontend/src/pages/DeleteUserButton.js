@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const DeleteUserButton = ({ userId, onDelete }) => {
   const handleDelete = () => {
-    axios.delete(`http://localhost:8000/delete-user/${userId}/`)
+    axios.delete(`http://localhost:8000/delete-user/${userId.trim()}/`)
       .then(response => {
         console.log('User deleted successfully:', response.data);
       })

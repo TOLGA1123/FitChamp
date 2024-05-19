@@ -23,6 +23,7 @@ import TraineeViewPage from './pages/TraineeViewPage'
 import NewTraineePage from './pages/NewTraineePage';
 import TrainerViewPage from './pages/TrainerViewPage';
 import GroupSessions from './pages/GroupSessions';
+import CreateGroupSession from './pages/NewGroupSession';
 import AdminPage from './pages/AdminPage';
 import NewReportPage from './pages/NewReportPage';
 import NewNutritionPlanPage from './pages/NewNutritionPlanPage';
@@ -63,6 +64,7 @@ const App = () => {
           <Route path = "/new-trainee" component={NewTraineePage} />
           <Route path="/group-sessions" component={GroupSessions} />
           <Route path="/admin" component={AdminPage} />
+          <Route path="/create-sessions" component={CreateGroupSession} />
           <Route path="/nutrition" component={CurrentNutritionPlans} />
           <Route path="/trainee/:trainee_Id" component={TraineeViewPage} />
           <Route path = "/trainer/:trainer_Id" component={TrainerViewPage} />

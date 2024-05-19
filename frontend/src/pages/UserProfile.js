@@ -64,7 +64,9 @@ const UserProfile = () => {
       });
   };
   return (
+    
     <Box sx={{ flexGrow: 1 }}>
+
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
       <NavTabs activeTab="" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
@@ -75,7 +77,9 @@ const UserProfile = () => {
         </Typography>
       </Box>
       </AppBar>
-
+      <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+        <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${userDetails.profile_picture}`} sx={{ width: 150, height: 150, mx: 'auto' }} />
+      </Paper>
     <Box sx={{ flexGrow: 1, p: 3 }}>
 
       <Grid container spacing={3}>

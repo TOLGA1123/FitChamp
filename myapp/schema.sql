@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS userf (
   User_ID char(11) PRIMARY KEY,
   User_name varchar(20) NOT NULL,
   Password varchar(20) NOT NULL,
-  Email varchar(40) NOT NULL
+  Email varchar(40) NOT NULL,
+  Profile_Picture bytea
 );
 
 CREATE TABLE IF NOT EXISTS adminf (
@@ -75,6 +76,19 @@ CREATE TABLE IF NOT EXISTS progress (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS workout_plan (
+  Routine_Name varchar(20),
+  Trainer_ID char(11),
+  User_ID char(11),
+  Exercises varchar(20)[],
+  Duration varchar(40),
+  Difficulty_Level varchar(20),
+  PRIMARY KEY (Routine_Name, Trainer_ID, User_ID),
+  UNIQUE (Routine_Name),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_ID char(11),
   User_ID char(11),
@@ -116,29 +130,19 @@ CREATE TABLE IF NOT EXISTS achievement (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS workout_plan (
-  Routine_Name varchar(20),
-  Trainer_ID char(11),
-  User_ID char(11),
-  Exercises varchar(20)[],
-  Duration varchar(40),
-  Difficulty_Level varchar(20),
-  PRIMARY KEY (Routine_Name, Trainer_ID, User_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
 -- 2.13 Group_Session
 CREATE TABLE IF NOT EXISTS Group_Session (
   Group_Session_ID char(11),
   Trainer_ID char(11),
+  Group_Session_ID varchar(11),
+  Session_name varchar(11) NOT NULL,
   Location varchar(40) NOT NULL,
   Starting_Time varchar(40) NOT NULL,
   End_Time varchar(40) NOT NULL,
   Type varchar(20),
   Max_Participants numeric(3,0) NOT NULL,
-  Price varchar(20) NOT NULL,
-  PRIMARY KEY (Group_Session_ID),
+  PRIMARY KEY (Trainer_ID, Group_Session_ID),
+  UNIQUE (Group_Session_ID),
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
 );
 
@@ -146,8 +150,9 @@ CREATE TABLE IF NOT EXISTS Group_Sessions (
   User_ID char(11),
   Group_Session_ID char(11),
   Trainer_ID char(11),
-  PRIMARY KEY (User_ID, Group_Session_ID),
+  PRIMARY KEY (User_ID, Group_Session_ID, Trainer_ID),
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES trainee (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Group_Session_ID) REFERENCES Group_Session (Group_Session_ID) ON DELETE CASCADE
 );
 
@@ -410,7 +415,7 @@ BEGIN
         DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
         DELETE FROM achievement WHERE User_ID = OLD.User_ID;
         DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
-        DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
+        DELETE FROM Group_sessions WHERE User_ID = OLD.User_ID;
         DELETE FROM chat WHERE User_ID = OLD.User_ID;
         DELETE FROM message WHERE User_ID = OLD.User_ID;
         DELETE FROM follows WHERE User_ID = OLD.User_ID;
@@ -481,7 +486,6 @@ BEGIN
     DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
     DELETE FROM achievement WHERE User_ID = OLD.User_ID;
     DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
-    DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
     DELETE FROM chat WHERE User_ID = OLD.User_ID;
     DELETE FROM message WHERE User_ID = OLD.User_ID;
     DELETE FROM follows WHERE User_ID = OLD.User_ID;
