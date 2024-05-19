@@ -258,6 +258,10 @@ class LoginView(APIView):
                     # Invalid password
                     return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
             else:
+                if user_row[4]:  # Check if profile picture data exists
+                    profile_picture_base64 = base64.b64encode(user_row[4]).decode('utf-8')
+                else:
+                    profile_picture_base64 = None
                 stored_password = user_row[2]  # Assuming password is stored in the third column
                 if password == stored_password:
                     # User authenticated
@@ -339,13 +343,25 @@ class UserProfileView(APIView):
             email = request.session.get('email')
             specialization = request.session.get('spe')
             telephone = request.session.get('telephone')
+            profile_picture = request.session.get('profile_picture')
             print('Session data set:', request.session.items())  # Debug statement
 
             if user_id and username and email:
                 try:
                     print(user_id)
                     with connection.cursor() as cursor:
-                        # Fetch the trainee details
+                        # Fetch the profile picture from the userf table
+                        cursor.execute("""
+                            SELECT profile_picture FROM userf WHERE user_id = %s
+                        """, [user_id])
+                        user_row = cursor.fetchone()
+
+                    if not user_row:
+                        return Response({"error": "User details not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                    profile_picture_base64 = base64.b64encode(user_row[0]).decode('utf-8') if user_row[0] else None
+                    with connection.cursor() as cursor:
+                        # Fetch the trainer details
                         cursor.execute("""
                             SELECT  Trainer_ID, user_name ,specialization, telephone_number, social_media 
                             FROM trainer 
@@ -359,7 +375,7 @@ class UserProfileView(APIView):
                             'user_id': user_id,
                             'username': username,
                             'trainer': trainer,
-                            'profile_picture': profile_picture,
+                            'profile_picture': profile_picture_base64,
                         }
                         return Response(user_details, status=status.HTTP_200_OK)
                     else:
@@ -1555,13 +1571,21 @@ class ChangeTrainerDetailsView(APIView):
     def put(self, request, trainer_id):
         # Get the updated trainer details from the request data
         updated_details = request.data
-        print(updated_details)
+        profile_picture = request.FILES.get('profile_picture')  # Retrieve the profile picture from request
+        user_id = request.session.get('user_id')
         # Ensure that trainer_id is provided in the URL or session
         if not trainer_id:
             return Response({"message": "Trainer ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         with connection.cursor() as cursor:
             try:
+                # Update the profile picture if provided
+                if profile_picture:
+                    # Convert the uploaded file into binary data
+                    binary_data = profile_picture.read()
+                    # Execute the SQL query to update profile picture in userf table
+                    cursor.execute("UPDATE userf SET Profile_Picture = %s WHERE User_ID = %s",
+                                   [binary_data, user_id])
                 # Execute the SQL query to update trainer details in trainer table
                 cursor.execute("UPDATE trainer SET Specialization = %s, Telephone_Number = %s, Social_Media = %s WHERE Trainer_ID = %s",
                                [updated_details.get('specialization'), updated_details.get('telephone_number'),  updated_details.get('social_media'), trainer_id])
@@ -1570,7 +1594,6 @@ class ChangeTrainerDetailsView(APIView):
                 return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "Trainer details updated successfully."}, status=status.HTTP_200_OK)
-
 class DeleteWorkoutView(APIView):
     
     def post(self, request):
