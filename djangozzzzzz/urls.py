@@ -36,4 +36,9 @@ urlpatterns = [
     path('new-trainee/', NewTraineeView.as_view(), name='new-trainee'),
     path('sort-goals/', SortGoalsView.as_view(), name='sort-goals'),
     path('goal/<str:goal_id>/delete/', DeleteGoalView.as_view(), name='goal_delete'),
+    path('workout-plans/', UserWorkouts.as_view(), name = 'workout-plans'),
+    path('create-exercise/', CreateExerciseView.as_view(), name='create-exercise'),
+    path('create-workout-plan/', CreateWorkoutPlanView.as_view(), name='create-workout-plan'),
+    path('exercises/',ExercisesView.as_view(),name='exercises'),
+    path('complete-exercises/', CompleteExercisesView.as_view(), name='complete-exercises'),
 ]

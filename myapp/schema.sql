@@ -77,11 +77,11 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_ID char(11),
   User_ID char(11),
   Goal_Name varchar(20),
+  Trainer_ID char(11),
   Goal_Type varchar(20),
   Goal_Value numeric(3,1),
   Start_Date varchar(20),
   End_Date varchar(20),
-  Trainer_ID char(11),
   Status varchar(40),
   PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID),
@@ -114,19 +114,19 @@ CREATE TABLE IF NOT EXISTS workout_plan (
   Routine_Name varchar(20),
   Trainer_ID char(11),
   User_ID char(11),
-  Description varchar(400),
+  Exercises varchar(20)[],
   Duration varchar(40),
   Difficulty_Level varchar(20),
   PRIMARY KEY (Routine_Name, Trainer_ID, User_ID),
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
 );
-
+  
 
 -- 2.13 Group_Session
 CREATE TABLE IF NOT EXISTS Group_Session (
+  Group_Session_ID char(11),
   Trainer_ID char(11),
-  User_ID char(11),
   Location varchar(40) NOT NULL,
   Starting_Time varchar(40) NOT NULL,
   End_Time varchar(40) NOT NULL,
@@ -138,43 +138,53 @@ CREATE TABLE IF NOT EXISTS Group_Session (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
 );
 
+CREATE TABLE IF NOT EXISTS Group_Sessions (
+  User_ID char(11) PRIMARY KEY,
+  Group_Session_ID char(11),
+  Trainer_ID char(11),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
+);
+
 -- 2.14 Exercise
 CREATE TABLE IF NOT EXISTS Exercise (
-  Exercise_name varchar(20) PRIMARY KEY,
+  User_ID char(11),
+  Exercise_name varchar(20) UNIQUE,
   Description varchar(200) NOT NULL,
   Muscle_Group_Targeted varchar(40) NOT NULL,
   Equipment varchar(40) NOT NULL,
-  Difficulty_Level varchar(20)
+  Difficulty_Level varchar(20),
+  PRIMARY KEY (Exercise_name, User_ID)
 );
 
 -- 2.15 Cardio
 CREATE TABLE IF NOT EXISTS Cardio (
-  Exercise_name varchar(20) PRIMARY KEY,
+  User_ID char(11),
+  Exercise_name varchar(20),
   Intensity_Level varchar(20) NOT NULL,
   Cardio_Duration varchar(40) NOT NULL,
-  FOREIGN KEY (Exercise_name) REFERENCES Exercise (Exercise_name)
+  PRIMARY KEY (User_ID, Exercise_name),
+  FOREIGN KEY (User_ID, Exercise_name) REFERENCES Exercise (User_ID, Exercise_name)
 );
 
--- 2.16 HyperTrophy
 CREATE TABLE IF NOT EXISTS HyperTrophy (
+  User_ID char(11),
   Exercise_name varchar(20) PRIMARY KEY,
   Number_of_Sets varchar(40) NOT NULL,
   Rest_Durations varchar(40) NOT NULL,
-  FOREIGN KEY (Exercise_name) REFERENCES Exercise (Exercise_name)
+  FOREIGN KEY (Exercise_name, User_ID) REFERENCES Exercise (Exercise_name, User_ID)
 );
 
--- 2.17 Forms
 CREATE TABLE IF NOT EXISTS Forms (
   Exercise_name varchar(20),
   Routine_name varchar(20),
   Trainer_ID char(11),
   User_ID char(11),
+  Completed boolean DEFAULT FALSE,
   PRIMARY KEY (Exercise_name, Routine_name, Trainer_ID, User_ID),
   FOREIGN KEY (Routine_name, Trainer_ID, User_ID) REFERENCES workout_plan (Routine_Name, Trainer_ID, User_ID),
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID)
 );
-
 
 -- 2.18 Has
 CREATE TABLE IF NOT EXISTS Has (
@@ -358,6 +368,3 @@ CREATE TABLE IF NOT EXISTS overview (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID),
   FOREIGN KEY (Report_ID) REFERENCES report (Report_ID)
 );
-
-
-
