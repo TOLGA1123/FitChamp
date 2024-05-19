@@ -48,4 +48,9 @@ urlpatterns = [
     path('delete-trainer/<str:trainer_id>/', DeleteTrainerView.as_view(), name='delete_trainer'),
     path('delete-trainee/<str:user_id>/', DeleteTraineeView.as_view(), name='delete_trainee'),
     path('change-user-details/<str:user_id>/', ChangeUserDetailsView.as_view(), name='change_user_details'),
+    path('workout-plans/', UserWorkouts.as_view(), name = 'workout-plans'),
+    path('create-exercise/', CreateExerciseView.as_view(), name='create-exercise'),
+    path('create-workout-plan/', CreateWorkoutPlanView.as_view(), name='create-workout-plan'),
+    path('exercises/',ExercisesView.as_view(),name='exercises'),
+    path('complete-exercises/', CompleteExercisesView.as_view(), name='complete-exercises'),
 ]

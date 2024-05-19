@@ -1,34 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab, Box, Typography, IconButton, Paper } from '@mui/material';
+import { AppBar, Tabs, Tab, Box, Typography, IconButton, Paper, Modal, Fade, Backdrop, Button, Checkbox, FormControlLabel } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
-import LogoutButton from './LogoutButton';
+import CloseIcon from '@mui/icons-material/Close';
+import { green } from '@mui/material/colors';
+import axios from 'axios';
 import NavTabs from './NavTabs';
-// Define a class for workout plans
-class WorkoutPlan {
-  constructor(id, title, description) {
-    this.id = id;
-    this.title = title;
-    this.description = description;
-  }
-}
 
-// Create an array of workout plans
-const workoutPlans = [
-  new WorkoutPlan(1, 'Workout 1', 'Description of Workout 1'),
-  new WorkoutPlan(2, 'Workout 2', 'Description of Workout 2'),
-  new WorkoutPlan(3, 'Workout 3', 'Description of Workout 3')
-];
+axios.defaults.withCredentials = true;
 
 const CurrentWorkoutPlans = () => {
   const history = useHistory();
+  const [workoutDetails, setWorkoutDetails] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('');
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [completedExercises, setCompletedExercises] = useState({});
+  const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    axios.get('http://localhost:8000/workout-plans/')
+      .then(response => {
+        setWorkoutDetails(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      });
+  }, [history]);
+
+  const handleRouteChange = (event, newValue) => {
+    setSelectedTab(newValue);
+    history.push(`/${newValue}`);
+  };
 
   const handleProfileClick = () => {
     history.push('/profile');
@@ -41,9 +52,46 @@ const CurrentWorkoutPlans = () => {
   const handleGroupSession = () => {
     history.push('/group-session');
   };
+
   const handleMSGClick = () => {
     history.push('/messages');
   };
+
+  const handleOpen = (workout) => {
+    setSelectedWorkout(workout);
+    setCompletedExercises(workout.Exercises.reduce((acc, exercise) => ({ ...acc, [exercise]: false }), {}));
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleCheckboxChange = (exercise) => {
+    setCompletedExercises(prev => ({ ...prev, [exercise]: !prev[exercise] }));
+  };
+
+  const handleSubmitCompletedExercises = () => {
+    const completed = Object.keys(completedExercises).filter(exercise => completedExercises[exercise]);
+    const payload = {
+      completedExercises: completed,
+      routineName: selectedWorkout.Routine_Name,
+      trainerId: selectedWorkout.Trainer_ID,
+    };
+    console.log(payload);
+    axios.post('http://localhost:8000/complete-exercises/', payload)
+      .then(response => {
+        console.log('Completed exercises submitted:', response.data);
+        handleClose();
+      })
+      .catch(error => {
+        console.error('Error submitting completed exercises:', error.response ? error.response.data : 'Server did not respond');
+      });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -61,18 +109,78 @@ const CurrentWorkoutPlans = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
-          <LogoutButton />
         </Box>
-
       </AppBar>
 
-      {/* Map workout plans to display */}
-      {workoutPlans.map((plan) => (
-        <Paper key={plan.id} elevation={3} sx={{ margin: 2, padding: 2 }}>
-          <Typography variant="h6">{plan.title}</Typography>
-          <Typography>{plan.description}</Typography>
-        </Paper>
-      ))}
+      <Box sx={{ padding: 2 }}>
+        {workoutDetails.length > 0 ? (
+          workoutDetails.map((plan, index) => (
+            <Paper key={index} elevation={3} sx={{ margin: 2, padding: 2, cursor: 'pointer' }} onClick={() => handleOpen(plan)}>
+              <Typography variant="h6">{plan.Routine_Name}</Typography>
+            </Paper>
+          ))
+        ) : (
+          <div>No workout plans available</div>
+        )}
+      </Box>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={open}>
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}>
+            <IconButton
+              sx={{ position: 'absolute', top: 8, right: 8 }}
+              onClick={handleClose}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" component="h2">
+              {selectedWorkout ? selectedWorkout.Routine_Name : ''}
+            </Typography>
+            {selectedWorkout && (
+              <Box>
+                <Typography variant="body1"><strong>Trainer:</strong> {selectedWorkout.Trainer_Name}</Typography>
+                <Typography variant="body1"><strong>Duration:</strong> {selectedWorkout.Duration}</Typography>
+                <Typography variant="body1"><strong>Difficulty Level:</strong> {selectedWorkout.Difficulty_Level}</Typography>
+                <Typography variant="body1"><strong>Exercises:</strong></Typography>
+                <Box>
+                  {selectedWorkout.Exercises.map((exercise, idx) => (
+                    <FormControlLabel
+                      key={idx}
+                      control={
+                        <Checkbox
+                          checked={completedExercises[exercise]}
+                          onChange={() => handleCheckboxChange(exercise)}
+                          name={exercise}
+                        />
+                      }
+                      label={exercise}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+            <Button onClick={handleSubmitCompletedExercises} sx={{ mt: 2 }}>Submit</Button>
+          </Box>
+        </Fade>
+      </Modal>
     </Box>
   );
 };

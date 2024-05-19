@@ -1,52 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Typography, Button, Grid, Paper, IconButton, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, RadioGroup, FormControlLabel, Radio, Slider } from '@mui/material';
+import axios from 'axios';
+import { 
+  Box, TextField, Typography, Button, Grid, Paper, IconButton, Autocomplete, 
+  Dialog, DialogTitle, DialogContent, DialogActions, RadioGroup, FormControlLabel, 
+  Radio, Slider, AppBar, Tabs, Tab 
+} from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import LogoutButton from './LogoutButton';
+import { green } from '@mui/material/colors';
+import { useHistory } from 'react-router-dom';
 import NavTabs from './NavTabs';
-const darkMintGreen = '#2E8B57'; // Define your dark mint green color
-const darkAshGrey = '#4B4B4B'; // Define your dark ash grey color
-const lila = '#cc99ff';
-const mavi = '#009999';
 
 const NewWorkoutPlan = () => {
-  const history = useHistory();
   const [workoutPlan, setWorkoutPlan] = useState({
-    routineName: '',
-    duration: '',
-    description: [],
-    trainee: null,
-    trainer: null,
-    difficulty: 0
+    Routine_Name: '',
+    Duration: '',
+    trainer_id: '',
+    user_id:  '',
+    Difficulty_Level: 0,
+    exerc: [],
   });
 
-  const [exercises, setExercises] = useState([
-    { name: 'Bah', type: 'Cardio', description: 'Bah', muscleGroup: 'Legs', equipment: 'None', difficulty: 1 },
-    { name: 'Rah', type: 'Cardio', description: 'Rah', muscleGroup: 'Arms', equipment: 'Dumbbells', difficulty: 2 }
-  ]);
-  
-  const [trainees, setTrainees] = useState([
-    { name: 'John Doe' },
-    { name: 'Jane Smith' }
-  ]);
-  
-  const [trainers, setTrainers] = useState([
-    { name: 'Mike Johnson' },
-    { name: 'Sarah Connor' }
-  ]);
-
+  const history = useHistory();
+  const [exercises, setExercises] = useState([]);
+  const [trainers, setTrainers] = useState([]);
+  const [trainees, setTrainees] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState('');
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+
   const [newExercise, setNewExercise] = useState({
-    name: '',
-    type: 'Cardio',
-    description: '',
-    muscleGroup: '',
-    equipment: '',
-    difficulty: 1
+    Exercise_name: '',
+    type: '',
+    Description: '',
+    Muscle_Group_Targeted: '',
+    Equipment: '',
+    Difficulty_Level: 1,
   });
+
+  const [selectedTab, setSelectedTab] = useState('workout-plans');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/trainers/')
+      .then(response => {
+        setTrainers(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching trainers:', error.response ? error.response.data : 'Server did not respond');
+      });
+  }, []);
+  
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/exercises/')
+      .then(response => {
+        setExercises(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching exercises:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/workout-plans');
+        }
+      });
+  }, [history]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -57,6 +80,7 @@ const NewWorkoutPlan = () => {
   };
 
   const handleRouteChange = (event, newValue) => {
+    setSelectedTab(newValue);
     history.push(`/${newValue}`);
   };
 
@@ -64,24 +88,32 @@ const NewWorkoutPlan = () => {
     history.push('/profile');
   };
 
-  const addDescription = () => {
+  const addExercise = () => {
     if (selectedExercise) {
-      const newDescription = [...workoutPlan.description, selectedExercise];
-      const newDifficulty = newDescription.reduce((acc, exercise) => acc + exercise.difficulty, 0) / newDescription.length;
+      const newExerc = [...workoutPlan.exerc, selectedExercise];
+      const newDifficulty = newExerc.reduce((acc, exercise) => acc + exercise.Difficulty_Level, 0) / newExerc.length;
 
       setWorkoutPlan((prevPlan) => ({
         ...prevPlan,
-        description: newDescription,
-        difficulty: newDifficulty
+        exerc: newExerc,
+        Difficulty_Level: newDifficulty
       }));
-      setSelectedExercise(null); // Clear the selected exercise
+      setSelectedExercise(null);
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Submitting New Workout Plan:', workoutPlan);
-    // Implement submit logic, possibly making a POST request to your backend
-    history.push('/workout-plans'); // Redirect to the workout plans overview
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    axios.post('http://localhost:8000/create-workout-plan/', workoutPlan)
+      .then(response => {
+        console.log('Workout Plan Submitted:', response.data);
+        if (response.status === 201) {
+          history.push('/workout-plans');
+        }
+      })
+      .catch(error => {
+        console.error('New Workout Plan error:', error.response ? error.response.data : 'Server did not respond');
+      });
   };
 
   const handleDialogOpen = () => {
@@ -103,15 +135,24 @@ const NewWorkoutPlan = () => {
   const handleSliderChange = (event, newValue) => {
     setNewExercise((prevExercise) => ({
       ...prevExercise,
-      difficulty: newValue
+      Difficulty_Level: newValue
     }));
   };
 
-  const createNewExercise = () => {
-    console.log('Creating New Exercise:', newExercise);
-    // Implement the exercise creation logic, possibly making a POST request to your backend
-    setExercises((prevExercises) => [...prevExercises, newExercise]);
-    handleDialogClose();
+  const createNewExercise = (e) => {
+    e.preventDefault();
+
+    axios.post('http://localhost:8000/create-exercise/', newExercise)
+      .then(response => {
+        console.log('Exercise Creation:', response);
+        if (response.status === 200) {
+          setExercises((prevExercises) => [...prevExercises, newExercise]);
+          handleDialogClose(); // Close dialog after successful creation
+        }
+      })
+      .catch(error => {
+        console.error('Error creating exercise:', error);
+      });
   };
 
   return (
@@ -119,44 +160,36 @@ const NewWorkoutPlan = () => {
       <AppBar position="static">
       <NavTabs activeTab="workout-plans" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
-            <PersonIcon />
-          </IconButton>
-
+          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}><PersonIcon /></IconButton>
           <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-            Create a Workout Plan
+            Create Workout Plan
           </Typography>
         </Box>
       </AppBar>
-      <Box sx={{ p: 3, mx: 25, backgroundColor: mavi, borderRadius: 2 }}> {/* Added background color and border radius to the Box */}
+      <Box sx={{ p: 3 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
               fullWidth
               label="Routine Name"
-              name="routineName"
-              value={workoutPlan.routineName}
+              name="Routine_Name"
+              value={workoutPlan.Routine_Name}
               onChange={handleChange}
-              sx={{ backgroundColor: 'white', borderRadius: 1 }} // To make sure the text fields stand out
             />
             <TextField
               fullWidth
               label="Duration"
-              name="duration"
-              value={workoutPlan.duration}
+              name="Duration"
+              value={workoutPlan.Duration}
               onChange={handleChange}
-              sx={{ mt: 2, backgroundColor: 'white', borderRadius: 1 }} // To make sure the text fields stand out
+              sx={{ mt: 2 }}
             />
             <Box sx={{ mt: 2 }}>
-              <Typography variant="h6" color="white">Description:</Typography> {/* Changed color to white */}
-              {workoutPlan.description.map((desc, index) => (
-                <Paper key={index} sx={{ p: 1, my: 1 }}>
-                  {desc.name}
-                </Paper>
-              ))}
+              <Typography variant="h6">Description:</Typography>
+              
               <Autocomplete
                 options={exercises}
-                getOptionLabel={(option) => option.name}
+                getOptionLabel={(option) => option.Exercise_name}
                 value={selectedExercise}
                 onChange={(event, newValue) => {
                   setSelectedExercise(newValue);
@@ -164,36 +197,39 @@ const NewWorkoutPlan = () => {
                 renderInput={(params) => <TextField {...params} label="Add Exercise" />}
                 sx={{ mt: 2 }}
               />
-              <IconButton onClick={addDescription} color="primary">
+              <IconButton onClick={addExercise} color="primary">
                 <AddCircleOutlineIcon />
               </IconButton>
             </Box>
             <Autocomplete
               options={trainees}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={(option) => option}
+              value={workoutPlan.trainee}
               onChange={(event, newValue) => {
                 setWorkoutPlan((prevPlan) => ({
                   ...prevPlan,
-                  trainee: newValue ? newValue.name : null
+                  trainee: newValue ? newValue : null
                 }));
               }}
               renderInput={(params) => <TextField {...params} label="Select Trainee" />}
               sx={{ mt: 2 }}
+              disabled={!trainees.length}
             />
-            <Autocomplete
+             <Autocomplete
               options={trainers}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={(option) => option.user_name}
               onChange={(event, newValue) => {
+                console.log('Selected Trainer:', newValue);
                 setWorkoutPlan((prevPlan) => ({
                   ...prevPlan,
-                  trainer: newValue ? newValue.name : null
+                  trainer_id: newValue ? newValue.trainer_id : null
                 }));
               }}
               renderInput={(params) => <TextField {...params} label="Select Trainer" />}
               sx={{ mt: 2 }}
             />
-            <Typography variant="h6" color="white" sx={{ mt: 2 }}>
-              Difficulty: {workoutPlan.difficulty.toFixed(2)}
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Difficulty: {workoutPlan.Difficulty_Level.toFixed(2)}
             </Typography>
             <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
               Submit
@@ -210,8 +246,8 @@ const NewWorkoutPlan = () => {
           <TextField
             fullWidth
             label="Name"
-            name="name"
-            value={newExercise.name}
+            name="Exercise_name"
+            value={newExercise.Exercise_name}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
@@ -228,30 +264,30 @@ const NewWorkoutPlan = () => {
           <TextField
             fullWidth
             label="Description"
-            name="description"
-            value={newExercise.description}
+            name="Description"
+            value={newExercise.Description}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
             label="Muscle Group"
-            name="muscleGroup"
-            value={newExercise.muscleGroup}
+            name="Muscle_Group_Targeted"
+            value={newExercise.Muscle_Group_Targeted}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
             label="Equipment"
-            name="equipment"
-            value={newExercise.equipment}
+            name="Equipment"
+            value={newExercise.Equipment}
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
           <Typography gutterBottom>Difficulty</Typography>
           <Slider
-            value={newExercise.difficulty}
+            value={newExercise.Difficulty_Level}
             onChange={handleSliderChange}
             step={1}
             marks
@@ -270,24 +306,6 @@ const NewWorkoutPlan = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <style>
-        {`
-          body {
-            margin: 0;
-            padding: 0;
-            background: repeating-linear-gradient(
-              45deg,
-              ${lila},
-              ${lila} 40px,
-              ${darkAshGrey} 40px,
-              ${darkAshGrey} 50px
-            );
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-          }
-        `}
-      </style>
     </Box>
   );
 };
