@@ -126,14 +126,26 @@ CREATE TABLE IF NOT EXISTS workout_plan (
 CREATE TABLE IF NOT EXISTS Group_Session (
   Group_Session_ID char(11),
   Trainer_ID char(11),
+  Group_Session_ID varchar(11),
+  Session_name varchar(11) NOT NULL,
   Location varchar(40) NOT NULL,
   Starting_Time varchar(40) NOT NULL,
   End_Time varchar(40) NOT NULL,
   Type varchar(20),
   Max_Participants numeric(3,0) NOT NULL,
-  Price varchar(20) NOT NULL,
-  PRIMARY KEY (Group_Session_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+  PRIMARY KEY (Trainer_ID, Group_Session_ID),
+  UNIQUE (Group_Session_ID),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Group_Sessions (
+  User_ID char(11),
+  Group_Session_ID char(11),
+  Trainer_ID char(11),
+  PRIMARY KEY (User_ID, Group_Session_ID, Trainer_ID),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
+  FOREIGN KEY (User_ID) REFERENCES trainee (User_ID),
+  FOREIGN KEY (Group_Session_ID) REFERENCES Group_Session (Group_Session_ID)
 );
 
 CREATE TABLE IF NOT EXISTS Group_Sessions (
