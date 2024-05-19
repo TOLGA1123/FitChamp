@@ -90,8 +90,8 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
-  FOREIGN KEY (Routine_Name) REFERENCES workout_plan (Routine_Name)
-  FOREIGN KEY (Nutrition_Plan_Name) REFERENCES nutrition_plan (Nutrition_Plan_Name)
+  FOREIGN KEY (Routine_Name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE
+  FOREIGN KEY (Nutrition_Plan_Name) REFERENCES nutrition_plan (Nutrition_Plan_Name) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS nutrition_plan (
