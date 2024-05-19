@@ -71,25 +71,23 @@ class GoalsView(APIView):
 
     
 class GoalDetailView(APIView):
-    def get(self,request,goal_id):
+    def get(self, request, goal_id):
         goal_id = str(goal_id).strip()
         print("GoalDetailView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
-        print('Session data set:', request.session.items()) 
+        print('Session data set:', request.session.items())
 
         if user_id and username and email:
-            try:    
+            try:
                 with connection.cursor() as cursor:
-                    
-                    print(f"Executing SQL query with User_ID: {user_id.strip()}, Goal_ID: {goal_id}, wdawedawef")
+                    print(f"Executing SQL query with User_ID: {user_id.strip()}, Goal_ID: {goal_id}")
 
                     cursor.execute("""
-                        SELECT fg.*, t.user_name AS trainer_name
-                        FROM fitnessgoal fg
-                        LEFT JOIN trainer t ON fg.Trainer_ID = t.Trainer_ID
-                        WHERE fg.User_ID = %s AND fg.Goal_ID = %s
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, target_value, Start_Date, End_Date, achieved
+                        FROM fitnessgoal
+                        WHERE User_ID = %s AND Goal_ID = %s
                     """, [user_id, goal_id])
                     goal = cursor.fetchone()
 
@@ -97,25 +95,24 @@ class GoalDetailView(APIView):
 
                 if goal:
                     goal_data = {
-                        'id': goal[0],
+                        'goal_id': goal[0],
                         'user_id': goal[1],
-                        'trainer_id': goal[2],
-                        'name': goal[3],
-                        'type': goal[4],
-                        'value': goal[5],
+                        'goal_name': goal[2],
+                        'goal_type': goal[3],
+                        'initial_value': goal[4],
+                        'target_value': goal[5],
                         'start_date': goal[6],
                         'end_date': goal[7],
-                        'status': goal[8],
-                        'trainer_name': goal[9]
+                        'achieved': goal[8]
                     }
                     return Response(goal_data, status=status.HTTP_200_OK)
                 else:
                     print(f"Goal with ID {goal_id} does not exist.")
-                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+                    return Response({'error': 'Goal does not exist'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)   
 
 
 class NewGoalView(APIView):
