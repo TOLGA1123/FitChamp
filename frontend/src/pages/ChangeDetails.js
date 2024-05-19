@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Grid, Paper, Typography, Button, TextField, Avatar } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
-
+import LogoutButton from './LogoutButton';
 const ChangeDetails = () => {
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -90,6 +90,9 @@ const ChangeDetails = () => {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{ position: 'absolute', top: 0, right: 0, p: 2 }}>
+        <LogoutButton />
+    </Box>
             <Box sx={{ flexGrow: 1, p: 3 }}>
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={4}>

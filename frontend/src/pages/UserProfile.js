@@ -74,6 +74,9 @@ const UserProfile = () => {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{ position: 'absolute', top: 40, right: 0, p: 2 }}>
+        <LogoutButton />
+    </Box>
             <AppBar position="static" sx={{ backgroundColor: green[500] }}>
                 <NavTabs activeTab="" />
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>

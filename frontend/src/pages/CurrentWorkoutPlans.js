@@ -9,7 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
-
+import LogoutButton from './LogoutButton';
 axios.defaults.withCredentials = true;
 
 const CurrentWorkoutPlans = () => {
@@ -166,6 +166,9 @@ const CurrentWorkoutPlans = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ position: 'absolute', top: 100, right: 0, p: 2 }}>
+        <LogoutButton />
+    </Box>
       <AppBar position="static" sx={{ backgroundColor: green[500] }}>
         <Tabs 
           value={selectedTab}
