@@ -128,12 +128,12 @@ class NewGoalView(APIView):
         goal_id = generate_unique_id()
         goal_name = request.data.get('goal_name')
         goal_type = request.data.get('goal_type')
-        initial_value = request.data.get('initial_value')
+
         target_value = request.data.get('target_value')
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         achieved = request.data.get('achieved', False)
-        current_value = initial_value  # Default to initial value
+        current_value = 0
 
         print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, initial_value={initial_value}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
 
@@ -146,6 +146,7 @@ class NewGoalView(APIView):
                         result = cursor.fetchone()
                         if result:
                             current_value = result[0]  # Set current_value to the user's weight
+                            initial_value = current_value
 
                     cursor.execute("""
                         INSERT INTO fitnessgoal (Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved)
