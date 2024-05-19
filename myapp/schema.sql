@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS Group_Session (
   Max_Participants numeric(3,0) NOT NULL,
   PRIMARY KEY (Trainer_ID, Group_Session_ID),
   UNIQUE (Group_Session_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID)
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Group_Sessions (
@@ -143,17 +143,8 @@ CREATE TABLE IF NOT EXISTS Group_Sessions (
   Group_Session_ID char(11),
   Trainer_ID char(11),
   PRIMARY KEY (User_ID, Group_Session_ID, Trainer_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID),
-  FOREIGN KEY (User_ID) REFERENCES trainee (User_ID),
-  FOREIGN KEY (Group_Session_ID) REFERENCES Group_Session (Group_Session_ID)
-);
-
-CREATE TABLE IF NOT EXISTS Group_Sessions (
-  User_ID char(11),
-  Group_Session_ID char(11),
-  Trainer_ID char(11),
-  PRIMARY KEY (User_ID, Group_Session_ID),
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES trainee (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Group_Session_ID) REFERENCES Group_Session (Group_Session_ID) ON DELETE CASCADE
 );
 
@@ -394,7 +385,7 @@ BEGIN
         DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
         DELETE FROM achievement WHERE User_ID = OLD.User_ID;
         DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
-        DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
+        DELETE FROM Group_sessions WHERE User_ID = OLD.User_ID;
         DELETE FROM chat WHERE User_ID = OLD.User_ID;
         DELETE FROM message WHERE User_ID = OLD.User_ID;
         DELETE FROM follows WHERE User_ID = OLD.User_ID;
@@ -465,7 +456,6 @@ BEGIN
     DELETE FROM nutrition_plan WHERE User_ID = OLD.User_ID;
     DELETE FROM achievement WHERE User_ID = OLD.User_ID;
     DELETE FROM workout_plan WHERE User_ID = OLD.User_ID;
-    DELETE FROM Group_Session WHERE User_ID = OLD.User_ID;
     DELETE FROM chat WHERE User_ID = OLD.User_ID;
     DELETE FROM message WHERE User_ID = OLD.User_ID;
     DELETE FROM follows WHERE User_ID = OLD.User_ID;
