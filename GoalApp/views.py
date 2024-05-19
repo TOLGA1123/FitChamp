@@ -135,7 +135,7 @@ class NewGoalView(APIView):
         achieved = request.data.get('achieved', False)
         current_value = 0
 
-        print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, initial_value={initial_value}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
+        print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
 
         if user_id and username and email: 
             try:

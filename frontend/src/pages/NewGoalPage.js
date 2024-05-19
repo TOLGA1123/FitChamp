@@ -14,7 +14,6 @@ const SetGoals = () => {
   const [goals, setGoals] = useState({
     goal_name: '',
     goal_type: 'Weight Loss',
-    initial_value: '',
     target_value: '',
     end_date: ''
   });
@@ -96,14 +95,6 @@ const SetGoals = () => {
               <FormControlLabel value="Endurance Improvement" control={<Radio />} label="Endurance Improvement" />
             </RadioGroup>
           </FormControl>
-          <TextField
-            label="Initial Value"
-            name="initial_value"
-            value={goals.initial_value}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
           <TextField
             label="Target Value"
             name="target_value"
