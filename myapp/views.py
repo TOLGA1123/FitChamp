@@ -553,6 +553,8 @@ class NewTrainerView(APIView):
 
         return Response({"message": "Trainer added to user successfully."}, status=status.HTTP_201_CREATED)
     
+import base64
+
 class TraineeView(APIView):
     def get(self, request, trainee_Id):
         print("TraineeView - Session Key:", request.session.session_key)
@@ -565,29 +567,39 @@ class TraineeView(APIView):
             try:
                 print(user_id)
                 with connection.cursor() as cursor:
-                    # Fetch the trainee details
+                    # Fetch the trainee details with profile picture using an inner join
                     cursor.execute("""
-                        SELECT  * 
-                        FROM trainee 
-                        WHERE User_ID = %s
+                        SELECT t.*, u.profile_picture
+                        FROM trainee t
+                        INNER JOIN userf u ON t.User_ID = u.User_ID
+                        WHERE t.User_ID = %s
                     """, [str(trainee_Id)])
                     trainee = dictfetchone(cursor)
-                print(trainee)
-                if trainee:
-                    user_details = {
-                        'user_id': user_id,
-                        'username': username,
-                        'email': email,
-                        'trainee': trainee,
-                    }
-                    return Response(user_details, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    if trainee:
+                        # Encode profile picture as base64 string
+                        profile_picture_data = trainee.pop('profile_picture')  # Remove from dictionary
+                        profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
+                        trainee['profile_picture'] = profile_picture_encoded
+                        
+                        user_details = {
+                            'user_id': user_id,
+                            'username': username,
+                            'email': email,
+                            'trainee': trainee,
+                        }
+                        return Response(user_details, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
         
+import base64
+
 class TrainerView(APIView):
     def get(self, request, trainer_Id):
         print("TrainerView - Session Key:", request.session.session_key)
@@ -600,28 +612,35 @@ class TrainerView(APIView):
             try:
                 print(user_id)
                 with connection.cursor() as cursor:
-                    # Fetch the trainee details
+                    # Fetch the trainer details with profile picture using an inner join
                     cursor.execute("""
-                        SELECT  * 
-                        FROM trainer 
-                        WHERE trainer_ID = %s
+                        SELECT t.*, u.profile_picture
+                        FROM trainer t
+                        INNER JOIN userf u ON t.User_ID = u.User_ID
+                        WHERE t.trainer_ID = %s
                     """, [str(trainer_Id)])
                     trainer = dictfetchone(cursor)
-                print(trainer)
-                if trainer:
-                    user_details = {
-                        'user_id': user_id,
-                        'username': username,
-                        'email': email,
-                        'trainer': trainer,
-                    }
-                    return Response(user_details, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    if trainer:
+                        # Encode profile picture as base64 string
+                        profile_picture_data = trainer.pop('profile_picture')  # Remove from dictionary
+                        profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
+                        trainer['profile_picture'] = profile_picture_encoded
+                        
+                        user_details = {
+                            'user_id': user_id,
+                            'username': username,
+                            'email': email,
+                            'trainer': trainer,
+                        }
+                        return Response(user_details, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"error": "Trainer details not found."}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
 
             
 class NutritionPlanView(APIView):

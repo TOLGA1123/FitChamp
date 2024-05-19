@@ -63,11 +63,10 @@ const TrainerProfile = () => {
         <LogoutButton />
       </Box>
     </AppBar>
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={4}>
-          <Avatar sx={{ width: 120, height: 120, margin: 'auto' }} />
+     <Box sx={{ flexGrow: 1, p: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <Avatar alt={trainerDetails.trainer.user_name} src={`data:image/jpeg;base64,${trainerDetails.trainer.profile_picture}`} sx={{ width: 120, height: 120, margin: 'auto' }} />
           <List>
             <ListItem>
               <ListItemText primary="Username" secondary={trainerDetails.trainer.user_name} />
