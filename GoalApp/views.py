@@ -29,33 +29,45 @@ def generate_unique_id():
 
 
 class GoalsView(APIView):
-    def get(self,request):
+    def get(self, request):
         print("GoalsView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
-        print('Session data set:', request.session.items()) 
+        print('Session data set:', request.session.items())
 
         if user_id and username and email:
-            try:    
+            try:
                 with connection.cursor() as cursor:
                     cursor.execute("""
-                        SELECT fg.*, t.user_name AS trainer_name
-                        FROM fitnessgoal fg
-                        LEFT JOIN trainer t ON fg.Trainer_ID = t.Trainer_ID
-                        WHERE fg.User_ID = %s
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, target_value, Start_Date, End_Date, achieved
+                        FROM fitnessgoal
+                        WHERE User_ID = %s
                     """, [user_id])
                     goals = cursor.fetchall()
-   
+
                 if goals:
-                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8],'trainer_name': goal[9]} for goal in goals]
+                    goals_list = [
+                        {
+                            'goal_id': goal[0],
+                            'user_id': goal[1],
+                            'goal_name': goal[2],
+                            'goal_type': goal[3],
+                            'initial_value': goal[4],
+                            'target_value': goal[5],
+                            'start_date': goal[6],
+                            'end_date': goal[7],
+                            'achieved': goal[8]
+                        } 
+                        for goal in goals
+                    ]
                     return Response(goals_list, status=status.HTTP_200_OK)
                 else:
-                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+                    return Response({'error': 'No goals found for the user'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
     
 class GoalDetailView(APIView):
