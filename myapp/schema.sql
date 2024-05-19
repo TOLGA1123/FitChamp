@@ -73,6 +73,19 @@ CREATE TABLE IF NOT EXISTS progress (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS workout_plan (
+  Routine_Name varchar(20),
+  Trainer_ID char(11),
+  User_ID char(11),
+  Exercises varchar(20)[],
+  Duration varchar(40),
+  Difficulty_Level varchar(20),
+  PRIMARY KEY (Routine_Name, Trainer_ID, User_ID),
+  UNIQUE (Routine_Name),
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS fitnessgoal (
   Goal_ID char(11),
   User_ID char(11),
@@ -83,9 +96,11 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   Start_Date varchar(20),
   End_Date varchar(20),
   Status varchar(40),
+  Routine_Name varchar(20),
   PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
+  FOREIGN KEY (Routine_Name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS nutrition_plan (
@@ -107,18 +122,6 @@ CREATE TABLE IF NOT EXISTS achievement (
   Achievement_Date varchar(40),
   Achievement_Details varchar(400),
   PRIMARY KEY (Achievement_ID, User_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS workout_plan (
-  Routine_Name varchar(20),
-  Trainer_ID char(11),
-  User_ID char(11),
-  Exercises varchar(20)[],
-  Duration varchar(40),
-  Difficulty_Level varchar(20),
-  PRIMARY KEY (Routine_Name, Trainer_ID, User_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
