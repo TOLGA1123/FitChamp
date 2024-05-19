@@ -44,7 +44,7 @@ const NewNutritionPlanPage = () => {
       .then(response => {
         console.log('Nutrition Plan Submitted:', response.data);
         if (response.status === 201) {
-          history.push('/nutrition');
+          history.push('/trainer-trainees/');
         }
       })
       .catch(error => {

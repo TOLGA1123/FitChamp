@@ -1249,6 +1249,7 @@ class CompleteExercisesView(APIView):
 
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class ChangeTrainerDetailsView(APIView):
     def put(self, request, trainer_id):
         # Get the updated trainer details from the request data
