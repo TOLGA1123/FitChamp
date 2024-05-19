@@ -133,7 +133,8 @@ class RegisterView(APIView):
         weight = request.data.get('weight')
         height = request.data.get('height')
         past_achievements = request.data.get('past_achievements')
-
+        if not user_name or not email or not password or not date_of_birth or not gender or not weight or not height or not past_achievements:
+            return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
         # Convert date_of_birth from string to datetime
         try:
             date_of_birth_dt = datetime.strptime(date_of_birth, '%Y-%m-%d')
@@ -172,7 +173,9 @@ class TrainerSignupView(APIView):
         specialization = request.data.get('specialization')
         phone_number = request.data.get('phone')
         social_media = request.data.get('socialMedia')
-
+         # Check for null or empty fields
+        if not user_name or not email or not password or not specialization or not phone_number or not social_media:
+            return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             with connection.cursor() as cursor:
                 # Insert into userf table
