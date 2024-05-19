@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab, Box, Typography, TextField, Button, Paper, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
+import { AppBar, Tabs, Tab, Box, Typography,IconButton, TextField, Button, Paper, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import { green } from '@mui/material/colors';
+import PersonIcon from '@mui/icons-material/Person';
+import MessageIcon from '@mui/icons-material/Message';
 import axios from 'axios';
 import moment from 'moment';
+import NavTabs from './NavTabs';
 
 const SetGoals = () => {
   const history = useHistory();
@@ -25,6 +28,13 @@ const SetGoals = () => {
     const { name, value } = e.target;
     setGoals({ ...goals, [name]: value });
   };
+  const handleMSGClick = () => {
+    history.push('/messages');
+  };
+
+  const handleProfileClick = () => {
+    history.push('/profile');
+  };
 
   const handleSubmit = () => {
     const startDate = moment().format('YYYY-MM-DD');
@@ -45,14 +55,23 @@ const SetGoals = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs value={selectedTab} onChange={handleRouteChange} variant="fullWidth">
-          <Tab label="Set Goals" value="set-goals" />
-          <Tab label="Track Progress" value="track-progress" />
-          <Tab label="Progress Reports" value="progress-reports" />
-          <Tab label="Adjust Plan" value="adjust-plan" />
-        </Tabs>
-      </AppBar>
+      <Box sx={{ flexGrow:1 }}>
+      <AppBar position="static">
+        <NavTabs activeTab="goals" />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
+            <PersonIcon />
+          </IconButton>
+          <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+            Create New Goal
+          </Typography>
+
+          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
+            <MessageIcon />
+          </IconButton>
+        </Box>
+        </AppBar>
+    </Box>
       <Box sx={{ padding: 2 }}>
         <Paper elevation={3} sx={{ padding: 2 }}>
           <Typography variant="h6">Set Your Fitness Goals</Typography>
