@@ -1,3 +1,5 @@
+
+
 CREATE TABLE IF NOT EXISTS userf (
   User_ID char(11) PRIMARY KEY,
   User_name varchar(20) NOT NULL,
@@ -98,18 +100,20 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   End_Date varchar(20),
   Status varchar(40),
   Routine_Name varchar(20),
+  Nutrition_Plan_Name varchar(40),
   PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Routine_Name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE
+  FOREIGN KEY (Routine_Name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
+  FOREIGN KEY (Nutrition_Plan_Name) REFERENCES nutrition_plan (Nutrition_Plan_Name) ON DELETE CASCADE,
 );
 
 CREATE TABLE IF NOT EXISTS nutrition_plan (
   Nutrition_Plan_Name varchar(40),
   User_ID char(11),
   Trainer_ID char(11),
-  Description varchar(400),
-  Total_Calories numeric(4,0) NOT NULL,
+  Meals varchar(20)[],
+  Total_Calories numeric(8,0) NOT NULL,
   Meal_Schedule varchar(200) NOT NULL,
   PRIMARY KEY (Nutrition_Plan_Name, User_ID, Trainer_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
@@ -190,6 +194,28 @@ CREATE TABLE IF NOT EXISTS Forms (
   Completed boolean DEFAULT FALSE,
   PRIMARY KEY (Exercise_name, Routine_name, Trainer_ID, User_ID),
   FOREIGN KEY (Routine_name, Trainer_ID, User_ID) REFERENCES workout_plan (Routine_Name, Trainer_ID, User_ID) ON DELETE CASCADE,
+  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Meal (
+User_ID char(11),
+Meal_name varchar(20) UNIQUE,
+Calories numeric(5,1) NOT NULL,
+Description varchar(200) NOT NULL,
+PRIMARY KEY (Meal_name, User_ID),
+FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS Diet (
+  Meal_name varchar(20),
+  Nutrition_Plan_Name varchar(40),
+  Trainer_ID char(11),
+  User_ID char(11),
+  Eaten boolean DEFAULT FALSE,
+  PRIMARY KEY (Meal_name, Nutrition_Plan_Name, Trainer_ID, User_ID),
+  FOREIGN KEY (Nutrition_Plan_Name, Trainer_ID, User_ID) REFERENCES nutrition_plan (Nutrition_Plan_Name, Trainer_ID, User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
