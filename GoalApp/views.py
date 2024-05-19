@@ -170,34 +170,39 @@ class SortGoalsView(APIView):
         username = request.session.get('username')
         email = request.session.get('email')
         sort_criteria = request.query_params.get('sort_by', 'value')
-        print('Session data set:', request.session.items()) 
+        print('Session data set:', request.session.items())
 
         if user_id and username and email:
             try:
                 with connection.cursor() as cursor:
-                    if sort_criteria == 'value':
+                    if sort_criteria == 'endDate':
                         cursor.execute("""
-                            SELECT fg.*, t.user_name AS trainer_name
-                            FROM fitnessgoal fg
-                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
-                            WHERE fg.user_id = %s
-                            ORDER BY fg.goal_value
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                            FROM fitnessgoal
+                            WHERE User_ID = %s
+                            ORDER BY End_Date
                         """, [user_id])
-                    elif sort_criteria == 'endDate':
+                    elif sort_criteria == 'startDate':
                         cursor.execute("""
-                            SELECT fg.*, t.user_name AS trainer_name
-                            FROM fitnessgoal fg
-                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
-                            WHERE fg.user_id = %s
-                            ORDER BY fg.end_date
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                            FROM fitnessgoal
+                            WHERE User_ID = %s
+                            ORDER BY Start_Date
                         """, [user_id])
-                    elif sort_criteria == 'trainerName':
+                    elif sort_criteria == 'GoalName':
                         cursor.execute("""
-                            SELECT fg.*, t.user_name AS trainer_name
-                            FROM fitnessgoal fg
-                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
-                            WHERE fg.user_id = %s
-                            ORDER BY t.user_name
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                            FROM fitnessgoal
+                            WHERE User_ID = %s
+                            ORDER BY Goal_Name
+                        """, [user_id])
+                    elif sort_criteria == 'progress':
+                        cursor.execute("""
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved,
+                                   ABS(current_value - initial_value) / NULLIF(ABS(target_value - initial_value), 0) AS progress
+                            FROM fitnessgoal
+                            WHERE User_ID = %s
+                            ORDER BY progress
                         """, [user_id])
                     else:
                         return Response({"error": "Invalid sort criteria"}, status=status.HTTP_400_BAD_REQUEST)
@@ -205,10 +210,25 @@ class SortGoalsView(APIView):
                     goals = cursor.fetchall()
 
                 if goals:
-                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8], 'trainer_name': goal[9]} for goal in goals]
+                    goals_list = [
+                        {
+                            'goal_id': goal[0],
+                            'user_id': goal[1],
+                            'goal_name': goal[2],
+                            'goal_type': goal[3],
+                            'initial_value': goal[4],
+                            'current_value': goal[5],
+                            'target_value': goal[6],
+                            'start_date': goal[7],
+                            'end_date': goal[8],
+                            'achieved': goal[9],
+                            'progress': goal[10] if len(goal) > 10 else None  # Include progress if available
+                        }
+                        for goal in goals
+                    ]
                     return Response(goals_list, status=status.HTTP_200_OK)
                 else:
-                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
+                    return Response({'error': 'No goals found for the user'}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
