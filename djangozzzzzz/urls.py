@@ -19,6 +19,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from myapp.views import *
+from GoalApp.views import *
 
 urlpatterns = [
     path('', schema_view, name='schema'),
