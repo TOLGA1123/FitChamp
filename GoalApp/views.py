@@ -309,3 +309,101 @@ class AutoUpdateGoalsView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class SearchGoalView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        search_string = request.query_params.get('q', '').strip()
+        print(search_string)
+
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not search_string:
+            return Response({"error": "No search string provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
+                    FROM fitnessgoal
+                    WHERE User_ID = %s AND Goal_Name LIKE %s
+                """, [user_id, f"%{search_string}%"])
+                goals = cursor.fetchall()
+
+            if goals:
+                goals_list = [
+                    {
+                        'goal_id': goal[0],
+                        'user_id': goal[1],
+                        'goal_name': goal[2],
+                        'goal_type': goal[3],
+                        'initial_value': goal[4],
+                        'current_value': goal[5],
+                        'target_value': goal[6],
+                        'start_date': goal[7],
+                        'end_date': goal[8],
+                        'achieved': goal[9],
+                        'progress': goal[10]
+                    }
+                    for goal in goals
+                ]
+                return Response(goals_list, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'No goals found matching the search criteria.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class FilterGoalsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        filter_type = request.query_params.get('type', '').strip()
+        end_date = request.query_params.get('startDate', '').strip()
+        print(filter_type)
+        print(end_date)
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not filter_type and not end_date:
+            return Response({"error": "No filter type or end date provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                    SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
+                    FROM fitnessgoal
+                    WHERE User_ID = %s
+                """
+                params = [user_id]
+
+                if filter_type:
+                    query += " AND Goal_Type = %s"
+                    params.append(filter_type)
+                if end_date:
+                    query += " AND End_Date <= %s"
+                    params.append(end_date)
+
+                cursor.execute(query, params)
+                goals = cursor.fetchall()
+
+            if goals:
+                goals_list = [
+                    {
+                        'goal_id': goal[0],
+                        'user_id': goal[1],
+                        'goal_name': goal[2],
+                        'goal_type': goal[3],
+                        'initial_value': goal[4],
+                        'current_value': goal[5],
+                        'target_value': goal[6],
+                        'start_date': goal[7],
+                        'end_date': goal[8],
+                        'achieved': goal[9],
+                        'progress': goal[10]
+                    }
+                for goal in goals]
+                return Response(goals_list, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'No goals found matching the specified criteria.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

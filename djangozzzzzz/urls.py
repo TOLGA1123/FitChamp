@@ -63,4 +63,6 @@ urlpatterns = [
     path('auto-update-goals/', AutoUpdateGoalsView.as_view(), name='auto-update-goals'),
     path('all-workouts/', AllWorkouts.as_view(), name='all-workouts'),
     path('select-workout/<str:routine_name>/', SelectWorkout.as_view(), name='select-workout'),
+    path('search-goals/', SearchGoalView.as_view(), name='search-goals'),
+    path('filter-goals/', FilterGoalsView.as_view(), name='filter-goals'),
 ]

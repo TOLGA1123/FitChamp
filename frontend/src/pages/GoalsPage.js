@@ -76,18 +76,22 @@ const GoalsPage = () => {
   };
 
   const handleSearch = () => {
-    axios.get('http://localhost:8000/search-goals/', { params: { query: searchQuery } })
-      .then(response => {
-        setGoals(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error searching goals:', error.response ? error.response.data : 'Server did not respond');
-        setLoading(false);
-        if (error.response && error.response.status === 401) {
-          history.push('/login');
-        }
-      });
+    if (searchQuery.trim() === '') {
+      fetchGoals(); // Call the function to fetch all goals
+    } else {
+      axios.get('http://localhost:8000/search-goals/', { params: { q: searchQuery } })
+        .then(response => {
+          setGoals(response.data);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('Error searching goals:', error.response ? error.response.data : 'Server did not respond');
+          setLoading(false);
+          if (error.response && error.response.status === 401) {
+            history.push('/login');
+          }
+        });
+      }
   };
 
   const handleFilter = () => {
