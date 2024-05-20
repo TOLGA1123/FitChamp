@@ -30,11 +30,10 @@ def generate_unique_id():
 
 class GoalsView(APIView):
     def get(self, request):
-        print("GoalsView - Session Key:", request.session.session_key)
+        print("GoalsView - Session Key:")
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
-        print('Session data set:', request.session.items())
 
         if user_id and username and email:
             try:
@@ -121,7 +120,7 @@ class GoalDetailView(APIView):
 
 class NewGoalView(APIView):
     def post(self, request):
-        print("NewGoalView - Session Key:", request.session.session_key)
+        print("NewGoalView - Session Key:")
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
@@ -183,12 +182,11 @@ class NewGoalView(APIView):
                           
 class SortGoalsView(APIView):
     def get(self, request):
-        print("SortGoalsView - Session Key:", request.session.session_key)
+        print("SortGoalsView - Session Key:")
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
         sort_criteria = request.query_params.get('sort_by', 'value')
-        print('Session data set:', request.session.items())
 
         if user_id and username and email:
             try:
@@ -372,7 +370,6 @@ class FilterGoalsView(APIView):
 class AutoUpdateGoalsView(APIView):
     def get(self, request):
         user_id = request.session.get('user_id')
-        print("AutoUpdateGoalsView - Session Key:", request.session.session_key)
         if not user_id:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
