@@ -807,7 +807,7 @@ def create_group_session(trainer_id, name, location, starting_time, end_time, se
         connection.rollback()
         return {"error": f"An error occurred: {str(e)}"}
 
-class CreateSessionView(APIView):
+class CreateGroupSessionView(APIView):
 
     #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
     def post(self, request):
@@ -838,7 +838,7 @@ class CreateSessionView(APIView):
         return Response(result, status=status.HTTP_201_CREATED)
     
 
-def display_available_sessions(trainer_id):
+def display_available_Group_sessions(trainer_id):
     try:
         with connection.cursor() as cursor:
            
@@ -868,7 +868,7 @@ def display_available_sessions(trainer_id):
         return {"error": f"An error occurred: {str(e)}"}
     
 
-class SessionView(APIView):
+class GroupSessionView(APIView):
     #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
     def get(self, request):
         trainer_id = request.session.get('trainer_id')
@@ -905,7 +905,7 @@ class SessionView(APIView):
         return Response(result, status=status.HTTP_201_CREATED)
     
 
-def join_session(user_id, group_session_id):
+def join_Groupsession(user_id, group_session_id):
     try:
         with connection.cursor() as cursor:
           
@@ -948,7 +948,7 @@ def join_session(user_id, group_session_id):
         connection.rollback()
         return {"error": f"An error occurred: {str(e)}"}
     
-class JoinSessionView(APIView):
+class JoinGroupSessionView(APIView):
 
     #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
     def post(self, request):
@@ -966,11 +966,53 @@ class JoinSessionView(APIView):
         if not trainer or not trainee_ids:
             return Response({"error": "trainer_id and trainee are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        result = join_session(user_id, group_session_id)
+        result = join_Groupsession(user_id, group_session_id)
 
         if "error" in result:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_201_CREATED)
+
+class GroupSessionsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+        print(user_id)
+        try:
+            with connection.cursor() as cursor:
+                # Fetch joined group sessions
+                cursor.execute("""
+                    SELECT *
+                    FROM Group_Session gs
+                    INNER JOIN Group_Sessions g ON gs.Group_Session_ID = g.Group_Session_ID
+                    WHERE g.User_ID = %s
+                """, [user_id])
+                joined_sessions = dictfetchall(cursor)
+                print(user_id)
+
+                # Fetch available group sessions
+                cursor.execute("""
+SELECT gs.Group_Session_ID, gs.Session_Name, gs.Location, gs.Starting_Time, gs.End_Time, gs.Type, gs.Max_Participants,
+       COUNT(g.User_ID) as participants
+FROM Group_Session gs
+LEFT JOIN Group_Sessions g ON gs.Group_Session_ID = g.Group_Session_ID
+GROUP BY gs.Group_Session_ID, gs.Session_Name, gs.Location, gs.Starting_Time, gs.End_Time, gs.Type, gs.Max_Participants
+HAVING COUNT(g.User_ID) < gs.Max_Participants
+AND gs.Group_Session_ID NOT IN (
+    SELECT Group_Session_ID FROM Group_Sessions WHERE User_ID = %s
+)
+
+                """, [user_id])
+                print(user_id)
+                available_sessions = dictfetchall(cursor)
+
+            return Response({
+                "joined_sessions": joined_sessions,
+                "available_sessions": available_sessions,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 
 def display_workouts(user_id):

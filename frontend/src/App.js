@@ -26,6 +26,7 @@ import CreateGroupSession from './pages/NewGroupSession';
 import AdminPage from './pages/AdminPage';
 import NewReportPage from './pages/NewReportPage';
 import ChangeDetails from './pages/ChangeDetails';
+import TraineeGroupSessions from './pages/TraineeGroupSessions';
 import TrainerChangeDetails from './pages/TrainerChangeDetails';
 import AllWorkoutsPage from './pages/AllWorkoutsPage';
 import NutritionPlanView from './pages/NutritionPlanView';
@@ -74,6 +75,7 @@ const App = () => {
           <Route path="/change-details" component={ChangeDetails} />
           <Route path="/trainer-change-details" component={TrainerChangeDetails} />
           <Route path="/all-workouts" component={AllWorkoutsPage} />
+          <Route path="/group-session" component={TraineeGroupSessions} />
           <Route path="/schedule-session/:user_id" component={ScheduleSessionPage} />
           {/*
            You can add more routes here if you have other pages */}
