@@ -66,4 +66,6 @@ urlpatterns = [
     path('select-workout/<str:routine_name>/', SelectWorkout.as_view(), name='select-workout'),
     path('search-goals/', SearchGoalView.as_view(), name='search-goals'),
     path('filter-goals/', FilterGoalsView.as_view(), name='filter-goals'),
+    path('is-achievement/', IsAchievementView.as_view(), name='is-achievement'),
+    path('achievements/', AchievementsView.as_view(), name='achievements'),
 ]

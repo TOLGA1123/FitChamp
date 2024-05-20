@@ -16,7 +16,6 @@ from rest_framework.exceptions import NotFound
 from datetime import datetime
 
 
-
 # Create your views here.
 
 
@@ -419,8 +418,84 @@ class AutoUpdateGoalsView(APIView):
                         """, [current_value, progress, goal_id, user_id])
 
                 connection.commit()
+                
+            IsAchievementView().post(request)
 
             return Response({"message": "Goals updated successfully"}, status=status.HTTP_200_OK)
         except Exception as e:
             connection.rollback()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class IsAchievementView(APIView):
+    def post(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch goals with progress 100% or more
+                cursor.execute("""
+                    SELECT Goal_ID, Goal_Name, Goal_Type, End_Date, target_value
+                    FROM fitnessgoal
+                    WHERE User_ID = %s AND progress >= 100
+                """, [user_id])
+                goals = cursor.fetchall()
+
+                for goal in goals:
+                    goal_id, goal_name, goal_type, end_date, target_value = goal
+                    achievement_id = generate_unique_id()
+                    achievement_date = datetime.now().strftime('%Y-%m-%d')
+
+                    # Insert into achievement table
+                    cursor.execute("""
+                        INSERT INTO achievement (Achievement_ID, User_ID, Achievement_Name, Achievement_Type, Achievement_Date, target_value)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, [achievement_id, user_id, goal_name, goal_type, achievement_date, target_value])
+
+                    delete_goal_view = DeleteGoalView()
+                    delete_goal_response = delete_goal_view.delete(request, goal_id)
+                    if delete_goal_response.status_code != 204:
+                        raise Exception("Error deleting goal: " + delete_goal_response.data.get('error', 'Unknown error'))
+
+                connection.commit()
+            return Response({"message": "Goals converted to achievements successfully"}, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            connection.rollback()
+            return Response({"error": "Database error: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AchievementsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch achievements for the user
+                cursor.execute("""
+                    SELECT Achievement_ID, Achievement_Name, Achievement_Type, Achievement_Date, target_value
+                    FROM achievement
+                    WHERE User_ID = %s
+                """, [user_id])
+                achievements = cursor.fetchall()
+
+                # Prepare the data for the response
+                achievements_list = [
+                    {
+                        "achievement_id": achievement[0],
+                        "achievement_name": achievement[1],
+                        "achievement_type": achievement[2],
+                        "achievement_date": achievement[3],
+                        "target_value": achievement[4],
+                    }
+                    for achievement in achievements
+                ]
+
+            return Response({"achievements": achievements_list}, status=status.HTTP_200_OK)
+        except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

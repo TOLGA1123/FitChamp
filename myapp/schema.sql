@@ -134,9 +134,10 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
 CREATE TABLE IF NOT EXISTS achievement (
   Achievement_ID char(11),
   User_ID char(11),
+  Achievement_Name varchar(20),
   Achievement_Type varchar(20),
   Achievement_Date varchar(40),
-  Achievement_Details varchar(400),
+  target_value numeric(6,1),
   PRIMARY KEY (Achievement_ID, User_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
