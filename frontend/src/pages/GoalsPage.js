@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, AppBar, IconButton, Menu, MenuItem, LinearProgress, TextField, Select, FormControl, InputLabel, Button } from '@mui/material';
+import { Box, Typography, Grid, AppBar, IconButton, Menu, MenuItem, LinearProgress, TextField, Select, FormControl, InputLabel, Button, Card, CardContent } from '@mui/material';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -7,6 +7,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import MessageIcon from '@mui/icons-material/Message';
 import SortIcon from '@mui/icons-material/Sort';
 import NavTabs from './NavTabs';
+import { green } from '@mui/material/colors';
+
+
 axios.defaults.withCredentials = true;
 
 const GoalsPage = () => {
@@ -91,7 +94,7 @@ const GoalsPage = () => {
             history.push('/login');
           }
         });
-      }
+    }
   };
 
   const handleFilter = () => {
@@ -203,7 +206,7 @@ const GoalsPage = () => {
         <MenuItem value="progress" onClick={handleSortChange}>Progress</MenuItem>
       </Menu>
 
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
         <TextField 
           label="Search" 
           value={searchQuery} 
@@ -213,7 +216,7 @@ const GoalsPage = () => {
         <Button variant="contained" onClick={handleSearch}>Search</Button>
       </Box>
 
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
         <FormControl variant="outlined" sx={{ minWidth: 120 }}>
           <InputLabel>Type</InputLabel>
           <Select
@@ -240,24 +243,26 @@ const GoalsPage = () => {
         <Button variant="contained" onClick={handleFilter}>Filter</Button>
       </Box>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         {goals.length ? (
           goals.map((goal) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={goal.goal_id}>
-              <Paper sx={{ p: 2, height: '100%', margin: '8px' }} onClick={() => handleGoalClick(goal.goal_id)}>
-                <Typography variant="h6">Goal Name: {goal.goal_name}</Typography>
-                <Typography>Goal Type: {goal.goal_type}</Typography>
-                <Typography>Current Value: {goal.current_value}</Typography>
-                <Typography>Target Value: {goal.target_value}</Typography>
-                <Typography>Start Date: {goal.start_date}</Typography>
-                <Typography>End Date: {goal.end_date}</Typography>
-                <Typography>Status: {goal.achieved ? 'Achieved' : 'Not Achieved'}</Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Typography>Progress</Typography>
-                  <LinearProgress variant="determinate" value={goal.progress} />
-                  <Typography>{goal.progress}%</Typography>
-                </Box>
-              </Paper>
+              <Card sx={{ maxWidth: 345, margin: 'auto', textAlign: 'center', backgroundColor: '#f9f9f9' }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: green[700] }}>{goal.goal_name}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Goal Type: {goal.goal_type}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Current Value: {goal.current_value}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Target Value: {goal.target_value}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Start Date: {goal.start_date}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>End Date: {goal.end_date}</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Status: {goal.achieved ? 'Achieved' : 'Not Achieved'}</Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Typography>Progress</Typography>
+                    <LinearProgress variant="determinate" value={goal.progress} />
+                    <Typography>{goal.progress}%</Typography>
+                  </Box>
+                </CardContent>
+              </Card>
             </Grid>
           ))
         ) : (
