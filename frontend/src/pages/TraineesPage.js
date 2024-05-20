@@ -59,6 +59,10 @@ const TraineesPage = () => {
     history.push('/messages');
   };
 
+  const handleNewWorkoutPlan = () => {
+    history.push(`/new-workout`)
+  }
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" >
@@ -85,6 +89,10 @@ const TraineesPage = () => {
           <IconButton onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
+          <IconButton onClick={handleNewWorkoutPlan} color="inherit">
+          <AddCircleOutlineIcon />
+          <Typography variant="button">New Workout Plan</Typography>
+        </IconButton>
         </Box>
       </AppBar>
       <Box sx={{ p: 3 }}>

@@ -57,5 +57,6 @@ urlpatterns = [
     path('group-sessions/',SessionView.as_view(),name='group-sessions'),
     path('create-session/',CreateSessionView.as_view(),name='group-sessions'),
     path('completed-exercises/<str:routine_name>/', CompletedExercisesView.as_view(), name='completed-exercises'),
-
+    path('all-workouts/', AllWorkouts.as_view(), name='all-workouts'),
+    path('select-workout/<str:routine_name>/', SelectWorkout.as_view(), name='select-workout'),
 ]

@@ -29,6 +29,7 @@ import NewReportPage from './pages/NewReportPage';
 import NewNutritionPlanPage from './pages/NewNutritionPlanPage';
 import ChangeDetails from './pages/ChangeDetails';
 import TrainerChangeDetails from './pages/TrainerChangeDetails';
+import AllWorkoutsPage from './pages/AllWorkoutsPage';
 
 const theme = createTheme({
   components: {
@@ -72,6 +73,7 @@ const App = () => {
           <Route path="/new-nutrition-plan/:trainee_Id" component={NewNutritionPlanPage} />
           <Route path="/change-details" component={ChangeDetails} />
           <Route path="/trainer-change-details" component={TrainerChangeDetails} />
+          <Route path="/all-workouts" component={AllWorkoutsPage} />
           {/*
            You can add more routes here if you have other pages */}
         </Switch>

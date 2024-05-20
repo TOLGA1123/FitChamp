@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab, Box, Typography, IconButton, Paper, Modal, Fade, Backdrop, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { AppBar, Tabs, Tab, Box, Typography, IconButton, Paper, Modal, Fade, Backdrop, Button, Checkbox, FormControlLabel, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
 
@@ -16,9 +17,11 @@ const CurrentWorkoutPlans = () => {
   const [workoutDetails, setWorkoutDetails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('');
-  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);  
   const [completedExercises, setCompletedExercises] = useState({});
   const [open, setOpen] = useState(false);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [confirmDialogData, setConfirmDialogData] = useState({});
 
   useEffect(() => {
     axios.get('http://localhost:8000/workout-plans/')
@@ -35,7 +38,6 @@ const CurrentWorkoutPlans = () => {
       });
   }, [history]);
 
-
   const handleRouteChange = (event, newValue) => {
     setSelectedTab(newValue);
     history.push(`/${newValue}`);
@@ -46,7 +48,7 @@ const CurrentWorkoutPlans = () => {
   };
 
   const handleNewWorkout = () => {
-    history.push('/new-workout');
+    history.push('/all-workouts');
   };
 
   const handleGroupSession = () => {
@@ -59,11 +61,13 @@ const CurrentWorkoutPlans = () => {
 
   const handleOpen = (workout) => {
     setSelectedWorkout(workout);
-    console.log(workout.Routine_Name);
     axios.get(`http://localhost:8000/completed-exercises/${workout.Routine_Name.trim()}/`)
     .then(response => {
-      setCompletedExercises(response.data);
-      console.log(response.data);
+      const completed = response.data.reduce((acc, exercise) => {
+        acc[exercise.Exercise_name] = true;
+        return acc;
+      }, {});
+      setCompletedExercises(completed);
       setLoading(false);
     })
     .catch(error => {
@@ -81,7 +85,9 @@ const CurrentWorkoutPlans = () => {
   };
 
   const handleCheckboxChange = (exercise) => {
-    setCompletedExercises(prev => ({ ...prev, [exercise]: !prev[exercise] }));
+    if (!completedExercises[exercise]) {
+      setCompletedExercises(prev => ({ ...prev, [exercise]: !prev[exercise] }));
+    }
   };
 
   const handleSubmitCompletedExercises = () => {
@@ -91,15 +97,67 @@ const CurrentWorkoutPlans = () => {
       routineName: selectedWorkout.Routine_Name,
       trainerId: selectedWorkout.Trainer_ID,
     };
-    console.log(payload);
     axios.post('http://localhost:8000/complete-exercises/', payload)
       .then(response => {
-        console.log('Completed exercises submitted:', response.data);
         handleClose();
       })
       .catch(error => {
         console.error('Error submitting completed exercises:', error.response ? error.response.data : 'Server did not respond');
       });
+  };
+
+  const openConfirmDialogHandler = (type, data) => {
+    setConfirmDialogData({ type, data });
+    setOpenConfirmDialog(true);
+  };
+
+  const closeConfirmDialogHandler = () => {
+    setOpenConfirmDialog(false);
+    setConfirmDialogData({});
+  };
+
+  const confirmDeleteHandler = () => {
+    if (confirmDialogData.type === 'workout') {
+      handleDeleteWorkout(confirmDialogData.data.routineName, confirmDialogData.data.trainerId);
+    } else if (confirmDialogData.type === 'exercise') {
+      handleDeleteExercise(confirmDialogData.data.exercise);
+    }
+    closeConfirmDialogHandler();
+  };
+
+  const handleDeleteExercise = (exercise) => {
+    axios.post('http://localhost:8000/delete-exercise/', {
+      exerciseName: exercise,
+      routineName: selectedWorkout.Routine_Name,
+      trainerId: selectedWorkout.Trainer_ID,
+    }, { withCredentials: true })
+    .then(response => {
+      setSelectedWorkout(prev => ({
+        ...prev,
+        Exercises: prev.Exercises.filter(e => e !== exercise),
+      }));
+      setCompletedExercises(prev => {
+        const updated = { ...prev };
+        delete updated[exercise];
+        return updated;
+      });
+    })
+    .catch(error => {
+      console.error('Error deleting exercise:', error.response ? error.response.data : 'Server did not respond');
+    });
+  };
+
+  const handleDeleteWorkout = (routineName, trainerId) => {
+    axios.post('http://localhost:8000/delete-workout/', {
+      routineName: routineName,
+      trainerId: trainerId,
+    }, { withCredentials: true })
+    .then(response => {
+      setWorkoutDetails(prev => prev.filter(plan => plan.Routine_Name !== routineName));
+    })
+    .catch(error => {
+      console.error('Error deleting workout:', error.response ? error.response.data : 'Server did not respond');
+    });
   };
 
   if (loading) {
@@ -128,7 +186,7 @@ const CurrentWorkoutPlans = () => {
             Current Workout Plans
           </Typography>
           <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleNewWorkout}>
-            <AddCircleOutlineIcon /><Typography variant="button">New Workout</Typography>
+            <AddCircleOutlineIcon /><Typography variant="button">Pick Workout</Typography>
           </IconButton>        
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
@@ -139,8 +197,13 @@ const CurrentWorkoutPlans = () => {
       <Box sx={{ padding: 2 }}>
         {workoutDetails.length > 0 ? (
           workoutDetails.map((plan, index) => (
-            <Paper key={index} elevation={3} sx={{ margin: 2, padding: 2, cursor: 'pointer' }} onClick={() => handleOpen(plan)}>
-              <Typography variant="h6">{plan.Routine_Name}</Typography>
+            <Paper key={index} elevation={3} sx={{ margin: 2, padding: 2, display: 'flex', alignItems: 'center' }}>
+              <Typography variant="h6" sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => handleOpen(plan)}>
+                {plan.Routine_Name}
+              </Typography>
+              <IconButton onClick={() => openConfirmDialogHandler('workout', { routineName: plan.Routine_Name, trainerId: plan.Trainer_ID })}>
+                <DeleteIcon />
+              </IconButton>
             </Paper>
           ))
         ) : (
@@ -186,17 +249,19 @@ const CurrentWorkoutPlans = () => {
                 <Typography variant="body1"><strong>Exercises:</strong></Typography>
                 <Box>
                   {selectedWorkout.Exercises.map((exercise, idx) => (
-                    <FormControlLabel
-                      key={idx}
-                      control={
-                        <Checkbox
-                          checked={completedExercises[exercise]}
-                          onChange={() => handleCheckboxChange(exercise)}
-                          name={exercise}
-                        />
-                      }
-                      label={exercise}
-                    />
+                    <Box key={idx} sx={{ display: 'flex', alignItems: 'center' }}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={!!completedExercises[exercise]}
+                            onChange={() => handleCheckboxChange(exercise)}
+                            name={exercise}
+                            disabled={completedExercises[exercise]}
+                          />
+                        }
+                        label={exercise}
+                      />
+                    </Box>
                   ))}
                 </Box>
               </Box>
@@ -205,6 +270,28 @@ const CurrentWorkoutPlans = () => {
           </Box>
         </Fade>
       </Modal>
+
+      <Dialog
+        open={openConfirmDialog}
+        onClose={closeConfirmDialogHandler}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Delete"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this {confirmDialogData.type === 'workout' ? 'workout' : 'exercise'}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeConfirmDialogHandler} color="primary">
+            No
+          </Button>
+          <Button onClick={confirmDeleteHandler} color="primary" autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

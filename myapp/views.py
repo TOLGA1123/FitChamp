@@ -1271,15 +1271,23 @@ class UserWorkouts(APIView):
             try:
                 with connection.cursor() as cursor:
                     # Fetch the workout details including Trainer_Name
-                    cursor.execute("""
-                        SELECT wp.Routine_Name, wp.Exercises, wp.Duration, wp.Difficulty_Level, t.User_name, t.Trainer_ID
-                        FROM workout_plan wp
-                        JOIN trainer t ON wp.Trainer_ID = t.Trainer_ID
-                        WHERE wp.User_ID = %s
-                    """, [user_id])
+                    #cursor.execute("""
+                    #    SELECT wp.Routine_Name, wp.Exercises, wp.Duration, wp.Difficulty_Level, t.Trainer_ID
+                    #    FROM workout_plan wp
+                    #    JOIN trainer t ON wp.Trainer_ID = t.Trainer_ID
+                    #    WHERE wp.trainer_ID = %s
+                    #""", [user_id])
+
+                    print("1")
+
+                    cursor.execute("SELECT * FROM Forms WHERE user_id = %s", [user_id])
+
+                    print("2")
 
                     workouts = cursor.fetchall()  # Fetch all rows
                     print('Workouts fetched:', workouts)
+
+                    print("3")
 
                     if not workouts:
                         return Response({"error": "Workout details not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -1287,29 +1295,44 @@ class UserWorkouts(APIView):
                     workout_details = []
                     for workout in workouts:
                         routine_name = workout[0]
-                        exercises = workout[1]
+                        trainer_id = workout[1]
+                        '''exercises = workout[1]
                         duration = workout[2]
                         difficulty_level = workout[3]
-                        trainer_name = workout[4]
-                        trainer_id = workout[5]
+                        '''
 
+                        print("4")
                         # Fetch exercises for this routine
                         cursor.execute("""
-                            SELECT Exercise_name
-                            FROM Forms
-                            WHERE Routine_name = %s AND User_ID = %s
-                        """, [routine_name, user_id])
+                            SELECT *
+                            FROM workout_plan
+                            WHERE Routine_name = %s
+                        """, [routine_name])
                         
-                        exercises = cursor.fetchall()
-                        exercise_names = [exercise[0] for exercise in exercises]
+                        exercises = cursor.fetchone()
+
+                        print(exercises)
+                        print("5")
+                        exercise_names = exercises[2]
+                        print("6")
+                        #exercise_names = [exercise[0] for exercise in exercises]
+                        #print(exercise_names)
+                        duration = exercises[3]
+                        difficulty_level = exercises[4]
+                        print(exercise_names)
+                        print(duration)
+                        print(difficulty_level)
+
+                        #workout_details = [{'Exercises': exercise[0], 'Duration': exercise[3], 'Difficulty_Level': exercise[4]} for exercise in exercises]
+                        #print(workout_details)
                         
                         workout_details.append({
                             'Routine_Name': routine_name,
+                            'Trainer_ID': trainer_id,
                             'Exercises': exercise_names,
                             'Duration': duration,
                             'Difficulty_Level': difficulty_level,
-                            'Trainer_Name': trainer_name,
-                            'Trainer_ID': trainer_id,
+
                         })
 
                     print('Workout details with exercises:', workout_details)
@@ -1352,10 +1375,9 @@ class CreateWorkoutPlanView(APIView):
     '''
 
     def post(self, request):
-        user_id = request.session.get('user_id')
-        if not user_id:
+        trainer_id = request.session.get('trainer_id')
+        if not trainer_id:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
-        trainer_id = request.data.get('trainer_id')
         routine_name = request.data.get('Routine_Name')
         
         duration = request.data.get('Duration')
@@ -1369,19 +1391,14 @@ class CreateWorkoutPlanView(APIView):
         try:
             
             with connection.cursor() as cursor:
-                print('AAAAAA')
+                print(trainer_id)
                 # Insert workout plan
                 cursor.execute("""
-                    INSERT INTO workout_plan (Routine_Name, Trainer_ID, User_ID, Exercises, Duration, Difficulty_Level)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, [routine_name, trainer_id, user_id, exercise_names, duration, difficulty_level])
+                    INSERT INTO workout_plan (Routine_Name, Trainer_id, Exercises, Duration, Difficulty_Level)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, [routine_name, trainer_id, exercise_names, duration, difficulty_level])
                 print('AAAAAA')
-                # Insert exercises
-                for exercise in exercise_names:
-                    cursor.execute("""
-                        INSERT INTO Forms (Exercise_name, Routine_name, Trainer_ID, User_ID, Completed)
-                        VALUES (%s, %s, %s, %s, %s)
-                    """, [exercise, routine_name, trainer_id, user_id, False])
+
 
             return Response({"success": "Workout plan created successfully."}, status=status.HTTP_201_CREATED)
 
@@ -1415,11 +1432,20 @@ class CreateExerciseView(APIView):
         try:
             with connection.cursor() as cursor:
                 # Insert the new exercise into the Exercise table
+                print("1")
+                print(user_id)
+                print(name)
+                print(description)
+                print(exercise_type)
+                print(muscle_group)
+                print(equipment)
+                print(difficulty)
                 cursor.execute("""
-                    INSERT INTO Exercise (User_ID, Exercise_name, Description, Muscle_Group_Targeted, Equipment, Difficulty_Level)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, [user_id, name, description, muscle_group, equipment, difficulty])
+                    INSERT INTO Exercise (User_ID, Exercise_name, Description, Target_Audiance, Calories_Burned, Equipment, Difficulty_Level)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, [user_id, name, description, exercise_type, muscle_group, equipment, difficulty])
                 connection.commit()
+                print("2")
 
                 return Response({"message": "New workout Plan Created"}, status=status.HTTP_200_OK)
 
@@ -1539,3 +1565,92 @@ class ChangeTrainerDetailsView(APIView):
                 return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "Trainer details updated successfully."}, status=status.HTTP_200_OK)
+    
+class AllWorkouts(APIView):
+
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        print(f"User ID from session: {user_id}")
+
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch all workout details including Trainer_Name
+                cursor.execute("""
+                    SELECT wp.Routine_Name, wp.Exercises, wp.Duration, wp.Difficulty_Level, t.User_name, t.Trainer_ID
+                    FROM workout_plan wp
+                    JOIN trainer t ON wp.Trainer_ID = t.Trainer_ID
+                """)
+
+                workouts = cursor.fetchall()  # Fetch all rows
+                print('Workouts fetched:', workouts)
+
+                if not workouts:
+                    return Response({"error": "Workout details not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                # Fetch routines already in Forms table for the current user
+                cursor.execute("""
+                    SELECT DISTINCT Routine_name
+                    FROM Forms
+                    WHERE User_ID = %s
+                """, [user_id])
+
+                user_routines = cursor.fetchall()
+                user_routine_names = [routine[0] for routine in user_routines]
+                print('User routines:', user_routine_names)
+
+                workout_details = []
+                for workout in workouts:
+                    routine_name = workout[0]
+                    exercises = workout[1]
+                    duration = workout[2]
+                    difficulty_level = workout[3]
+                    trainer_name = workout[4]
+                    trainer_id = workout[5]
+
+                    # Skip workouts that are already in the user's Forms table
+                    if routine_name in user_routine_names:
+                        continue
+
+                    # Fetch exercises for this routine
+
+                    exercises = cursor.fetchall()
+                    exercise_names = [exercise[0] for exercise in exercises]
+
+                    workout_details.append({
+                        'Routine_Name': routine_name,
+                        'Exercises': exercise_names,
+                        'Duration': duration,
+                        'Difficulty_Level': difficulty_level,
+                        'Trainer_Name': trainer_name,
+                        'Trainer_ID': trainer_id,
+                    })
+
+                print('Workout details with exercises:', workout_details)
+                return Response(workout_details, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # Log the error
+            print("Error fetching workout details:", str(e))
+            return Response({"error": "An error occurred while fetching workout details."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class SelectWorkout(APIView):
+    def post(self, request, routine_name):
+        user_id = request.session.get('user_id')
+        print(f"User ID from session: {user_id}")
+
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM workout_plan WHERE routine_name = %s", [routine_name])
+            plan = cursor.fetchone()
+
+        trainer_id = plan[1]
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO forms (routine_name, trainer_id, user_id, completed) VALUES (%s, %s, %s, %s)", (routine_name, trainer_id, user_id, False))
+        
+        return Response({"success": "Workout plan selected."}, status=status.HTTP_200_OK)

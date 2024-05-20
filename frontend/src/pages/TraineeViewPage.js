@@ -45,6 +45,10 @@ const TraineeViewPage = () => {
         history.push(`/new-nutrition-plan/${trainee_Id}/`);
     };
 
+    const handleNewWorkoutPlan = () => {
+      history.push(`/new-workout`)
+    }
+
   if (loading) {
     return <div>Loading...</div>; // Display a loading state while fetching user details
   }
@@ -75,6 +79,10 @@ const TraineeViewPage = () => {
             <AddCircleOutlineIcon />
             <Typography variant="button">New Nutrition Plan</Typography>
           </IconButton>
+        <IconButton onClick={handleNewWorkoutPlan} color="inherit">
+          <AddCircleOutlineIcon />
+          <Typography variant="button">New Workout Plan</Typography>
+        </IconButton>
       </Box>
       </AppBar>
 
