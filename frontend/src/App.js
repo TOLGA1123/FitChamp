@@ -74,7 +74,7 @@ const App = () => {
           <Route path="/change-details" component={ChangeDetails} />
           <Route path="/trainer-change-details" component={TrainerChangeDetails} />
           <Route path="/all-workouts" component={AllWorkoutsPage} />
-          <Route path="/schedule-session" component={ScheduleSessionPage} />
+          <Route path="/schedule-session/:user_id" component={ScheduleSessionPage} />
           {/*
            You can add more routes here if you have other pages */}
         </Switch>

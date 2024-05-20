@@ -1594,40 +1594,49 @@ class DeleteWorkoutView(APIView):
 class TrainerScheduleSessionView(APIView):
     def post(self, request, user_id):
         trainer_id = request.session.get('trainer_id')
+        if not trainer_id:
+            return Response({'error': 'Trainer not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        
         session_id = generate_unique_id()
         session_date = request.data.get('session_date')
         session_time = request.data.get('session_time')
         location = request.data.get('location')
         description = request.data.get('description')
-        # Check trainer's availability
-        if not self.is_trainer_available(trainer_id):
+
+        print(user_id,trainer_id, session_id, session_date, session_time, location, description)
+
+        if not self.is_trainer_available(trainer_id, session_date, session_time):
             return Response({'error': 'Trainer is not available'}, status=status.HTTP_400_BAD_REQUEST)
+        print("Yo")
         
         # Insert session details into the database
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO individual_session (trainer_id, user_id, Session_ID, Session_Date, Session_Time, Location, Description)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, [trainer_id, user_id, session_id, session_date, session_time, location, description ])
-        
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO individual_session (Trainer_ID, User_ID, Session_ID, Session_Date, Session_Time, Location, Description)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, [trainer_id, user_id, session_id, session_date, session_time, location, description])
+                print("a")
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return Response({'message': 'Session scheduled successfully'}, status=status.HTTP_201_CREATED)
     
-    def is_trainer_available(self, trainer_id):
-        # Get current datetime
-        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    def is_trainer_available(self, trainer_id, session_date, session_time):
+        # Combine date and time for comparison
+        session_datetime = f"{session_date} {session_time}"
         
         # Query to check if trainer has any conflicting sessions
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT COUNT(*) 
                 FROM individual_session 
-                WHERE trainer_id = %s 
-                AND Session_Time > %s
-            """, [trainer_id, current_datetime])
+                WHERE Trainer_ID = %s 
+                AND Session_Date = %s 
+                AND Session_Time = %s
+            """, [trainer_id, session_date, session_time])
             session_count = cursor.fetchone()[0]
         
-        # If session_count is greater than 0, trainer has conflicting sessions
-        if session_count > 0:
-            return False
-        else:
-            return True
+        return session_count == 0
+
+    
