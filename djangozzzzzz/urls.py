@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.urls import path, include
 from myapp.views import *
 from GoalApp.views import *
+from NutritionApp.views import *
 
 urlpatterns = [
     path('', schema_view, name='schema'),
@@ -37,6 +38,7 @@ urlpatterns = [
     path('new-goal/', NewGoalView.as_view(),name='new-goal'),
     path('new-trainee/', NewTraineeView.as_view(), name='new-trainee'),
     path('nutrition/', NutritionPlanView.as_view(), name='nutrition_plan'),
+    path('addmeal/', AddMealView.as_view(), name='add-meal'),
     path('trainee/<str:trainee_Id>/', TraineeView.as_view(), name='trainee_view'),
     path('trainer/<str:trainer_Id>/', TrainerView.as_view(), name='trainer_view'),
     path('sort-goals/', SortGoalsView.as_view(), name='sort-goals'),
@@ -45,7 +47,6 @@ urlpatterns = [
     path('all-trainees/', AllTraineesView.as_view(), name='all_trainees'),
     path('new-report/', NewReportView.as_view(), name='new_report'),
     path('admin-reports/', AdminReportsView.as_view(), name='admin_reports'),
-    path('new-nutrition-plan/<str:trainee_Id>/', NewNutritionPlanView.as_view(), name='new-nutrition-plan'),
     path('delete-user/<str:user_id>/', DeleteUserView.as_view(), name='delete_user'),
     path('delete-trainer/<str:trainer_id>/', DeleteTrainerView.as_view(), name='delete_trainer'),
     path('delete-trainee/<str:user_id>/', DeleteTraineeView.as_view(), name='delete_trainee'),
@@ -63,6 +64,10 @@ urlpatterns = [
     path('auto-update-goals/', AutoUpdateGoalsView.as_view(), name='auto-update-goals'),
     path('all-workouts/', AllWorkouts.as_view(), name='all-workouts'),
     path('select-workout/<str:routine_name>/', SelectWorkout.as_view(), name='select-workout'),
+    path('search-goals/', SearchGoalView.as_view(), name='search-goals'),
+    path('filter-goals/', FilterGoalsView.as_view(), name='filter-goals'),
+    path('is-achievement/', IsAchievementView.as_view(), name='is-achievement'),
+    path('achievements/', AchievementsView.as_view(), name='achievements'),
     path('add-start-time/<str:start_time>/<str:routine_name>/', StartTimeView.as_view(), name='start_time'),
     path('add-end-time/<str:end_time>/<str:routine_name>/', EndTimeView.as_view(), name='end_time'),
     path('completed-workouts/', CompletedUserWorkoutsView.as_view(), name='completed-workout'),
