@@ -100,8 +100,14 @@ const TraineesPage = () => {
           {Trainees.map((trainee) => (
             <Grid item xs={12} sm={6} md={4} key={trainee.id} onClick={() => handleTraineeSelect(trainee.user_id)}>
               <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
-                <Avatar sx={{ width: 100, height: 100, margin: 'auto' }} />
-                <Typography>{trainee.user_name}</Typography>
+                <Avatar alt={trainee.user_name} src={`data:image/jpeg;base64,${trainee.profile_picture}`} sx={{ width: 100, height: 100, margin: 'auto' }} />
+                <Typography variant="h6">{trainee.user_name}</Typography>
+                <Typography variant="body1">Age: {trainee.age}</Typography>
+                <Typography variant="body1">Date of Birth: {trainee.date_of_birth}</Typography>
+                <Typography variant="body1">Gender: {trainee.gender}</Typography>
+                <Typography variant="body1">Weight: {trainee.weight}</Typography>
+                <Typography variant="body1">Height: {trainee.height}</Typography>
+                <Typography variant="body1">Past Achievements: {trainee.past_achievements}</Typography>
               </Paper>
             </Grid>
           ))}

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, Button, TextField } from '@mui/material';
-import { Link, useHistory } from 'react-router-dom';
+import { Box, Grid, Paper, Typography, Button, TextField, Avatar } from '@mui/material';
+import { useHistory } from 'react-router-dom';
 import axios from 'axios';
-
+import LogoutButton from './LogoutButton';
 const ChangeDetails = () => {
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [oldProfilePicture, setOldProfilePicture] = useState(null);
+    const [profilePicture, setProfilePicture] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
     const history = useHistory();
 
     useEffect(() => {
@@ -13,6 +16,10 @@ const ChangeDetails = () => {
             .then(response => {
                 setUserDetails(response.data);
                 setLoading(false);
+                if (response.data.profile_picture) {
+                    const base64Image = btoa(String.fromCharCode.apply(null, response.data.profile_picture));
+                    setOldProfilePicture(`data:image/jpeg;base64,${base64Image}`);
+                }
             })
             .catch(error => {
                 console.error('Error fetching user details:', error.response ? error.response.data : 'Server did not respond');
@@ -30,17 +37,32 @@ const ChangeDetails = () => {
         }));
     };
 
-    const handleSave = () => {
-        const updatedDetails = { ...userDetails.trainee };
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        setProfilePicture(file);
+        const imageUrl = URL.createObjectURL(file);
+        setPreviewUrl(imageUrl); // Set preview URL for new profile picture
+    };
 
-        axios.put(`http://localhost:8000/change-user-details/${userDetails.user_id}/`, updatedDetails)
-            .then(response => {
-                console.log('User details updated successfully:', response.data);
-                history.push('/profile');
-            })
-            .catch(error => {
-                console.error('Error updating user details:', error.response ? error.response.data : 'Server did not respond');
-            });
+    const handleSave = () => {
+        const formData = new FormData();
+        formData.append('profile_picture', profilePicture);
+        for (const key in userDetails.trainee) {
+            formData.append(key, userDetails.trainee[key]);
+        }
+
+        axios.put(`http://localhost:8000/change-user-details/${userDetails.user_id}/`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(response => {
+            console.log('User details updated successfully:', response.data);
+            history.push('/profile');
+        })
+        .catch(error => {
+            console.error('Error updating user details:', error.response ? error.response.data : 'Server did not respond');
+        });
     };
 
     const handleCancel = () => {
@@ -57,7 +79,7 @@ const ChangeDetails = () => {
             variant="outlined"
         />
     );
-
+    
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -68,10 +90,39 @@ const ChangeDetails = () => {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{ position: 'absolute', top: 0, right: 0, p: 2 }}>
+        <LogoutButton />
+    </Box>
             <Box sx={{ flexGrow: 1, p: 3 }}>
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={4}>
                         <Paper elevation={3} sx={{ p: 2 }}>
+                            {/* Render both old and new profile pictures */}
+                            {oldProfilePicture && (
+                                <Box>
+                                    <Typography variant="body2" sx={{ typography: 'body1' }}>
+                                        Old Profile Picture
+                                    </Typography>
+                                    <Avatar alt="Old Profile Picture" src={oldProfilePicture} sx={{ width: 100, height: 100, marginBottom: 2 }} />
+                                </Box>
+                            )}
+                            {previewUrl && (
+                                <Box>
+                                    <Typography variant="body2" sx={{ typography: 'body1' }}>
+                                        New Profile Picture
+                                    </Typography>
+                                    <Avatar alt="New Profile Picture" src={previewUrl} sx={{ width: 100, height: 100, marginBottom: 2 }} />
+                                </Box>
+                            )}
+                            <Typography variant="body2" sx={{ marginTop: 2, typography: 'body1' }}>
+                                Change Profile Picture
+                            </Typography>
+                            <input
+                                accept="image/*"
+                                type="file"
+                                onChange={handleFileChange}
+                                style={{ margin: '10px 0' }}
+                            />
                             {renderTextField("Age", userDetails.trainee.age, "age")}
                             {renderTextField("Date of Birth", userDetails.trainee.date_of_birth, "date_of_birth")}
                             {renderTextField("Gender", userDetails.trainee.gender, "gender")}
@@ -88,9 +139,7 @@ const ChangeDetails = () => {
                     </Grid>
                 </Grid>
             </Box>
-            <Box sx={{ p: 3 }}>
-
-            </Box>
+            <Box sx={{ p: 3 }}></Box>
         </Box>
     );
 };

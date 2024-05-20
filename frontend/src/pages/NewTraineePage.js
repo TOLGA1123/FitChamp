@@ -37,7 +37,7 @@ const NewTraineePage = () => {
   if (!trainees) {
     return <div>Error loading user details</div>; // Display an error message if user details couldn't be fetched
   }
-console.log(trainees);
+
   const handleSelectTrainee = (trainee) => {
     setSelectedTrainee(trainee);
   };
@@ -96,7 +96,7 @@ console.log(trainees);
         {trainees.map((trainee) => (
             <Grid item xs={12} sm={6} md={4} key={trainee.user_id} onClick={() => handleSelectTrainee(trainee)}>
               <Paper elevation={3} sx={{ p: 2, textAlign: 'center', cursor: 'pointer', border: selectedTrainee?.id === trainee.id ? '2px solid blue' : 'none' }}>
-                <Avatar sx={{ width: 56, height: 56, margin: 'auto' }} />
+                <Avatar src={`data:image/jpeg;base64,${trainee.profile_picture}`} sx={{ width: 56, height: 56, margin: 'auto' }} />
                 <Typography>Username: {trainee.user_name}</Typography>
                 <Typography>Age: {trainee.age}</Typography>
                 <Typography>Date of Birth: {trainee.date_of_birth}</Typography>

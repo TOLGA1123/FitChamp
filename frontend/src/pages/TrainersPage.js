@@ -12,6 +12,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import LogoutButton from './LogoutButton';
 import NavTabs from './NavTabs';
+
 const TrainersPage = () => {
   const history = useHistory();
   const [trainers, setTrainers] = useState([]);
@@ -54,7 +55,7 @@ const TrainersPage = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
-      <NavTabs activeTab="trainers" />
+        <NavTabs activeTab="trainers" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
             <PersonIcon />
@@ -73,20 +74,20 @@ const TrainersPage = () => {
         </Box>
       </AppBar>
       <Box sx={{ p: 3 }}>
-        <Grid container spacing={2}>
-          {trainers.map((trainer) => (
-            <Grid item xs={12} sm={6} md={4} key={trainer.id}>
-              <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }} onClick={() => handleSelectTrainer(trainer.trainer_id)}>
-                <Avatar sx={{ width: 56, height: 56, margin: 'auto' }} />
-                <Typography variant="h6">{trainer.user_name}</Typography>
-                <Typography variant="body2">{trainer.specialization}</Typography>
-                <Typography variant="body2">{trainer.telephone_number}</Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    </Box>
+  <Grid container spacing={2}>
+    {trainers.map((trainer) => (
+      <Grid item xs={12} sm={6} md={4} key={trainer.id}>
+        <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }} onClick={() => handleSelectTrainer(trainer.trainer_id)}>
+          <Avatar alt={trainer.user_name} src={`data:image/jpeg;base64,${trainer.profile_picture}`} sx={{ width: 100, height: 100, margin: 'auto' }} />
+          <Typography variant="h6" sx={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Trainer Name: {trainer.user_name}</Typography>
+          <Typography variant="body2" sx={{ fontSize: '1rem', marginBottom: '0.5rem' }}>Specialization: {trainer.specialization}</Typography>
+          <Typography variant="body2" sx={{ fontSize: '1rem' }}>Telephone Number: {trainer.telephone_number}</Typography>
+        </Paper>
+      </Grid>
+    ))}
+  </Grid>
+</Box>
+</Box>
   );
 };
 

@@ -1,3 +1,4 @@
+
 """
 URL configuration for djangozzzzzz project.
 
@@ -18,6 +19,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from myapp.views import *
+from GoalApp.views import *
 
 urlpatterns = [
     path('', schema_view, name='schema'),
@@ -57,6 +59,8 @@ urlpatterns = [
     path('group-sessions/',SessionView.as_view(),name='group-sessions'),
     path('create-session/',CreateSessionView.as_view(),name='group-sessions'),
     path('completed-exercises/<str:routine_name>/', CompletedExercisesView.as_view(), name='completed-exercises'),
+    path('delete-workout/', DeleteWorkoutView.as_view(), name='delete-workout'),
+    path('auto-update-goals/', AutoUpdateGoalsView.as_view(), name='auto-update-goals'),
     path('all-workouts/', AllWorkouts.as_view(), name='all-workouts'),
     path('select-workout/<str:routine_name>/', SelectWorkout.as_view(), name='select-workout'),
 ]

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-import psycopg2
+import psycopg2, base64
 from django.db import connection, IntegrityError
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -12,28 +12,12 @@ from django.shortcuts import render
 from rest_framework.views import APIView, status
 from .models import *
 from rest_framework.response import Response
-from .serializer import *
 from rest_framework.exceptions import NotFound
 from datetime import datetime
 
 base_goal_id = 3000000000
 
 # Create your views here.
-
-class ReactView(APIView):
-    serializer_class = ReactSerializer
-
-    def get(self, request):
-        detail = [{"name": detail.name, "detail": detail.detail}
-                  for detail in React.objects.all()]
-        return Response(detail)
-
-    def post(self, request):
-        serializer = ReactSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
-
 
 def runschema(sql_file, cur):
     # Read SQL file
@@ -50,6 +34,7 @@ def schema_view(request):
         return redirect('login')
     except Exception as e:
         return HttpResponse("Failed to apply schema: {}".format(e))
+    
 
 def generate_unique_id():
     # Generate a UUID4 and get the first 11 characters
@@ -66,43 +51,6 @@ def generate_report_id():
     report_id = str(1000000000 + num_reports + 1)[-11:]
 
     return report_id
-
-''''
-def generate_user_id():
-    # Count the number of existing users
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM userf")
-        num_users = cursor.()[0]
-
-    # Generate user_id by adding 1 to the count and padding it with zeros
-    user_id = str(1000000000 + num_users + 1)[-11:]
-
-    return user_id
-
-def generate_trainer_id():
-
-    # Count the number of existing trainers
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM trainer")
-        num_trainers = cursor.fetchone()[0]
-
-    # Generate trainer_id by adding 1 to the count and padding it with zeros
-    trainer_id = str(1000000000 + num_trainers + 1)[-11:]
-
-    return trainer_id
-
-
-def generate_goal_id():
-    # Count the number of existing users
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM fitnessgoal")
-        num_goals = cursor.fetchone()[0]
-
-    # Generate user_id by adding 1 to the count and padding it with zeros
-    goal_id = str(1000000000 + num_goals + 1)[-11:]
-
-    return goal_id
-'''
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -215,6 +163,10 @@ class LoginView(APIView):
             cursor.execute("SELECT * FROM adminf WHERE user_name = %s", [username])
             admin_row = cursor.fetchone()
         if user_row:
+            if user_row[4]:  # Check if profile picture data exists
+                profile_picture_base64 = base64.b64encode(user_row[4]).decode('utf-8')
+            else:
+                profile_picture_base64 = None
             if trainer_row:
                 stored_password = trainer_row[3]  # Assuming password is stored in the third column
                 print(stored_password)
@@ -228,6 +180,7 @@ class LoginView(APIView):
                     request.session['type'] = 2
                     request.session['spe'] = trainer_row[4]
                     request.session['telephone'] = trainer_row[5]
+                    request.session['profile_picture'] = profile_picture_base64
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
@@ -243,6 +196,7 @@ class LoginView(APIView):
                     request.session['user_id'] = admin_row[0]
                     request.session['username'] = admin_row[1]
                     request.session['email'] = admin_row[4]  # Assuming email is in the fourth column
+                    request.session['profile_picture'] = profile_picture_base64
                     request.session['type'] = 3
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
@@ -252,6 +206,10 @@ class LoginView(APIView):
                     # Invalid password
                     return Response({"error": "Invalid password."}, status=status.HTTP_401_UNAUTHORIZED)
             else:
+                if user_row[4]:  # Check if profile picture data exists
+                    profile_picture_base64 = base64.b64encode(user_row[4]).decode('utf-8')
+                else:
+                    profile_picture_base64 = None
                 stored_password = user_row[2]  # Assuming password is stored in the third column
                 if password == stored_password:
                     # User authenticated
@@ -260,6 +218,7 @@ class LoginView(APIView):
                     request.session['username'] = user_row[1]
                     request.session['email'] = user_row[3]
                     request.session['type'] = 1
+                    request.session['profile_picture'] = profile_picture_base64
                     request.session.save()
                     print("LoginView - Session Key:", request.session.session_key)
                     print('Session data set:', request.session.items())  # Debug statement
@@ -281,10 +240,24 @@ class UserProfileView(APIView):
             user_id = request.session.get('user_id')
             username = request.session.get('username')
             email = request.session.get('email')
+            profile_picture = request.session.get('profile_picture')
+            print('profile picture:', profile_picture)
             print('Session data set:', request.session.items())  # Debug statement
 
             if user_id and username and email:
                 try:
+                    with connection.cursor() as cursor:
+                        # Fetch the profile picture from the userf table
+                        cursor.execute("""
+                            SELECT profile_picture FROM userf WHERE user_id = %s
+                        """, [user_id])
+                        user_row = cursor.fetchone()
+
+                    if not user_row:
+                        return Response({"error": "User details not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                    profile_picture_base64 = base64.b64encode(user_row[0]).decode('utf-8') if user_row[0] else None
+
                     print(user_id)
                     with connection.cursor() as cursor:
                         # Fetch the trainee details
@@ -300,6 +273,7 @@ class UserProfileView(APIView):
                             'user_id': user_id,
                             'username': username,
                             'email': email,
+                            'profile_picture': profile_picture_base64,
                             'trainee': trainee,
                         }
                         return Response(user_details, status=status.HTTP_200_OK)
@@ -317,13 +291,25 @@ class UserProfileView(APIView):
             email = request.session.get('email')
             specialization = request.session.get('spe')
             telephone = request.session.get('telephone')
+            profile_picture = request.session.get('profile_picture')
             print('Session data set:', request.session.items())  # Debug statement
 
             if user_id and username and email:
                 try:
                     print(user_id)
                     with connection.cursor() as cursor:
-                        # Fetch the trainee details
+                        # Fetch the profile picture from the userf table
+                        cursor.execute("""
+                            SELECT profile_picture FROM userf WHERE user_id = %s
+                        """, [user_id])
+                        user_row = cursor.fetchone()
+
+                    if not user_row:
+                        return Response({"error": "User details not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                    profile_picture_base64 = base64.b64encode(user_row[0]).decode('utf-8') if user_row[0] else None
+                    with connection.cursor() as cursor:
+                        # Fetch the trainer details
                         cursor.execute("""
                             SELECT  Trainer_ID, user_name ,specialization, telephone_number, social_media 
                             FROM trainer 
@@ -336,7 +322,8 @@ class UserProfileView(APIView):
                         user_details = {
                             'user_id': user_id,
                             'username': username,
-                            'trainer': trainer
+                            'trainer': trainer,
+                            'profile_picture': profile_picture_base64,
                         }
                         return Response(user_details, status=status.HTTP_200_OK)
                     else:
@@ -352,20 +339,18 @@ class LogoutView(APIView):
         request.session.flush()
         return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
 class TrainerTraineesView(APIView):
-    def get(self,request):
+    def get(self, request):
         trainer_id = request.session.get('trainer_id')
         with connection.cursor() as cursor:
-            cursor.execute("SELECT user_id FROM trains WHERE trainer_id = %s", [trainer_id])
-            trainer_trainees = cursor.fetchall()
-        if not trainer_trainees:
-            return Response([], status=status.HTTP_200_OK)
-        trainee_ids = [row[0] for row in trainer_trainees]
-        if trainee_ids:
-            trainee_ids_tuple = tuple(trainee_ids)
-            with connection.cursor() as cursor:
-                query = "SELECT * FROM trainee WHERE user_id IN %s"
-                cursor.execute(query, [trainee_ids_tuple])
-                trainees = cursor.fetchall()
+            cursor.execute("""
+                SELECT trainee.user_id, trainee.user_name, trainee.password, trainee.age, trainee.date_of_birth, 
+                       trainee.gender, trainee.weight, trainee.height, trainee.past_achievements, userf.profile_picture
+                FROM trains
+                INNER JOIN trainee ON trains.user_id = trainee.user_id
+                INNER JOIN userf ON trainee.user_id = userf.user_id
+                WHERE trains.trainer_id = %s
+            """, [trainer_id])
+            trainees = cursor.fetchall()
 
         trainee_list = [
             {
@@ -377,37 +362,56 @@ class TrainerTraineesView(APIView):
                 'gender': trainee[5],
                 'weight': trainee[6],
                 'height': trainee[7],
-                'past_achievements': trainee[8]
+                'past_achievements': trainee[8],
+                'profile_picture': base64.b64encode(trainee[9]).decode('utf-8') if trainee[9] else None
             }
             for trainee in trainees
         ]
 
         return Response(trainee_list, status=status.HTTP_200_OK)
+
 class NewTraineeView(APIView):
-    def get(self,request):
+    def get(self, request):
         trainer_id = request.session.get('trainer_id')
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM trains WHERE trainer_id = %s", [trainer_id])
             associated_trainees = cursor.fetchall()
-        # Extract the trainer_ids from the fetched rows
+
         associated_trainee_ids = [row[0] for row in associated_trainees]
-        print(associated_trainee_ids)
+
         if associated_trainee_ids:
             associated_trainee_ids_tuple = tuple(associated_trainee_ids)
             with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT * FROM trainee WHERE user_id NOT IN %s", 
-                    [associated_trainee_ids_tuple]
-                )
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainee AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id
+                    WHERE t.user_id NOT IN %s
+                """, [associated_trainee_ids_tuple])
                 trainees = cursor.fetchall()
         else:
             with connection.cursor() as cursor:
-                # Fetch all trainees since the user has no associated trainees
-                cursor.execute("SELECT * FROM trainee")
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainee AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id
+                """)
                 trainees = cursor.fetchall()
-        trainees = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'age': trainee[3], 'date_of_birth': trainee[4], 'gender': trainee[5], 'weight': trainee[6], 'height': trainee[7], 'past_achievements': trainee[8]} for trainee in trainees]
-        #print(trainees)
-        return Response(trainees, status=status.HTTP_200_OK)
+
+        trainees_data = [{
+            'user_id': trainee[0],
+            'user_name': trainee[1],
+            'password': trainee[2],
+            'age': trainee[3],
+            'date_of_birth': trainee[4],
+            'gender': trainee[5],
+            'weight': trainee[6],
+            'height': trainee[7],
+            'past_achievements': trainee[8],
+            'profile_picture': base64.b64encode(trainee[9]).decode('utf-8') if trainee[9] else None
+        } for trainee in trainees]
+
+        return Response(trainees_data, status=status.HTTP_200_OK)
      # POST method to add the selected trainee to a trainer in the trains table
     def post(self, request):
         # Retrieve user ID and trainer ID from request data
@@ -440,7 +444,13 @@ class UserTrainersView(APIView):
             return Response({"error": "User ID not found in session"}, status=status.HTTP_400_BAD_REQUEST)
         
         with connection.cursor() as cursor:
-            cursor.execute("SELECT trainer.* FROM trains INNER JOIN trainer ON trains.trainer_id = trainer.trainer_id WHERE trains.user_id = %s", [user_id])
+            cursor.execute("""
+                SELECT trainer.*, userf.profile_picture
+                FROM trains 
+                INNER JOIN trainer ON trains.trainer_id = trainer.trainer_id 
+                INNER JOIN userf ON trainer.user_id = userf.user_id
+                WHERE trains.user_id = %s
+            """, [user_id])
             trainers = cursor.fetchall()
         
         trainer_list = [{
@@ -450,39 +460,51 @@ class UserTrainersView(APIView):
             'password': trainer[3],
             'specialization': trainer[4],
             'telephone_number': trainer[5],
-            'social_media': trainer[6]
+            'social_media': trainer[6],
+            'profile_picture': base64.b64encode(trainer[7]).decode('utf-8') if trainer[7] else None
         } for trainer in trainers]
         
         return Response(trainer_list, status=status.HTTP_200_OK)
     
 class NewTrainerView(APIView):
-    def get(self,request):
+    def get(self, request):
         user_id = request.session.get('user_id')
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM trains WHERE user_id = %s", [user_id])
             associated_trainers = cursor.fetchall()
-        # Extract the trainer_ids from the fetched rows
         associated_trainer_ids = [row[1] for row in associated_trainers]
-        #print(trainer_ids)
-        # Fetch all trainers matched with the given trainer_ids
+
         if associated_trainer_ids:
             associated_trainer_ids_tuple = tuple(associated_trainer_ids)
             with connection.cursor() as cursor:
-                # Step 2: Fetch the trainers who are not associated with the user
-                cursor.execute(
-                    "SELECT * FROM trainer WHERE trainer_id NOT IN %s", 
-                    [associated_trainer_ids_tuple]
-                )
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainer AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id 
+                    WHERE t.trainer_id NOT IN %s
+                """, [associated_trainer_ids_tuple])
                 trainers = cursor.fetchall()
         else:
             with connection.cursor() as cursor:
-                # Fetch all trainers since the user has no associated trainers
-                cursor.execute("SELECT * FROM trainer")
+                cursor.execute("""
+                    SELECT t.*, u.profile_picture 
+                    FROM trainer AS t 
+                    INNER JOIN userf AS u ON t.user_id = u.user_id
+                """)
                 trainers = cursor.fetchall()
-        #trainee_list = [{'user_id': trainee[0], 'user_name': trainee[1], 'password': trainee[2], 'email': trainee[3]} for trainee in trainees]
-        trainers = [{'user_id': trainer[0], 'trainer_id': trainer[1], 'user_name': trainer[2], 'password': trainer[3], 'specialization': trainer[4], 'telephone_number': trainer[5], 'social_media': trainer[6]} for trainer in trainers]
-        print(trainers)
-        return Response(trainers, status=status.HTTP_200_OK)
+
+        trainers_data = [{
+            'user_id': trainer[0],
+            'trainer_id': trainer[1],
+            'user_name': trainer[2],
+            'password': trainer[3],
+            'specialization': trainer[4],
+            'telephone_number': trainer[5],
+            'social_media': trainer[6],
+            'profile_picture': base64.b64encode(trainer[7]).decode('utf-8') if trainer[7] else None
+        } for trainer in trainers]
+
+        return Response(trainers_data, status=status.HTTP_200_OK)
      # POST method to add the selected trainer to a user in the trains table
     def post(self, request):
         # Retrieve user ID and trainer ID from request data
@@ -506,152 +528,8 @@ class NewTrainerView(APIView):
             cursor.execute("INSERT INTO trains (user_id, trainer_id) VALUES (%s, %s)", [user_id, trainer_id])
 
         return Response({"message": "Trainer added to user successfully."}, status=status.HTTP_201_CREATED)
-
-
-class GoalsView(APIView):
-    def get(self,request):
-        print("GoalsView - Session Key:", request.session.session_key)
-        user_id = request.session.get('user_id')
-        username = request.session.get('username')
-        email = request.session.get('email')
-        print('Session data set:', request.session.items()) 
-
-        if user_id and username and email:
-            try:    
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT fg.*, t.user_name AS trainer_name
-                        FROM fitnessgoal fg
-                        LEFT JOIN trainer t ON fg.Trainer_ID = t.Trainer_ID
-                        WHERE fg.User_ID = %s
-                    """, [user_id])
-                    goals = cursor.fetchall()
-   
-                if goals:
-                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8],'trainer_name': goal[9]} for goal in goals]
-                    return Response(goals_list, status=status.HTTP_200_OK)
-                else:
-                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
-
     
-class GoalDetailView(APIView):
-    def get(self,request,goal_id):
-        goal_id = str(goal_id).strip()
-        print("GoalDetailView - Session Key:", request.session.session_key)
-        user_id = request.session.get('user_id')
-        username = request.session.get('username')
-        email = request.session.get('email')
-        print('Session data set:', request.session.items()) 
 
-        if user_id and username and email:
-            try:    
-                with connection.cursor() as cursor:
-                    
-                    print(f"Executing SQL query with User_ID: {user_id.strip()}, Goal_ID: {goal_id}, wdawedawef")
-
-                    cursor.execute("""
-                        SELECT fg.*, t.user_name AS trainer_name
-                        FROM fitnessgoal fg
-                        LEFT JOIN trainer t ON fg.Trainer_ID = t.Trainer_ID
-                        WHERE fg.User_ID = %s AND fg.Goal_ID = %s
-                    """, [user_id, goal_id])
-                    goal = cursor.fetchone()
-
-                print(f"SQL query result: {goal}")
-
-                if goal:
-                    goal_data = {
-                        'id': goal[0],
-                        'user_id': goal[1],
-                        'trainer_id': goal[2],
-                        'name': goal[3],
-                        'type': goal[4],
-                        'value': goal[5],
-                        'start_date': goal[6],
-                        'end_date': goal[7],
-                        'status': goal[8],
-                        'trainer_name': goal[9]
-                    }
-                    return Response(goal_data, status=status.HTTP_200_OK)
-                else:
-                    print(f"Goal with ID {goal_id} does not exist.")
-                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
-
-
-class NewGoalView(APIView):
-    def post(self,request):
-        print("GoalDetailView - Session Key:", request.session.session_key)
-        user_id = request.session.get('user_id')
-        username = request.session.get('username')
-        email = request.session.get('email')
-        print('Session data set:', request.session.items()) 
-
-        goal_id = generate_unique_id()
-        trainer_id = request.data.get('trainer_id')
-        goal_name = request.data.get('name')
-        goal_type = request.data.get('type')
-        goal_value = request.data.get('value')
-        start_date = request.data.get('startDate')
-        end_date = request.data.get('endDate')
-        statusg = request.data.get('status')
-        routine_name = request.data.get('Routine_Name')
-
-        print(f"Received Data: goal_id={goal_id}, user_id={user_id}, trainer_id={trainer_id}, goal_name={goal_name}, goal_type={goal_type}, goal_value={goal_value}, start_date={start_date}, end_date={end_date}, status={statusg}, Routine_Name = {routine_name}")
-
-        if user_id and username and email: 
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                    INSERT INTO fitnessgoal (Goal_ID, User_ID, Trainer_ID, Goal_Name, Goal_Type, Goal_Value, Start_Date, End_Date, Status, Routine_Name)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s ,%s ,%s,%s)
-                """,[goal_id, user_id, trainer_id , goal_name, goal_type, goal_value, start_date, end_date, statusg, routine_name])
-
-                    connection.commit()
-                return Response({"message": "New Goal Created"}, status=status.HTTP_201_CREATED)
-            except IntegrityError as e:
-                connection.rollback()
-                return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                connection.rollback()
-                return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
-class CompletedExercisesView(APIView):
-    def get(self, request, routine_name):
-        print("CompletedExercisesView - Session Key:", request.session.session_key)
-        user_id = request.session.get('user_id')
-        username = request.session.get('username')
-        email = request.session.get('email')
-        print('Session data set:', request.session.items()) 
-
-        if user_id and username and email:
-            try:    
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT Exercise_name
-                        FROM Forms
-                        WHERE User_ID = %s AND Routine_name = %s AND Completed = TRUE
-                    """, [user_id, routine_name])
-                    completed_exercises = cursor.fetchall()
-
-                if completed_exercises:
-                    exercises_list = [{'Exercise_name': exercise[0]} for exercise in completed_exercises]
-                    print('BBB: ', exercises_list)
-                    return Response(exercises_list, status=status.HTTP_200_OK)
-                else:
-                    return Response({'error': 'No completed exercises found for this routine'}, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
-            
 class TraineeView(APIView):
     def get(self, request, trainee_Id):
         print("TraineeView - Session Key:", request.session.session_key)
@@ -664,29 +542,39 @@ class TraineeView(APIView):
             try:
                 print(user_id)
                 with connection.cursor() as cursor:
-                    # Fetch the trainee details
+                    # Fetch the trainee details with profile picture using an inner join
                     cursor.execute("""
-                        SELECT  * 
-                        FROM trainee 
-                        WHERE User_ID = %s
+                        SELECT t.*, u.profile_picture
+                        FROM trainee t
+                        INNER JOIN userf u ON t.User_ID = u.User_ID
+                        WHERE t.User_ID = %s
                     """, [str(trainee_Id)])
                     trainee = dictfetchone(cursor)
-                print(trainee)
-                if trainee:
-                    user_details = {
-                        'user_id': user_id,
-                        'username': username,
-                        'email': email,
-                        'trainee': trainee,
-                    }
-                    return Response(user_details, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    if trainee:
+                        # Encode profile picture as base64 string
+                        profile_picture_data = trainee.pop('profile_picture')  # Remove from dictionary
+                        profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
+                        trainee['profile_picture'] = profile_picture_encoded
+                        
+                        user_details = {
+                            'user_id': user_id,
+                            'username': username,
+                            'email': email,
+                            'trainee': trainee,
+                        }
+                        return Response(user_details, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
         
+import base64
+
 class TrainerView(APIView):
     def get(self, request, trainer_Id):
         print("TrainerView - Session Key:", request.session.session_key)
@@ -699,28 +587,35 @@ class TrainerView(APIView):
             try:
                 print(user_id)
                 with connection.cursor() as cursor:
-                    # Fetch the trainee details
+                    # Fetch the trainer details with profile picture using an inner join
                     cursor.execute("""
-                        SELECT  * 
-                        FROM trainer 
-                        WHERE trainer_ID = %s
+                        SELECT t.*, u.profile_picture
+                        FROM trainer t
+                        INNER JOIN userf u ON t.User_ID = u.User_ID
+                        WHERE t.trainer_ID = %s
                     """, [str(trainer_Id)])
                     trainer = dictfetchone(cursor)
-                print(trainer)
-                if trainer:
-                    user_details = {
-                        'user_id': user_id,
-                        'username': username,
-                        'email': email,
-                        'trainer': trainer,
-                    }
-                    return Response(user_details, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": "Trainee details not found."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    if trainer:
+                        # Encode profile picture as base64 string
+                        profile_picture_data = trainer.pop('profile_picture')  # Remove from dictionary
+                        profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
+                        trainer['profile_picture'] = profile_picture_encoded
+                        
+                        user_details = {
+                            'user_id': user_id,
+                            'username': username,
+                            'email': email,
+                            'trainer': trainer,
+                        }
+                        return Response(user_details, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"error": "Trainer details not found."}, status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
 
             
 class NutritionPlanView(APIView):
@@ -751,85 +646,20 @@ class NutritionPlanView(APIView):
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)        
-            
-class SortGoalsView(APIView):
-    def get(self, request):
-        print("SortGoalsView - Session Key:", request.session.session_key)
-        user_id = request.session.get('user_id')
-        username = request.session.get('username')
-        email = request.session.get('email')
-        sort_criteria = request.query_params.get('sort_by', 'value')
-        print('Session data set:', request.session.items()) 
-
-        if user_id and username and email:
-            try:
-                with connection.cursor() as cursor:
-                    if sort_criteria == 'value':
-                        cursor.execute("""
-                            SELECT fg.*, t.user_name AS trainer_name
-                            FROM fitnessgoal fg
-                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
-                            WHERE fg.user_id = %s
-                            ORDER BY fg.goal_value
-                        """, [user_id])
-                    elif sort_criteria == 'endDate':
-                        cursor.execute("""
-                            SELECT fg.*, t.user_name AS trainer_name
-                            FROM fitnessgoal fg
-                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
-                            WHERE fg.user_id = %s
-                            ORDER BY fg.end_date
-                        """, [user_id])
-                    elif sort_criteria == 'trainerName':
-                        cursor.execute("""
-                            SELECT fg.*, t.user_name AS trainer_name
-                            FROM fitnessgoal fg
-                            LEFT JOIN trainer t ON fg.trainer_id = t.trainer_id
-                            WHERE fg.user_id = %s
-                            ORDER BY t.user_name
-                        """, [user_id])
-                    else:
-                        return Response({"error": "Invalid sort criteria"}, status=status.HTTP_400_BAD_REQUEST)
-
-                    goals = cursor.fetchall()
-
-                if goals:
-                    goals_list = [{'id': goal[0],'user_id': goal[1],'trainer_id': goal[2], 'name': goal[3], 'type': goal[4],'value': goal[5],'start_date': goal[6],'end_date': goal[7],'status': goal[8], 'trainer_name': goal[9]} for goal in goals]
-                    return Response(goals_list, status=status.HTTP_200_OK)
-                else:
-                    return Response({'error':'Goal does not exist'},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class DeleteGoalView(APIView):
-    def delete(self, request, goal_id):
-        goal_id = str(goal_id).strip()
-        user_id = request.session.get('user_id')
-        if not user_id:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    DELETE FROM fitnessgoal
-                    WHERE user_id = %s AND goal_id = %s
-                """, [user_id, goal_id])
-                connection.commit()
-
-            return Response({"message": "Goal deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 class AllTrainersView(APIView):
     def get(self, request):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM trainer")
+            cursor.execute("""
+                SELECT trainer.user_id, trainer.trainer_id, trainer.user_name, trainer.password, trainer.specialization, trainer.telephone_number, trainer.social_media, userf.profile_picture
+                FROM trainer
+                INNER JOIN userf ON trainer.user_id = userf.user_id
+            """)
             trainers = cursor.fetchall()
-
+        print(trainers)
         trainer_list = [{
             'user_id': trainer[0],
             'trainer_id': trainer[1],
@@ -837,14 +667,23 @@ class AllTrainersView(APIView):
             'password': trainer[3],
             'specialization': trainer[4],
             'telephone_number': trainer[5],
-            'social_media': trainer[6]
+            'social_media': trainer[6],
+            'profile_picture': base64.b64encode(trainer[7]).decode('utf-8') if trainer[7] else None
         } for trainer in trainers]
 
         return Response(trainer_list, status=status.HTTP_200_OK)
+
+
+
 class AllTraineesView(APIView):
     def get(self, request):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM trainee")
+            cursor.execute("""
+                SELECT trainee.user_id, trainee.user_name, trainee.password, trainee.age, trainee.date_of_birth, trainee.gender, 
+                       trainee.weight, trainee.height, trainee.past_achievements, userf.profile_picture
+                FROM trainee
+                INNER JOIN userf ON trainee.user_id = userf.user_id
+            """)
             trainees = cursor.fetchall()
 
         trainee_list = [{
@@ -857,6 +696,7 @@ class AllTraineesView(APIView):
             'weight': trainee[6],
             'height': trainee[7],
             'past_achievements': trainee[8],
+            'profile_picture': base64.b64encode(trainee[9]).decode('utf-8') if trainee[9] else None
         } for trainee in trainees]
 
         return Response(trainee_list, status=status.HTTP_200_OK)
@@ -1183,13 +1023,14 @@ class NewNutritionPlanView(APIView):
             cursor.execute("SELECT * FROM trainer WHERE user_id = %s", [user_id])
             foundTrainer = cursor.fetchone()
         
-        user_id = foundTrainer[1]
-
+        trainer_id = foundTrainer[1]
         trainee_id = trainee_Id
         nutrition_plan_name = request.data.get('name')
-        nutrition_plan_description = request.data.get('description')
-        nutrition_plan_total_calories = request.data.get('total_calories')
+        total_calories = request.data.get('total_calories')
         meal_schedule = request.data.get('meal_schedule')
+        meals = request.data.get('meals')
+
+        meal_names = [meal['Meal_name'] for meal in meals]
 
         print(f"Received Data: user_id={user_id}, trainee_id={trainee_id}, nutrition_plan_name={nutrition_plan_name}, nutrition_plan_description={nutrition_plan_description}, nutrition_plan_total_calories={nutrition_plan_total_calories}, meal_schedule={meal_schedule}")
 
@@ -1197,11 +1038,19 @@ class NewNutritionPlanView(APIView):
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("""
-                    INSERT INTO nutrition_plan (nutrition_plan_name, user_id, trainer_id, description, total_calories, meal_schedule)
+                    INSERT INTO nutrition_plan (nutrition_plan_name, user_id, trainer_id, Meals, total_calories, meal_schedule)
                     VALUES (%s, %s, %s, %s, %s, %s)
-                """,[nutrition_plan_name, trainee_id, user_id, nutrition_plan_description, nutrition_plan_total_calories, meal_schedule])
-                    print("hahahahahahahahahahahahahahahhahaha")
+                """,[nutrition_plan_name, trainee_id, trainer_id, meal_names, total_calories, meal_schedule])
                     connection.commit()
+
+                print('BBBBBB')
+
+                for meal in meal_names:
+                    cursor.execute("""
+                        INSERT INTO Diet (Meal_name, Nutrition_Plan_Name, Trainer_ID, User_ID, Eaten)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, [meal, nutrition_plan_name, trainer_id, user_id, False])
+
                 return Response({"message": "New Nutrition Plan Created"}, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
                 connection.rollback()
@@ -1245,13 +1094,21 @@ class ChangeUserDetailsView(APIView):
     def put(self, request, user_id):
         # Get the updated user details from the request data
         updated_details = request.data
-        print(updated_details)
+        profile_picture = request.FILES.get('profile_picture')  # Retrieve the profile picture from request
+
         # Ensure that user_id is provided in the URL or session
         if not user_id:
             return Response({"message": "User ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         with connection.cursor() as cursor:
             try:
+                # Update the profile picture if provided
+                if profile_picture:
+                    # Convert the uploaded file into binary data
+                    binary_data = profile_picture.read()
+                    # Execute the SQL query to update profile picture in userf table
+                    cursor.execute("UPDATE userf SET Profile_Picture = %s WHERE User_ID = %s",
+                                   [binary_data, user_id])
                 # Execute the SQL query to update user details in trainee table
                 cursor.execute("UPDATE trainee SET Age = %s, Date_of_Birth = %s, Gender = %s, Weight = %s, Height = %s, Past_Achievements = %s WHERE User_ID = %s",
                                [updated_details.get('age'), updated_details.get('date_of_birth'), 
@@ -1456,7 +1313,35 @@ class CreateExerciseView(APIView):
                 connection.rollback()
                 return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+class CompletedExercisesView(APIView):
+    def get(self, request, routine_name):
+        print("CompletedExercisesView - Session Key:", request.session.session_key)
+        user_id = request.session.get('user_id')
+        username = request.session.get('username')
+        email = request.session.get('email')
+        print('Session data set:', request.session.items()) 
 
+        if user_id and username and email:
+            try:    
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT Exercise_name
+                        FROM Forms
+                        WHERE User_ID = %s AND Routine_name = %s AND Completed = TRUE
+                    """, [user_id, routine_name])
+                    completed_exercises = cursor.fetchall()
+
+                if completed_exercises:
+                    exercises_list = [{'Exercise_name': exercise[0]} for exercise in completed_exercises]
+                    print('BBB: ', exercises_list)
+                    return Response(exercises_list, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'No completed exercises found for this routine'}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+          
 
 class ExercisesView(APIView):
     def get(self,request):
@@ -1546,17 +1431,26 @@ class CompleteExercisesView(APIView):
 
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class ChangeTrainerDetailsView(APIView):
     def put(self, request, trainer_id):
         # Get the updated trainer details from the request data
         updated_details = request.data
-        print(updated_details)
+        profile_picture = request.FILES.get('profile_picture')  # Retrieve the profile picture from request
+        user_id = request.session.get('user_id')
         # Ensure that trainer_id is provided in the URL or session
         if not trainer_id:
             return Response({"message": "Trainer ID not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         with connection.cursor() as cursor:
             try:
+                # Update the profile picture if provided
+                if profile_picture:
+                    # Convert the uploaded file into binary data
+                    binary_data = profile_picture.read()
+                    # Execute the SQL query to update profile picture in userf table
+                    cursor.execute("UPDATE userf SET Profile_Picture = %s WHERE User_ID = %s",
+                                   [binary_data, user_id])
                 # Execute the SQL query to update trainer details in trainer table
                 cursor.execute("UPDATE trainer SET Specialization = %s, Telephone_Number = %s, Social_Media = %s WHERE Trainer_ID = %s",
                                [updated_details.get('specialization'), updated_details.get('telephone_number'),  updated_details.get('social_media'), trainer_id])

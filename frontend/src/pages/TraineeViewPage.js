@@ -89,43 +89,45 @@ const TraineeViewPage = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Username
-            </Typography>
-            <Typography>{userDetails.trainee.user_name}</Typography>
+      <Grid item xs={12} md={4}>
+  <Paper elevation={3} sx={{ p: 2 }}>
+    <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${userDetails.trainee.profile_picture}`} sx={{ width: 150, height: 150, margin: 'auto' }} />
+    <Typography variant="h6" gutterBottom>
+      Username
+    </Typography>
+    <Typography>{userDetails.trainee.user_name}</Typography>
 
-            <Typography variant="h6" gutterBottom>
-              Age
-            </Typography>
-            <Typography>{userDetails.trainee.age}</Typography>
+    <Typography variant="h6" gutterBottom>
+      Age
+    </Typography>
+    <Typography>{userDetails.trainee.age}</Typography>
 
-            <Typography variant="h6" gutterBottom>
-              Date of Birth:
-            </Typography>
-            <Typography>{userDetails.trainee.date_of_birth}</Typography>
+    <Typography variant="h6" gutterBottom>
+      Date of Birth:
+    </Typography>
+    <Typography>{userDetails.trainee.date_of_birth}</Typography>
 
-            <Typography variant="h6" gutterBottom>
-              Gender
-            </Typography>
-            <Typography>{userDetails.trainee.gender}</Typography>
+    <Typography variant="h6" gutterBottom>
+      Gender
+    </Typography>
+    <Typography>{userDetails.trainee.gender}</Typography>
 
-            <Typography variant="h6" gutterBottom>
-              Weight
-            </Typography>
-            <Typography>{userDetails.trainee.weight}</Typography>
+    <Typography variant="h6" gutterBottom>
+      Weight
+    </Typography>
+    <Typography>{userDetails.trainee.weight}</Typography>
 
-            <Typography variant="h6" gutterBottom>
-              Height
-            </Typography>
-            <Typography>{userDetails.trainee.height}</Typography>
-            <Typography variant="h6" gutterBottom>
-              Past Achievements
-            </Typography>
-            <Typography>{userDetails.trainee.past_achievements}</Typography>
-          </Paper>
-        </Grid>
+    <Typography variant="h6" gutterBottom>
+      Height
+    </Typography>
+    <Typography>{userDetails.trainee.height}</Typography>
+    <Typography variant="h6" gutterBottom>
+      Past Achievements
+    </Typography>
+    <Typography>{userDetails.trainee.past_achievements}</Typography>
+  </Paper>
+</Grid>
+
         <Grid item xs={12} md={8}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>

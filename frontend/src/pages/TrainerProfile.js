@@ -60,6 +60,7 @@ const TrainerProfile = () => {
   };
   return (
     <Box sx={{ flexGrow: 1 }}>
+      
     <AppBar position="static" >
       <Tabs 
           onChange={handleRouteChange} 
@@ -94,6 +95,7 @@ const TrainerProfile = () => {
 
           <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
         </Tabs>
+        
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
         <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleBackClick}>
           <ArrowBackIcon />
@@ -105,11 +107,14 @@ const TrainerProfile = () => {
         <LogoutButton />
       </Box>
     </AppBar>
+          
     <Box sx={{ flexGrow: 1, p: 3 }}>
       
       <Grid container spacing={2}>
         <Grid item xs={12} sm={4}>
-          <Avatar sx={{ width: 120, height: 120, margin: 'auto' }} />
+        <Paper elevation={3} sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${trainerDetails.profile_picture}`} sx={{ width: 150, height: 150, mb: 2 }} />
+                        </Paper>
           <List>
             <ListItem>
               <ListItemText primary="Username" secondary={trainerDetails.username} />
@@ -139,6 +144,8 @@ const TrainerProfile = () => {
           </Paper>
         </Grid>
       </Grid>
+
+
     </Box>
     </Box>
   );
