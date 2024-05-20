@@ -551,10 +551,11 @@ class TraineeView(APIView):
                     trainee = dictfetchone(cursor)
                     
                     if trainee:
-                        # Encode profile picture as base64 string
-                        profile_picture_data = trainee.pop('profile_picture')  # Remove from dictionary
-                        profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
-                        trainee['profile_picture'] = profile_picture_encoded
+                        profile_picture_data = trainee.pop('profile_picture')
+                        if profile_picture_data is not None:
+                            # Encode profile picture as base64 string
+                            profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
+                            trainee['profile_picture'] = profile_picture_encoded
                         
                         user_details = {
                             'user_id': user_id,
@@ -572,7 +573,6 @@ class TraineeView(APIView):
 
 
         
-import base64
 
 class TrainerView(APIView):
     def get(self, request, trainer_Id):
@@ -596,10 +596,11 @@ class TrainerView(APIView):
                     trainer = dictfetchone(cursor)
                     
                     if trainer:
-                        # Encode profile picture as base64 string
-                        profile_picture_data = trainer.pop('profile_picture')  # Remove from dictionary
-                        profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
-                        trainer['profile_picture'] = profile_picture_encoded
+                        profile_picture_data = trainer.pop('profile_picture')
+                        if profile_picture_data is not None:
+                            # Encode profile picture as base64 string
+                            profile_picture_encoded = base64.b64encode(profile_picture_data).decode('utf-8')
+                            trainer['profile_picture'] = profile_picture_encoded
                         
                         user_details = {
                             'user_id': user_id,
