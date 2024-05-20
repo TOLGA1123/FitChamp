@@ -63,4 +63,5 @@ urlpatterns = [
     path('auto-update-goals/', AutoUpdateGoalsView.as_view(), name='auto-update-goals'),
     path('all-workouts/', AllWorkouts.as_view(), name='all-workouts'),
     path('select-workout/<str:routine_name>/', SelectWorkout.as_view(), name='select-workout'),
+    path('schedule-session/<str:user_id>/', TrainerScheduleSessionView.as_view(), name='schedule-session'),
 ]

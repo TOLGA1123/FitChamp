@@ -1,7 +1,7 @@
 // pages/UserProfile.js
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText, Button } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab, IconButton} from '@mui/material';
@@ -40,7 +40,9 @@ const TraineeViewPage = () => {
     const handleRouteChange = (event, newValue) => {
         history.push(`/${newValue}`);
     };
-    
+    const handleScheduleSession = () => {
+        history.push(`/schedule-session/${trainee_Id}`);
+    };
     const handleNewNutritionPlan = () => {
         history.push(`/new-nutrition-plan/${trainee_Id}/`);
     };
@@ -59,113 +61,104 @@ const TraineeViewPage = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" >
-       <Tabs
-          onChange={handleRouteChange}
-          sx={{ backgroundColor: 'black' }}
-          variant="fullWidth"
-        >
-          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <LogoutButton />
-        </Tabs>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-
-
-        <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-          Your Trainee's Profile
-        </Typography>
-        <IconButton onClick={handleNewNutritionPlan} color="inherit">
-            <AddCircleOutlineIcon />
-            <Typography variant="button">New Nutrition Plan</Typography>
-          </IconButton>
-        <IconButton onClick={handleNewWorkoutPlan} color="inherit">
-          <AddCircleOutlineIcon />
-          <Typography variant="button">New Workout Plan</Typography>
-        </IconButton>
-      </Box>
-      </AppBar>
-
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-
-      <Grid container spacing={3}>
-      <Grid item xs={12} md={4}>
-  <Paper elevation={3} sx={{ p: 2 }}>
-    <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${userDetails.trainee.profile_picture}`} sx={{ width: 150, height: 150, margin: 'auto' }} />
-    <Typography variant="h6" gutterBottom>
-      Username
-    </Typography>
-    <Typography>{userDetails.trainee.user_name}</Typography>
-
-    <Typography variant="h6" gutterBottom>
-      Age
-    </Typography>
-    <Typography>{userDetails.trainee.age}</Typography>
-
-    <Typography variant="h6" gutterBottom>
-      Date of Birth:
-    </Typography>
-    <Typography>{userDetails.trainee.date_of_birth}</Typography>
-
-    <Typography variant="h6" gutterBottom>
-      Gender
-    </Typography>
-    <Typography>{userDetails.trainee.gender}</Typography>
-
-    <Typography variant="h6" gutterBottom>
-      Weight
-    </Typography>
-    <Typography>{userDetails.trainee.weight}</Typography>
-
-    <Typography variant="h6" gutterBottom>
-      Height
-    </Typography>
-    <Typography>{userDetails.trainee.height}</Typography>
-    <Typography variant="h6" gutterBottom>
-      Past Achievements
-    </Typography>
-    <Typography>{userDetails.trainee.past_achievements}</Typography>
-  </Paper>
-</Grid>
-
-        <Grid item xs={12} md={8}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Paper elevation={3} sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Goals
+        <AppBar position="static">
+            <Tabs
+                onChange={handleRouteChange}
+                sx={{ backgroundColor: 'black' }}
+                variant="fullWidth"
+            >
+                <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
+                <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: 'black' }} />
+                <LogoutButton />
+            </Tabs>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+                <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+                    Your Trainee's Profile
                 </Typography>
-                <List>
-                  <ListItem>
-                    <ListItemText primary="Lose 10 lbs" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Run a marathon" />
-                  </ListItem>
-                </List>
-              </Paper>
+                <Button variant="contained" onClick={handleScheduleSession}>Schedule Session</Button>
+            </Box>
+        </AppBar>
+
+        <Box sx={{ flexGrow: 1, p: 3 }}>
+            <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                    <Paper elevation={3} sx={{ p: 2 }}>
+                        <Avatar alt="Profile Picture" src={`data:image/jpeg;base64,${userDetails.trainee.profile_picture}`} sx={{ width: 150, height: 150, margin: 'auto' }} />
+                        <Typography variant="h6" gutterBottom>
+                            Username
+                        </Typography>
+                        <Typography>{userDetails.trainee.user_name}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Age
+                        </Typography>
+                        <Typography>{userDetails.trainee.age}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Date of Birth:
+                        </Typography>
+                        <Typography>{userDetails.trainee.date_of_birth}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Gender
+                        </Typography>
+                        <Typography>{userDetails.trainee.gender}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Weight
+                        </Typography>
+                        <Typography>{userDetails.trainee.weight}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Height
+                        </Typography>
+                        <Typography>{userDetails.trainee.height}</Typography>
+
+                        <Typography variant="h6" gutterBottom>
+                            Past Achievements
+                        </Typography>
+                        <Typography>{userDetails.trainee.past_achievements}</Typography>
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12} md={8}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <Paper elevation={3} sx={{ p: 2 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    Goals
+                                </Typography>
+                                <List>
+                                    <ListItem>
+                                        <ListItemText primary="Lose 10 lbs" />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText primary="Run a marathon" />
+                                    </ListItem>
+                                </List>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Paper elevation={3} sx={{ p: 2 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    Progress
+                                </Typography>
+                                <List>
+                                    <ListItem>
+                                        <ListItemText primary="Lost 5 lbs" />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText primary="Half marathon completed" />
+                                    </ListItem>
+                                </List>
+                            </Paper>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Paper elevation={3} sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Progress
-                </Typography>
-                <List>
-                  <ListItem>
-                    <ListItemText primary="Lost 5 lbs" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Half marathon completed" />
-                  </ListItem>
-                </List>
-              </Paper>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+        </Box>
     </Box>
-    </Box>
-  );
+);
 };
 
 export default TraineeViewPage;

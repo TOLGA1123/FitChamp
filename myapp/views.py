@@ -1591,3 +1591,43 @@ class DeleteWorkoutView(APIView):
 
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class TrainerScheduleSessionView(APIView):
+    def post(self, request, user_id):
+        trainer_id = request.session.get('trainer_id')
+        session_id = generate_unique_id()
+        session_date = request.data.get('session_date')
+        session_time = request.data.get('session_time')
+        location = request.data.get('location')
+        description = request.data.get('description')
+        # Check trainer's availability
+        if not self.is_trainer_available(trainer_id):
+            return Response({'error': 'Trainer is not available'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Insert session details into the database
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO individual_session (trainer_id, user_id, Session_ID, Session_Date, Session_Time, Location, Description)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, [trainer_id, user_id, session_id, session_date, session_time, location, description ])
+        
+        return Response({'message': 'Session scheduled successfully'}, status=status.HTTP_201_CREATED)
+    
+    def is_trainer_available(self, trainer_id):
+        # Get current datetime
+        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Query to check if trainer has any conflicting sessions
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM individual_session 
+                WHERE trainer_id = %s 
+                AND Session_Time > %s
+            """, [trainer_id, current_datetime])
+            session_count = cursor.fetchone()[0]
+        
+        # If session_count is greater than 0, trainer has conflicting sessions
+        if session_count > 0:
+            return False
+        else:
+            return True
