@@ -401,11 +401,6 @@ const AllWorkoutsPage = () => {
               </Box>
             )}
             <Button onClick={() => handleSubmitCompletedExercises} sx={{ mt: 2 }}>Submit</Button>
-            {startTime === -1 ? (
-              <Button onClick={() => handleStartWorkout(selectedWorkout)} sx={{ mt: 2 }}>Start Workout</Button>
-            ) : (
-              <Button onClick={() => handleEndWorkout(selectedWorkout)} sx={{ mt: 2 }}>End Workout</Button>
-            )}
           </Box>
         </Fade>
       </Modal>

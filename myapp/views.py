@@ -1364,7 +1364,7 @@ class ExercisesView(APIView):
                     exercises = cursor.fetchall()
 
                 if exercises:
-                    exercises_list = [{'user_id': exercise[0],'Exercise_name': exercise[1],'Description': exercise[2], 'Muscle_Group_Targeted': exercise[3], 'Equipment': exercise[4],'Difficulty_Level': exercise[5]}for exercise in exercises]
+                    exercises_list = [{'user_id': exercise[0],'Exercise_name': exercise[1],'Target Audiance': exercise[2], 'Description': exercise[3], 'Calories Burned': exercise[4],'Equipment': exercise[5], 'Difficulty_Level': exercise[6]}for exercise in exercises]
                     return Response(exercises_list, status=status.HTTP_200_OK)
                 else:
                     return Response({'error':'Exercise does not exist'},status=status.HTTP_404_NOT_FOUND)

@@ -198,7 +198,7 @@ const CurrentWorkoutPlans = () => {
     });
   };
 
-  const handleEndWorkout = (workout) => {
+  /*const handleEndWorkout = (workout) => {
     endTime = date.getMinutes()
     console.log(endTime);
     setSelectedWorkout(workout);
@@ -211,18 +211,7 @@ const CurrentWorkoutPlans = () => {
       }
     });
 
-    axios.get('http://localhost:8000/workout-plans/')
-      .then(response => {
-        setWorkoutDetails(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
-        setLoading(false);
-        if (error.response && error.response.status === 401) {
-          history.push('/login');
-        }
-      });
+    
 
       axios.get('http://localhost:8000/completed-workouts/')
       .then(response => {
@@ -236,7 +225,40 @@ const CurrentWorkoutPlans = () => {
           history.push('/login');
         }
       });
-  }
+
+      axios.get('http://localhost:8000/workout-plans/')
+      .then(response => {
+        setWorkoutDetails(response.data);
+        setLoading(false);
+        history.push('/workout-plans')
+      })
+      .catch(error => {
+        console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      });
+  }*/
+
+  const handleEndWorkout = (workout) => {
+    endTime = date.getMinutes();
+    console.log(endTime);
+    setSelectedWorkout(workout);
+    axios.post(`http://localhost:8000/add-end-time/${endTime}/${workout.Routine_Name}/`)
+    .then(() => {
+      // Update the state to remove the ended workout
+      setWorkoutDetails(prev => prev.filter(plan => plan.Routine_Name !== workout.Routine_Name));
+      // Optionally, update the completed workouts list
+      setCompletedWorkouts(prev => [...prev, workout]);
+    })
+    .catch(error => {
+      console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
+      if (error.response && error.response.status === 401) {
+        history.push('/login');
+      }
+    });
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -350,7 +372,6 @@ const CurrentWorkoutPlans = () => {
                     </Box>
                   ))}
                 </Box>
-                <Button onClick={handleSubmitCompletedExercises} sx={{ mt: 2 }}>Submit</Button>
                 {startTime === -1 ? (
               <Button onClick={() => handleStartWorkout(selectedWorkout)} sx={{ mt: 2 }}>Start Workout</Button>
               ) : (
