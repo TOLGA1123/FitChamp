@@ -904,74 +904,53 @@ class GroupSessionView(APIView):
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
         return Response(result, status=status.HTTP_201_CREATED)
     
-
-def join_Groupsession(user_id, group_session_id):
-    try:
-        with connection.cursor() as cursor:
-          
-            cursor.execute("""
-                SELECT gs.Max_Participants, COALESCE(gs_count.participant_count, 0) as participant_count
-                FROM Group_Session gs
-                LEFT JOIN (
-                    SELECT Group_Session_ID, COUNT(*) as participant_count
-                    FROM Group_Sessions
-                    GROUP BY Group_Session_ID
-                ) gs_count ON gs.Group_Session_ID = gs_count.Group_Session_ID
-                WHERE gs.Group_Session_ID = %s
-            """, [group_session_id])
-            
-            session = cursor.fetchone()
-            
-            if not session:
-                return {"error": "Group session not found."}
-            
-            if session['participant_count'] >= session['Max_Participants']:
-                return {"error": "Group session has already reached its maximum limit."}
-
-            # Check if the user is already in the session
-            cursor.execute("""
-                SELECT * FROM Group_Sessions WHERE User_ID = %s AND Group_Session_ID = %s
-            """, [user_id, group_session_id])
-            
-            if cursor.fetchone():
-                return {"error": "User is already in the session."}
-
-            # Insert the user into the Group_Sessions table
-            cursor.execute("""
-                INSERT INTO Group_Sessions (User_ID, Group_Session_ID)
-                VALUES (%s, %s)
-            """, [user_id, group_session_id])
-
-            connection.commit()
-            return {"message": "User successfully joined the group session."}
-    except Exception as e:
-        connection.rollback()
-        return {"error": f"An error occurred: {str(e)}"}
     
 class JoinGroupSessionView(APIView):
+    def post(self, request, session_id):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
-    #ASSUMPTON : TRAINEE IDS ARE PASSED IN FORM OF AN ARRAY FROM FORNTEND
-    def post(self, request):
+        try:
+            with connection.cursor() as cursor:
+                # Check if the session exists and has available slots
+                cursor.execute("""
+                    SELECT gs.Group_Session_ID, gs.Max_Participants, COUNT(g.User_ID) as participants
+                    FROM Group_Session gs
+                    LEFT JOIN Group_Sessions g ON gs.Group_Session_ID = g.Group_Session_ID
+                    WHERE gs.Group_Session_ID = %s
+                    GROUP BY gs.Group_Session_ID, gs.Max_Participants
+                """, [session_id])
+                session = cursor.fetchone()
 
-        trainee_ids = request.data.get('trainee_ids')
-        trainer = request.user
-        location = request.data.get('location')
-        starting_time = request.data.get('starting_time')
-        end_time = request.data.get('end_time')
-        session_type = request.data.get('session_type')
-        max_participants = request.data.get('max_participants')
-        price = request.data.get('price')
+                if not session:
+                    return Response({"error": "Session not found."}, status=status.HTTP_404_NOT_FOUND)
 
+                group_session_id, max_participants, participants = session
 
-        if not trainer or not trainee_ids:
-            return Response({"error": "trainer_id and trainee are required."}, status=status.HTTP_400_BAD_REQUEST)
+                if participants >= max_participants:
+                    return Response({"error": "Session is full."}, status=status.HTTP_400_BAD_REQUEST)
 
-        result = join_Groupsession(user_id, group_session_id)
+                # Check if the user is already in the session
+                cursor.execute("""
+                    SELECT * FROM Group_Sessions
+                    WHERE User_ID = %s AND Group_Session_ID = %s
+                """, [user_id, group_session_id])
+                if cursor.fetchone():
+                    return Response({"error": "User already joined this session."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if "error" in result:
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-        return Response(result, status=status.HTTP_201_CREATED)
+                # Add user to the session
+                cursor.execute("""
+                    INSERT INTO Group_Sessions (User_ID, Group_Session_ID, Trainer_ID)
+                    VALUES (%s, %s, (SELECT Trainer_ID FROM Group_Session WHERE Group_Session_ID = %s))
+                """, [user_id, group_session_id, group_session_id])
 
+                connection.commit()
+
+            return Response({"message": "Joined group session successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class GroupSessionsView(APIView):
     def get(self, request):
         user_id = request.session.get('user_id')

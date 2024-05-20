@@ -72,7 +72,7 @@ const NutritionPlanView = () => {
       <Box sx={{ position: 'absolute', top: 100, right: 0, p: 2 }}>
         <LogoutButton />
       </Box>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+      <AppBar position="static">
         <NavTabs activeTab="nutrition" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}><PersonIcon /></IconButton>

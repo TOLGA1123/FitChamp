@@ -3,6 +3,8 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+
 
 const LogoutButton = () => {
   const history = useHistory();
@@ -23,8 +25,8 @@ const LogoutButton = () => {
       variant="contained"
       color="primary"
       onClick={handleLogout}
+      startIcon={<ExitToAppIcon sx={{ color: 'gray' }} />}
     >
-      Logout
     </Button>
   );
 };

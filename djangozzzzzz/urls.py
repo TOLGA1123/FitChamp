@@ -75,4 +75,5 @@ urlpatterns = [
     path('delete-workout/', DeleteWorkoutView.as_view(), name='delete-workout'),
     path('schedule-session/<str:user_id>/', TrainerScheduleSessionView.as_view(), name='schedule-session'),
     path('trainee-sessions/<str:trainee_id>/', TraineeSessionView.as_view(), name='trainee-sessions'),
+    path('join-group-session/<str:session_id>/', JoinGroupSessionView.as_view(), name='join-group-session'),
 ]
