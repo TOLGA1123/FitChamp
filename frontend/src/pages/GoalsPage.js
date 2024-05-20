@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, AppBar, Tabs, Tab, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Paper, Grid, AppBar, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -13,21 +13,6 @@ const GoalsPage = () => {
   const [loading, setLoading] = useState(true);
   const history = useHistory();
   const [sortCriteria, setSortCriteria] = useState('endDate');
-
-  useEffect(() => {
-    axios.get('http://localhost:8000/goals/')
-      .then(response => {
-        setGoals(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching goals:', error.response ? error.response.data : 'Server did not respond');
-        setLoading(false);
-        if (error.response && error.response.status === 401) {
-          history.push('/login');
-        }
-      });
-  }, [history]);
 
   const fetchGoals = (sort_by) => {
     axios.get('http://localhost:8000/sort-goals/', { params: { sort_by } })
@@ -45,8 +30,20 @@ const GoalsPage = () => {
   };
 
   useEffect(() => {
-    fetchGoals(sortCriteria);
-  }, [sortCriteria, history]); 
+    const updateGoalsAndFetch = async () => {
+      try {
+        await axios.get('http://localhost:8000/auto-update-goals/');
+        fetchGoals(sortCriteria);
+      } catch (error) {
+        console.error('Error updating goals:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      }
+    };
+    updateGoalsAndFetch();
+  }, [sortCriteria, history]);
 
   const handleGoalClick = (goalId) => {
     history.push(`/goal/${goalId.trim()}`);
@@ -88,33 +85,33 @@ const GoalsPage = () => {
   const sortedGoals = sortGoals([...goals], sortCriteria);
 
   if (loading) {
-    return( 
-      <Box sx={{ flexGrow:1 }}>
-      <AppBar position="static">
-        <NavTabs activeTab="goals" />
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
-            <PersonIcon />
-          </IconButton>
-          <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-            Your Goals
-          </Typography>
-          <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleCreateNewGoal}>
-            <AddCircleOutlineIcon />
-            <Typography variant="button">New Goal</Typography>
-          </IconButton>
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
-        </Box>
+    return (
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <NavTabs activeTab="goals" />
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+            <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
+              <PersonIcon />
+            </IconButton>
+            <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+              Your Goals
+            </Typography>
+            <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleCreateNewGoal}>
+              <AddCircleOutlineIcon />
+              <Typography variant="button">New Goal</Typography>
+            </IconButton>
+            <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
+              <MessageIcon />
+            </IconButton>
+          </Box>
         </AppBar>
-      <Typography>Loading...</Typography>
-    </Box>
+        <Typography>Loading...</Typography>
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ flexGrow:1 }}>
+    <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <NavTabs activeTab="goals" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
@@ -154,7 +151,6 @@ const GoalsPage = () => {
                 <Typography>Start Date: {goal.start_date}</Typography>
                 <Typography>End Date: {goal.end_date}</Typography>
                 <Typography>Status: {goal.achieved ? 'Achieved' : 'Not Achieved'}</Typography>
-                {goal.trainer_name && <Typography>Trainer: {goal.trainer_name}</Typography>}
               </Paper>
             </Grid>
           ))

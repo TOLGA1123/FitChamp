@@ -60,5 +60,5 @@ urlpatterns = [
     path('create-session/',CreateSessionView.as_view(),name='group-sessions'),
     path('completed-exercises/<str:routine_name>/', CompletedExercisesView.as_view(), name='completed-exercises'),
     path('delete-workout/', DeleteWorkoutView.as_view(), name='delete-workout'),
-
+    path('auto-update-goals/', AutoUpdateGoalsView.as_view(), name='auto-update-goals'),
 ]

@@ -253,3 +253,45 @@ class DeleteGoalView(APIView):
             return Response({"message": "Goal deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AutoUpdateGoalsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch user weight if needed
+                cursor.execute("SELECT Weight FROM trainee WHERE User_ID = %s", [user_id])
+                user_weight_result = cursor.fetchone()
+                user_weight = user_weight_result[0] if user_weight_result else None
+
+                # Fetch goals
+                cursor.execute("""
+                    SELECT Goal_ID, Goal_Type, initial_value
+                    FROM fitnessgoal
+                    WHERE User_ID = %s
+                """, [user_id])
+                goals = cursor.fetchall()
+
+                # Update current values based on goal type
+                for goal in goals:
+                    goal_id, goal_type, initial_value = goal
+                    if goal_type.lower() in ['weight loss', 'muscle gain'] and user_weight is not None:
+                        current_value = user_weight
+                    else:
+                        current_value = current_value  # Default behavior for other types
+
+                    cursor.execute("""
+                        UPDATE fitnessgoal
+                        SET current_value = %s
+                        WHERE Goal_ID = %s AND User_ID = %s
+                    """, [current_value, goal_id, user_id])
+
+                connection.commit()
+
+            return Response({"message": "Goals updated successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
