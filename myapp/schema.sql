@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS fitnessgoal (
   Start_Date varchar(20),
   End_Date varchar(20),
   achieved boolean DEFAULT FALSE,
+  progress numeric(4,0),
   PRIMARY KEY (Goal_ID, User_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );

@@ -40,7 +40,7 @@ class GoalsView(APIView):
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("""
-                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value ,current_value, target_value, Start_Date, End_Date, achieved
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value ,current_value, target_value, Start_Date, End_Date, achieved, progress
                         FROM fitnessgoal
                         WHERE User_ID = %s
                     """, [user_id])
@@ -58,7 +58,8 @@ class GoalsView(APIView):
                             'target_value': goal[6],
                             'start_date': goal[7],
                             'end_date': goal[8],
-                            'achieved': goal[9]
+                            'achieved': goal[9],
+                            'progress': goal[10]
                         } 
                         for goal in goals
                     ]
@@ -86,7 +87,7 @@ class GoalDetailView(APIView):
                     print(f"Executing SQL query with User_ID: {user_id.strip()}, Goal_ID: {goal_id}")
 
                     cursor.execute("""
-                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                        SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
                         FROM fitnessgoal
                         WHERE User_ID = %s AND Goal_ID = %s
                     """, [user_id, goal_id])
@@ -105,7 +106,8 @@ class GoalDetailView(APIView):
                         'target_value': goal[6],
                         'start_date': goal[7],
                         'end_date': goal[8],
-                        'achieved': goal[9]
+                        'achieved': goal[9],
+                        'progress': goal[10]
                     }
                     return Response(goal_data, status=status.HTTP_200_OK)
                 else:
@@ -128,12 +130,12 @@ class NewGoalView(APIView):
         goal_id = generate_unique_id()
         goal_name = request.data.get('goal_name')
         goal_type = request.data.get('goal_type')
-
         target_value = request.data.get('target_value')
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         achieved = request.data.get('achieved', False)
         current_value = 0
+        initial_value = 0
 
         print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
 
@@ -148,10 +150,16 @@ class NewGoalView(APIView):
                             current_value = result[0]  # Set current_value to the user's weight
                             initial_value = current_value
 
+                    # Calculate progress
+                    if target_value != initial_value:
+                        progress = abs(current_value - initial_value) / abs(target_value - initial_value) * 100
+                    else:
+                        progress = 0
+
                     cursor.execute("""
-                        INSERT INTO fitnessgoal (Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, [goal_id, user_id, goal_name, goal_type, initial_value, current_value, target_value, start_date, end_date, achieved])
+                        INSERT INTO fitnessgoal (Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, [goal_id, user_id, goal_name, goal_type, initial_value, current_value, target_value, start_date, end_date, achieved, progress])
                     connection.commit()
                 return Response({"message": "New Goal Created"}, status=status.HTTP_201_CREATED)
             except IntegrityError as e:
@@ -177,29 +185,28 @@ class SortGoalsView(APIView):
                 with connection.cursor() as cursor:
                     if sort_criteria == 'endDate':
                         cursor.execute("""
-                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
                             FROM fitnessgoal
                             WHERE User_ID = %s
                             ORDER BY End_Date
                         """, [user_id])
                     elif sort_criteria == 'startDate':
                         cursor.execute("""
-                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
                             FROM fitnessgoal
                             WHERE User_ID = %s
                             ORDER BY Start_Date
                         """, [user_id])
                     elif sort_criteria == 'GoalName':
                         cursor.execute("""
-                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
                             FROM fitnessgoal
                             WHERE User_ID = %s
                             ORDER BY Goal_Name
                         """, [user_id])
                     elif sort_criteria == 'progress':
                         cursor.execute("""
-                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved,
-                                   ABS(current_value - initial_value) / NULLIF(ABS(target_value - initial_value), 0)*100 AS progress
+                            SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved, progress
                             FROM fitnessgoal
                             WHERE User_ID = %s
                             ORDER BY progress
@@ -222,7 +229,7 @@ class SortGoalsView(APIView):
                             'start_date': goal[7],
                             'end_date': goal[8],
                             'achieved': goal[9],
-                            'progress': goal[10] if len(goal) > 10 else None  # Include progress if available
+                            'progress': goal[10]
                         }
                         for goal in goals
                     ]
@@ -269,25 +276,31 @@ class AutoUpdateGoalsView(APIView):
 
                 # Fetch goals
                 cursor.execute("""
-                    SELECT Goal_ID, Goal_Type, initial_value
+                    SELECT Goal_ID, Goal_Type, initial_value, target_value
                     FROM fitnessgoal
                     WHERE User_ID = %s
                 """, [user_id])
                 goals = cursor.fetchall()
 
-                # Update current values based on goal type
+                # Update current values and progress based on goal type
                 for goal in goals:
-                    goal_id, goal_type, initial_value = goal
+                    goal_id, goal_type, initial_value, target_value = goal
                     if goal_type.lower() in ['weight loss', 'muscle gain'] and user_weight is not None:
                         current_value = user_weight
                     else:
                         current_value = current_value  # Default behavior for other types
 
+                    # Calculate progress
+                    if target_value != initial_value:
+                        progress = abs(current_value - initial_value) / abs(target_value - initial_value) * 100
+                    else:
+                        progress = 0
+
                     cursor.execute("""
                         UPDATE fitnessgoal
-                        SET current_value = %s
+                        SET current_value = %s, progress = %s
                         WHERE Goal_ID = %s AND User_ID = %s
-                    """, [current_value, goal_id, user_id])
+                    """, [current_value, progress, goal_id, user_id])
 
                 connection.commit()
 
