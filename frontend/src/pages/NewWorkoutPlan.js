@@ -423,7 +423,7 @@ const NewWorkoutPlan = () => {
       .then(response => {
         console.log('Workout Plan Submitted:', response.data);
         if (response.status === 201) {
-          history.push('/workout-plans');
+          history.push('/trainees');
         }
       })
       .catch(error => {

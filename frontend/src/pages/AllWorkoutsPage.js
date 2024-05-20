@@ -209,6 +209,10 @@ const AllWorkoutsPage = () => {
   const [selectedWorkout, setSelectedWorkout] = useState(null);  
   const [completedExercises, setCompletedExercises] = useState({});
   const [open, setOpen] = useState(false);
+  let startTime = -1;
+  let endTime;
+
+  let date = new Date();
 
   useEffect(() => {
     setSelectedWorkout(0);
@@ -271,6 +275,34 @@ const AllWorkoutsPage = () => {
   const handleSubmitCompletedExercises = () => {
     // Implement the function to handle submitting the completed exercises
   };
+
+  const handleStartWorkout = (workout) => {
+    startTime = date.getMinutes();
+    console.log(startTime)
+    setSelectedWorkout(workout);
+    axios.post(`http://localhost:8000/add-start-time/${startTime}/${workout.Routine_Name}/`)
+    .then()
+    .catch(error => {
+      console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
+      if (error.response && error.response.status === 401) {
+        history.push('/login');
+      }
+    });
+  };
+
+  const handleEndWorkout = (workout) => {
+    endTime = date.getMinutes()
+    setSelectedWorkout(workout);
+    axios.post(`http://localhost:8000/add-end-time/${endTime}/${workout.Routine_Name}/`)
+    .then()
+    .catch(error => {
+      console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
+      if (error.response && error.response.status === 401) {
+        history.push('/login');
+      }
+    });
+
+  }
 
   const handleClose = () => {
     setOpen(false);
@@ -368,7 +400,12 @@ const AllWorkoutsPage = () => {
                 </Box>
               </Box>
             )}
-            <Button onClick={handleSubmitCompletedExercises} sx={{ mt: 2 }}>Submit</Button>
+            <Button onClick={() => handleSubmitCompletedExercises} sx={{ mt: 2 }}>Submit</Button>
+            {startTime === -1 ? (
+              <Button onClick={() => handleStartWorkout(selectedWorkout)} sx={{ mt: 2 }}>Start Workout</Button>
+            ) : (
+              <Button onClick={() => handleEndWorkout(selectedWorkout)} sx={{ mt: 2 }}>End Workout</Button>
+            )}
           </Box>
         </Fade>
       </Modal>

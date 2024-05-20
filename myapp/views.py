@@ -1137,7 +1137,7 @@ class UserWorkouts(APIView):
 
                     print("1")
 
-                    cursor.execute("SELECT * FROM Forms WHERE user_id = %s", [user_id])
+                    cursor.execute("SELECT * FROM Forms WHERE user_id = %s AND completed = FALSE", [user_id])
 
                     print("2")
 
@@ -1324,6 +1324,7 @@ class CompletedExercisesView(APIView):
         if user_id and username and email:
             try:    
                 with connection.cursor() as cursor:
+                    print("here")
                     cursor.execute("""
                         SELECT Exercise_name
                         FROM Forms
@@ -1552,6 +1553,111 @@ class SelectWorkout(APIView):
 
 class DeleteWorkoutView(APIView):
     
+    def post(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        routine_name = request.data.get('routineName')
+        trainer_id = request.data.get('trainerId')
+
+        print(f"Received data: {request.data}")
+
+        if not routine_name or not trainer_id:
+            return Response({"error": "Incomplete data provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with connection.cursor() as cursor:
+                # Step 1: Delete entries from the Forms table related to the specified Routine_Name
+                cursor.execute("""
+                    DELETE FROM Forms
+                    WHERE Routine_name = %s AND Trainer_ID = %s AND User_ID = %s
+                """, [routine_name, trainer_id, user_id])
+
+                # Step 2: Find exercises related to the routine and check if they need to be deleted
+                cursor.execute("""
+                    SELECT Exercise_name
+                    FROM Forms
+                    WHERE Routine_name = %s
+                """, [routine_name])
+                exercises = cursor.fetchall()
+
+                # Step 3: Delete the routine from the workout_plan table
+                cursor.execute("""
+                    DELETE FROM workout_plan
+                    WHERE Routine_Name = %s AND Trainer_ID = %s AND User_ID = %s
+                """, [routine_name, trainer_id, user_id])
+
+            return Response({"success": "Workout and associated entries deleted successfully"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class StartTimeView(APIView):
+    def post(self, request, start_time, routine_name):
+        user_id = request.session.get('user_id')
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE forms SET start_time = %s WHERE routine_name = %s AND User_id = %s", [start_time, routine_name, user_id])
+
+            return Response({"success": "start time added"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class EndTimeView(APIView):
+    def post(self, request, end_time, routine_name):
+        user_id = request.session.get('user_id')
+        print("printthishit")
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE forms SET end_time = %s, completed = %s WHERE routine_name = %s AND User_id = %s", [end_time, True, routine_name, user_id])
+
+        return Response({"success": "end time added"}, status=status.HTTP_200_OK)
+    
+class CompletedUserWorkoutsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        print(f"User ID from session: {user_id}")
+
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT *
+                    FROM forms
+                    WHERE Trainer_ID IN (
+                        SELECT Trainer_ID FROM forms WHERE User_ID = %s
+                    ) AND Completed = TRUE
+                """, [user_id])
+
+                workouts = cursor.fetchall()
+                if not workouts:
+                    return Response({"error": "No completed workout plans found for user."}, status=status.HTTP_404_NOT_FOUND)
+
+                workout_details = [
+                    {
+                        'Routine_Name': workout[0],
+                        'Trainer_ID': workout[1],
+                        'Exercises': workout[2],
+                        'Duration': workout[3],
+                        'Difficulty_Level': workout[4],
+                        'Completed': workout[5]
+                    }
+                    for workout in workouts
+                ]
+
+                return Response(workout_details, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Error fetching completed workout plans: {str(e)}")
+            return Response({"error": "An error occurred while fetching completed workout plans."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+    
+class DeleteWorkoutView(APIView):
+
     def post(self, request):
         user_id = request.session.get('user_id')
         if not user_id:
