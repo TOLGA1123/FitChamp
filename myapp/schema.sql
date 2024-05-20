@@ -249,11 +249,9 @@ CREATE TABLE IF NOT EXISTS follows (
 CREATE TABLE IF NOT EXISTS aims_to (
   Goal_ID char(11),
   User_ID char(11),
-  Trainer_ID char(11),
-  PRIMARY KEY (Goal_ID, User_ID, Trainer_ID),
-  FOREIGN KEY (Goal_ID, User_ID, Trainer_ID) REFERENCES fitnessgoal (Goal_ID, User_ID, Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+  PRIMARY KEY (Goal_ID, User_ID),
+  FOREIGN KEY (Goal_ID, User_ID) REFERENCES fitnessgoal (Goal_ID, User_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
 -- 2.22 assigned

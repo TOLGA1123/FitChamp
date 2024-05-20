@@ -1548,3 +1548,46 @@ class SelectWorkout(APIView):
             cursor.execute("INSERT INTO forms (routine_name, trainer_id, user_id, completed) VALUES (%s, %s, %s, %s)", (routine_name, trainer_id, user_id, False))
         
         return Response({"success": "Workout plan selected."}, status=status.HTTP_200_OK)
+
+
+class DeleteWorkoutView(APIView):
+    
+    def post(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        routine_name = request.data.get('routineName')
+        trainer_id = request.data.get('trainerId')
+
+        print(f"Received data: {request.data}")
+
+        if not routine_name or not trainer_id:
+            return Response({"error": "Incomplete data provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with connection.cursor() as cursor:
+                # Step 1: Delete entries from the Forms table related to the specified Routine_Name
+                cursor.execute("""
+                    DELETE FROM Forms
+                    WHERE Routine_name = %s AND Trainer_ID = %s AND User_ID = %s
+                """, [routine_name, trainer_id, user_id])
+
+                # Step 2: Find exercises related to the routine and check if they need to be deleted
+                cursor.execute("""
+                    SELECT Exercise_name
+                    FROM Forms
+                    WHERE Routine_name = %s
+                """, [routine_name])
+                exercises = cursor.fetchall()
+
+                # Step 3: Delete the routine from the workout_plan table
+                cursor.execute("""
+                    DELETE FROM workout_plan
+                    WHERE Routine_Name = %s AND Trainer_ID = %s AND User_ID = %s
+                """, [routine_name, trainer_id, user_id])
+
+            return Response({"success": "Workout and associated entries deleted successfully"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
