@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, Button, TextField, Avatar } from '@mui/material';
+import { Box, Grid, Paper, Typography, Button, TextField, Avatar, Snackbar, Alert } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import LogoutButton from './LogoutButton';
+
 const ChangeDetails = () => {
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [oldProfilePicture, setOldProfilePicture] = useState(null);
     const [profilePicture, setProfilePicture] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(false);
     const history = useHistory();
 
     useEffect(() => {
@@ -58,7 +60,10 @@ const ChangeDetails = () => {
         })
         .then(response => {
             console.log('User details updated successfully:', response.data);
-            history.push('/profile');
+            setSuccessMessage(true); // Show success message
+            setTimeout(() => {
+                history.push('/profile');
+            }, 1000);
         })
         .catch(error => {
             console.error('Error updating user details:', error.response ? error.response.data : 'Server did not respond');
@@ -67,6 +72,13 @@ const ChangeDetails = () => {
 
     const handleCancel = () => {
         history.push('/profile');
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSuccessMessage(false);
     };
 
     const renderTextField = (label, value, field) => (
@@ -79,7 +91,7 @@ const ChangeDetails = () => {
             variant="outlined"
         />
     );
-    
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -91,8 +103,8 @@ const ChangeDetails = () => {
     return (
         <Box sx={{ flexGrow: 1 }}>
             <Box sx={{ position: 'absolute', top: 0, right: 0, p: 2 }}>
-        <LogoutButton />
-    </Box>
+                <LogoutButton />
+            </Box>
             <Box sx={{ flexGrow: 1, p: 3 }}>
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={4}>
@@ -139,6 +151,15 @@ const ChangeDetails = () => {
                     </Grid>
                 </Grid>
             </Box>
+            <Snackbar
+                open={successMessage}
+                autoHideDuration={1000}
+                onClose={handleClose}
+            >
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    User details updated successfully!
+                </Alert>
+            </Snackbar>
             <Box sx={{ p: 3 }}></Box>
         </Box>
     );

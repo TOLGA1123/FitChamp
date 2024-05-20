@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, Button, TextField, Avatar } from '@mui/material';
+import { Box, Grid, Paper, Typography, Button, TextField, Avatar, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+
 const TrainerChangeDetails = () => {
     const [trainerDetails, setTrainerDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [oldProfilePicture, setOldProfilePicture] = useState(null);
     const [profilePicture, setProfilePicture] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(false);
     const history = useHistory();
 
     useEffect(() => {
@@ -57,7 +59,10 @@ const TrainerChangeDetails = () => {
         })
         .then(response => {
             console.log('Trainer details updated successfully:', response.data);
-            history.push(`/trainer-profile/${trainerDetails.trainer.trainer_id}/`);
+            setSuccessMessage(true); // Show success message
+            setTimeout(() => {
+                history.push(`/trainer-profile/${trainerDetails.trainer.trainer_id}/`);
+            }, 1000);
         })
         .catch(error => {
             console.error('Error updating trainer details:', error.response ? error.response.data : 'Server did not respond');
@@ -66,6 +71,13 @@ const TrainerChangeDetails = () => {
 
     const handleCancel = () => {
         history.push(`/trainer-profile/${trainerDetails.trainer.trainer_id}/`);
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSuccessMessage(false);
     };
 
     const renderTextField = (label, value, field) => (
@@ -132,6 +144,15 @@ const TrainerChangeDetails = () => {
                     </Grid>
                 </Grid>
             </Box>
+            <Snackbar
+                open={successMessage}
+                autoHideDuration={1000}
+                onClose={handleClose}
+            >
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Trainer details updated successfully!
+                </Alert>
+            </Snackbar>
             <Box sx={{ p: 3 }}></Box>
         </Box>
     );
