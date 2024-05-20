@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, AppBar, IconButton, Menu, MenuItem, LinearProgress } from '@mui/material';
+import { Box, Typography, Paper, Grid, AppBar, IconButton, Menu, MenuItem, LinearProgress, TextField, Select, FormControl, InputLabel, Button } from '@mui/material';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -14,6 +14,9 @@ const GoalsPage = () => {
   const [loading, setLoading] = useState(true);
   const history = useHistory();
   const [sortCriteria, setSortCriteria] = useState('endDate');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
@@ -65,6 +68,36 @@ const GoalsPage = () => {
       })
       .catch(error => {
         console.error('Error fetching sorted goals:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      });
+  };
+
+  const handleSearch = () => {
+    axios.get('http://localhost:8000/search-goals/', { params: { query: searchQuery } })
+      .then(response => {
+        setGoals(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error searching goals:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      });
+  };
+
+  const handleFilter = () => {
+    axios.get('http://localhost:8000/filter-goals/', { params: { type: filterType, startDate: filterStartDate } })
+      .then(response => {
+        setGoals(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error filtering goals:', error.response ? error.response.data : 'Server did not respond');
         setLoading(false);
         if (error.response && error.response.status === 401) {
           history.push('/login');
@@ -165,6 +198,43 @@ const GoalsPage = () => {
         <MenuItem value="GoalName" onClick={handleSortChange}>Goal Name</MenuItem>
         <MenuItem value="progress" onClick={handleSortChange}>Progress</MenuItem>
       </Menu>
+
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <TextField 
+          label="Search" 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+          variant="outlined"
+        />
+        <Button variant="contained" onClick={handleSearch}>Search</Button>
+      </Box>
+
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <FormControl variant="outlined" sx={{ minWidth: 120 }}>
+          <InputLabel>Type</InputLabel>
+          <Select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            label="Type"
+          >
+            <MenuItem value="Weight Loss">Weight Loss</MenuItem>
+            <MenuItem value="Muscle Gain">Muscle Gain</MenuItem>
+            <MenuItem value="Endurance Improvement">Endurance Improvement</MenuItem>
+          </Select>
+        </FormControl>
+
+        <TextField
+          label="Start Date"
+          type="date"
+          value={filterStartDate}
+          onChange={(e) => setFilterStartDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+
+        <Button variant="contained" onClick={handleFilter}>Filter</Button>
+      </Box>
 
       <Grid container spacing={2}>
         {goals.length ? (
