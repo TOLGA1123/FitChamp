@@ -296,7 +296,8 @@ import axios from 'axios';
 import { 
   Box, TextField, Typography, Button, Grid, Paper, IconButton, Autocomplete, 
   Dialog, DialogTitle, DialogContent, DialogActions, RadioGroup, FormControlLabel, 
-  Radio, Slider, AppBar, Tabs, Tab 
+  Radio, Slider, AppBar, Tabs, Tab, 
+  FormControl
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
@@ -326,9 +327,9 @@ const NewWorkoutPlan = () => {
 
   const [newExercise, setNewExercise] = useState({
     Exercise_name: '',
-    type: '',
+    Target_Audiance: '',
     Description: '',
-    Muscle_Group_Targeted: '',
+    Calories_Burned: '',
     Equipment: '',
     Difficulty_Level: 1,
   });
@@ -388,6 +389,7 @@ const NewWorkoutPlan = () => {
       const newExerc = [...workoutPlan.exerc, selectedExercise];
       let sum = 0;
       for (let i = 0; i < newExerc.length; i++) {
+        console.log(newExerc[i].Difficulty_Level)
         sum += parseInt(newExerc[i].Difficulty_Level, 10);
       }
       
@@ -423,7 +425,7 @@ const NewWorkoutPlan = () => {
       .then(response => {
         console.log('Workout Plan Submitted:', response.data);
         if (response.status === 201) {
-          history.push('/workout-plans');
+          history.push('/trainees');
         }
       })
       .catch(error => {
@@ -545,16 +547,18 @@ const NewWorkoutPlan = () => {
             onChange={handleNewExerciseChange}
             sx={{ mb: 2 }}
           />
+          <FormControl>
           <RadioGroup
             name="type"
             value={newExercise.type}
-            onChange={handleExerciseTypeChange}
+            
             sx={{ mb: 2 }}
           >
-            <FormControlLabel value="Beginner" control={<Radio />} label="Beginner" />
-            <FormControlLabel value="Intermediate" control={<Radio />} label="Intermediate" />
-            <FormControlLabel value="Advanced" control={<Radio />} label="Advanced" />
+            <FormControlLabel value="Beginner" onChange={handleExerciseTypeChange} control={<Radio />} label="Beginner" />
+            <FormControlLabel value="Intermediate" onChange={handleExerciseTypeChange} control={<Radio />} label="Intermediate" />
+            <FormControlLabel value="Advanced" onChange={handleExerciseTypeChange} control={<Radio />} label="Advanced" />
           </RadioGroup>
+          </FormControl>
           <TextField
             fullWidth
             label="Description"
@@ -585,8 +589,8 @@ const NewWorkoutPlan = () => {
             onChange={handleSliderChange}
             step={1}
             marks
-            min={newExercise.type === 'Cardio' ? 1 : newExercise.type === 'Hypertrophy' ? 4 : 8}
-            max={newExercise.type === 'Cardio' ? 3 : newExercise.type === 'Hypertrophy' ? 7 : 10}
+            min={newExercise.type === 'Beginner' ? 1 : newExercise.type === 'Intermediate' ? 4 : 8}
+            max={newExercise.type === 'Beginner' ? 3 : newExercise.type === 'Intermediate' ? 7 : 10}
             valueLabelDisplay="auto"
             sx={{ mb: 2 }}
           />

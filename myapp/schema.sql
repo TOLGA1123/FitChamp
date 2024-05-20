@@ -202,6 +202,8 @@ CREATE TABLE IF NOT EXISTS Forms (
   Routine_name varchar(20),
   Trainer_ID char(11),
   User_ID char(11),
+  Start_time varchar(20),
+  End_time varchar(20),
   Completed boolean DEFAULT FALSE,
   PRIMARY KEY (Routine_name, Trainer_ID, User_ID),
   FOREIGN KEY (Routine_name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
