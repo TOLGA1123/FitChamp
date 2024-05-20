@@ -1,204 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, Typography, TextField, Button, Avatar, AppBar, Tabs, Tab, Autocomplete, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { AppBar, Tabs, Tab, Box, Typography,IconButton, TextField, Button, Paper, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import { green } from '@mui/material/colors';
+import PersonIcon from '@mui/icons-material/Person';
+import MessageIcon from '@mui/icons-material/Message';
 import axios from 'axios';
+import moment from 'moment';
 import NavTabs from './NavTabs';
 
-const NewGoalPage = () => {
+const SetGoals = () => {
   const history = useHistory();
-  const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    value: 0.0,
-    startDate: '',
-    endDate: '',
-    status: 'NEW',
-    trainer_id: '',
-    Routine_Name: '',
+  const [selectedTab, setSelectedTab] = useState('');
+  const [goals, setGoals] = useState({
+    goal_name: '',
+    goal_type: 'Weight Loss',
+    target_value: '',
+    end_date: ''
   });
 
-  const [trainers, setTrainers] = useState([]);
-  const [workoutPlans, setWorkoutPlans] = useState([]);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  useEffect(() => {
-    axios.get('http://localhost:8000/trainers/')
-      .then(response => {
-        setTrainers(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching trainers:', error.response ? error.response.data : 'Server did not respond');
-      });
-  }, []);
-
-  useEffect(() => {
-    if (formData.type === 'Fitness Goals') {
-      axios.get('http://localhost:8000/workout-plans/')
-        .then(response => {
-          
-          setWorkoutPlans(response.data);
-          console.log('typeshi:',response.data);
-        })
-        .catch(error => {
-          console.error('Error fetching workout plans:', error.response ? error.response.data : 'Server did not respond');
-        });
-    } else {
-      setWorkoutPlans([]);
-    }
-  }, [formData.type]);
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    axios.post('http://localhost:8000/new-goal/', formData)
-      .then(response => {
-        console.log('Goal Submitted:', response.data);
-        if (response.status === 201) {
-          history.push('/goals');
-        }
-      })
-      .catch(error => {
-        console.error('New Goal error:', error.response ? error.response.data : 'Server did not respond');
-      });
-  };
-
-  
   const handleRouteChange = (event, newValue) => {
+    setSelectedTab(newValue);
     history.push(`/${newValue}`);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setGoals({ ...goals, [name]: value });
+  };
+  const handleMSGClick = () => {
+    history.push('/messages');
   };
 
   const handleProfileClick = () => {
     history.push('/profile');
   };
 
+  const handleSubmit = () => {
+    const startDate = moment().format('YYYY-MM-DD');
+    const payload = {
+      ...goals,
+      start_date: startDate,
+    };
+
+    axios.post('http://localhost:8000/new-goal/', payload)
+      .then(response => {
+        console.log('Goals set:', response.data);
+        history.push('/goals')
+      })
+      .catch(error => {
+        console.error('Error setting goals:', error.response ? error.response.data : 'Server did not respond');
+      });
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+      <Box sx={{ flexGrow:1 }}>
+      <AppBar position="static">
         <NavTabs activeTab="goals" />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-          <Button onClick={handleProfileClick}>
-            <Avatar />
-          </Button>
-        </Box>
-      </AppBar>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Set New Goal
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Goal Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>Goal Type</InputLabel>
-              <Select
-                label="Goal Type"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-              >
-                <MenuItem value="Fitness Goals">Fitness Goals</MenuItem>
-                <MenuItem value="Diet Goals">Diet Goals</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          {formData.type === 'Fitness Goals' && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
+            <PersonIcon />
+          </IconButton>
+          <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+            Create New Goal
+          </Typography>
 
-            
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                
-                <Autocomplete
-          options={workoutPlans}
-          getOptionLabel={(option) => option.Routine_Name}
-          onChange={(event, newValue) => {
-            console.log('Selected Routine:', newValue);
-            setFormData((prevPlan) => ({
-              ...prevPlan,
-              Routine_Name: newValue ? newValue.Routine_Name : null
-            }));
-          }}
-          renderInput={(params) => <TextField {...params} label="Select Workout" />}
-          sx={{ mt: 2 }}
-        />
-              </FormControl>
-              
-            </Grid>
-          )}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Goal Value"
-              name="value"
-              value={formData.value}
+          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
+            <MessageIcon />
+          </IconButton>
+        </Box>
+        </AppBar>
+    </Box>
+      <Box sx={{ padding: 2 }}>
+        <Paper elevation={3} sx={{ padding: 2 }}>
+          <Typography variant="h6">Set Your Fitness Goals</Typography>
+          <TextField
+            label="Goal Name"
+            name="goal_name"
+            value={goals.goal_name}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <FormControl component="fieldset" margin="normal">
+            <FormLabel component="legend">Goal Type</FormLabel>
+            <RadioGroup
+              name="goal_type"
+              value={goals.goal_type}
               onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Start Date"
-              name="startDate"
-              type="date"
-              value={formData.startDate}
-              onChange={handleChange}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="End Date"
-              name="endDate"
-              type="date"
-              value={formData.endDate}
-              onChange={handleChange}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-        </Grid>
-        <Autocomplete
-          options={trainers}
-          getOptionLabel={(option) => option.user_name}
-          onChange={(event, newValue) => {
-            console.log('Selected Trainer:', newValue);
-            setFormData((prevPlan) => ({
-              ...prevPlan,
-              trainer_id: newValue ? newValue.trainer_id : null
-            }));
-          }}
-          renderInput={(params) => <TextField {...params} label="Select Trainer" />}
-          sx={{ mt: 2 }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          sx={{ mt: 2 }}
-        >
-          Submit
-        </Button>
+              row
+            >
+              <FormControlLabel value="Weight Loss" control={<Radio />} label="Weight Loss" />
+              <FormControlLabel value="Muscle Gain" control={<Radio />} label="Muscle Gain" />
+              <FormControlLabel value="Endurance Improvement" control={<Radio />} label="Endurance Improvement" />
+            </RadioGroup>
+          </FormControl>
+          <TextField
+            label="Target Value"
+            name="target_value"
+            value={goals.target_value}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="End Date"
+            name="end_date"
+            value={goals.end_date}
+            onChange={handleChange}
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            margin="normal"
+          />
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            Set Goals
+          </Button>
+        </Paper>
       </Box>
     </Box>
   );
 };
 
-export default NewGoalPage;
+export default SetGoals;

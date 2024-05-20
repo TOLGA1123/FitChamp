@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import { Box, Typography, LinearProgress, Paper, Grid, Button  } from '@mui/material';
+import { Box, Typography, LinearProgress, Paper, Grid, Button } from '@mui/material';
 import moment from 'moment';
 import axios from 'axios';
 import NavTabs from './NavTabs';
 
 const GoalDetailPage = () => {
-
   const { goalId } = useParams();
   const [goalDetails, setGoalDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +23,6 @@ const GoalDetailPage = () => {
         setError(error.response ? error.response.data : 'Server did not respond');
         setLoading(false);
       });
-      
   }, [goalId]);
 
   const handleDelete = () => {
@@ -55,21 +53,26 @@ const GoalDetailPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      <NavTabs activeTab="goals" />
       <Typography variant="h4" gutterBottom>
-        {goalDetails.name} - Progress
+        {goalDetails.goal_name} - Progress
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h6">Goal Type:</Typography>
-          <Paper sx={{ p: 2 }}>{goalDetails.type}</Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography variant="h6">Goal ID:</Typography>
-          <Paper sx={{ p: 2 }}>{goalDetails.id}</Paper>
+          <Typography variant="h6">Goal Name:</Typography>
+          <Paper sx={{ p: 2 }}>{goalDetails.goal_name}</Paper>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">Goal Type:</Typography>
-          <Paper sx={{ p: 2 }}>{goalDetails.type}</Paper>
+          <Paper sx={{ p: 2 }}>{goalDetails.goal_type}</Paper>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="h6">Initial Value:</Typography>
+          <Paper sx={{ p: 2 }}>{goalDetails.initial_value}</Paper>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="h6">Target Value:</Typography>
+          <Paper sx={{ p: 2 }}>{goalDetails.target_value}</Paper>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">Start Date:</Typography>
@@ -80,17 +83,15 @@ const GoalDetailPage = () => {
           <Paper sx={{ p: 2 }}>{goalDetails.end_date}</Paper>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h6">Trainer:</Typography>
-          <Paper sx={{ p: 2 }}>{goalDetails.trainer_name}</Paper>
-        </Grid>
-        <Grid item xs={12}>
           <Typography variant="h6">Completion:</Typography>
           <LinearProgress variant="determinate" value={calculateProgress(goalDetails.start_date, goalDetails.end_date)} />
           <Typography>{Math.round(calculateProgress(goalDetails.start_date, goalDetails.end_date))}%</Typography>
         </Grid>
-        <Button variant="contained" color="secondary" onClick={handleDelete}>
+        <Grid item xs={12}>
+          <Button variant="contained" color="secondary" onClick={handleDelete}>
             Delete Goal
-        </Button>
+          </Button>
+        </Grid>
       </Grid>
     </Box>
   );

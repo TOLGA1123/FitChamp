@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, List, ListItem, ListItemText,AppBar, Tabs, Tab, IconButton, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Paper, Grid, AppBar, IconButton, Menu, MenuItem, LinearProgress } from '@mui/material';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { green } from '@mui/material/colors';
 import MessageIcon from '@mui/icons-material/Message';
+import SortIcon from '@mui/icons-material/Sort';
 import NavTabs from './NavTabs';
 axios.defaults.withCredentials = true;
 
@@ -15,9 +13,36 @@ const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const history = useHistory();
-  const [sortCriteria, setSortCriteria] = useState('value');
+  const [sortCriteria, setSortCriteria] = useState('endDate');
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
+    fetchGoals();
+  }, []);
+
+  useEffect(() => {
+    if (sortCriteria) {
+      fetchSortedGoals(sortCriteria);
+    }
+  }, [sortCriteria]);
+
+  useEffect(() => {
+    const updateGoalsAndFetch = async () => {
+      try {
+        await axios.get('http://localhost:8000/auto-update-goals/');
+        fetchSortedGoals(sortCriteria);
+      } catch (error) {
+        console.error('Error updating goals:', error.response ? error.response.data : 'Server did not respond');
+        setLoading(false);
+        if (error.response && error.response.status === 401) {
+          history.push('/login');
+        }
+      }
+    };
+    updateGoalsAndFetch();
+  }, [sortCriteria, history]);
+
+  const fetchGoals = () => {
     axios.get('http://localhost:8000/goals/')
       .then(response => {
         setGoals(response.data);
@@ -30,26 +55,22 @@ const GoalsPage = () => {
           history.push('/login');
         }
       });
-  }, [history]);
+  };
 
-  const fetchGoals = (sort_by) => {
+  const fetchSortedGoals = (sort_by) => {
     axios.get('http://localhost:8000/sort-goals/', { params: { sort_by } })
       .then(response => {
         setGoals(response.data);
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error fetching goals:', error.response ? error.response.data : 'Server did not respond');
+        console.error('Error fetching sorted goals:', error.response ? error.response.data : 'Server did not respond');
         setLoading(false);
         if (error.response && error.response.status === 401) {
           history.push('/login');
         }
       });
   };
-
-  useEffect(() => {
-    fetchGoals(sortCriteria);
-  }, [sortCriteria, history]);
 
   const handleGoalClick = (goalId) => {
     history.push(`/goal/${goalId.trim()}`);
@@ -60,9 +81,9 @@ const GoalsPage = () => {
   };
 
   const handleCreateNewGoal = () => {
-    // Navigate to the goal creation page
     history.push('/new-goal');
   };
+
   const handleMSGClick = () => {
     history.push('/messages');
   };
@@ -72,53 +93,46 @@ const GoalsPage = () => {
   };
 
   const handleSortChange = (event) => {
-    setSortCriteria(event.target.value);
+    setSortCriteria(event.target.getAttribute('value'));
+    setAnchorEl(null);
   };
 
-  const sortGoals = (goals, criteria) => {
-    switch (criteria) {
-      case 'value':
-        return goals.sort((a, b) => a.value - b.value);
-      case 'endDate':
-        return goals.sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
-      case 'trainerName':
-        return goals.sort((a, b) => a.trainer_name.localeCompare(b.trainer_name));
-      default:
-        return goals;
-    }
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const sortedGoals = sortGoals([...goals], sortCriteria);
-
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   if (loading) {
-    return( 
-      <Box sx={{ flexGrow:1 }}>
-      <AppBar position="static">
-        <NavTabs activeTab="goals" />
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-          <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
-            <PersonIcon />
-          </IconButton>
-          <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-            Your Goals
-          </Typography>
-          <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleCreateNewGoal}>
-            <AddCircleOutlineIcon />
-            <Typography variant="button">New Goal</Typography>
-          </IconButton>
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
-        </Box>
+    return (
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <NavTabs activeTab="goals" />
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+            <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>
+              <PersonIcon />
+            </IconButton>
+            <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+              Your Goals
+            </Typography>
+            <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleCreateNewGoal}>
+              <AddCircleOutlineIcon />
+              <Typography variant="button">New Goal</Typography>
+            </IconButton>
+            <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
+              <MessageIcon />
+            </IconButton>
+          </Box>
         </AppBar>
-      <Typography>Loading...</Typography>
-    </Box>
+        <Typography>Loading...</Typography>
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ flexGrow:1 }}>
+    <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <NavTabs activeTab="goals" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
@@ -135,29 +149,40 @@ const GoalsPage = () => {
           <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
             <MessageIcon />
           </IconButton>
+          <IconButton sx={{ position: 'absolute', right: 80 }} color="inherit" onClick={handleMenuOpen}>
+            <SortIcon />
+          </IconButton>
         </Box>
       </AppBar>
 
-      <FormControl sx={{ m: 1, minWidth: 120 }}>
-        <InputLabel>Sort By</InputLabel>
-        <Select value={sortCriteria} onChange={handleSortChange} label="Sort By">
-          <MenuItem value="value">Value</MenuItem>
-          <MenuItem value="endDate">End Date</MenuItem>
-          <MenuItem value="trainerName">Trainer Name</MenuItem>
-        </Select>
-      </FormControl>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem value="startDate" onClick={handleSortChange}>Start Date</MenuItem>
+        <MenuItem value="endDate" onClick={handleSortChange}>End Date</MenuItem>
+        <MenuItem value="GoalName" onClick={handleSortChange}>Goal Name</MenuItem>
+        <MenuItem value="progress" onClick={handleSortChange}>Progress</MenuItem>
+      </Menu>
+
       <Grid container spacing={2}>
         {goals.length ? (
           goals.map((goal) => (
-            <Grid item xs={12} key={goal.id}>
-              <Paper sx={{ p: 2 }} onClick={() => handleGoalClick(goal.id)}>
-                <Typography variant="h6">Goal Name: {goal.name}</Typography>
-                <Typography>Goal Type: {goal.type}</Typography>
-                <Typography>Value: {goal.value}</Typography>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={goal.goal_id}>
+              <Paper sx={{ p: 2, height: '100%', margin: '8px' }} onClick={() => handleGoalClick(goal.goal_id)}>
+                <Typography variant="h6">Goal Name: {goal.goal_name}</Typography>
+                <Typography>Goal Type: {goal.goal_type}</Typography>
+                <Typography>Current Value: {goal.current_value}</Typography>
+                <Typography>Target Value: {goal.target_value}</Typography>
                 <Typography>Start Date: {goal.start_date}</Typography>
                 <Typography>End Date: {goal.end_date}</Typography>
-                <Typography>Status: {goal.status}</Typography>
-                <Typography>Trainer: {goal.trainer_name}</Typography>
+                <Typography>Status: {goal.achieved ? 'Achieved' : 'Not Achieved'}</Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Typography>Progress</Typography>
+                  <LinearProgress variant="determinate" value={goal.progress} />
+                  <Typography>{goal.progress}%</Typography>
+                </Box>
               </Paper>
             </Grid>
           ))
