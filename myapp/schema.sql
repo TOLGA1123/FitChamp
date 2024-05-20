@@ -86,16 +86,31 @@ CREATE TABLE IF NOT EXISTS workout_plan (
 );
 
 CREATE TABLE IF NOT EXISTS nutrition_plan (
-  Nutrition_Plan_Name varchar(40),
+  NutritionPlan_ID varchar(11),
   User_ID char(11),
-  Trainer_ID char(11),
-  Meals varchar(20)[],
   Total_Calories numeric(8,0) NOT NULL,
-  Meal_Schedule varchar(200) NOT NULL,
-  PRIMARY KEY (Nutrition_Plan_Name, User_ID, Trainer_ID),
-  UNIQUE (Nutrition_Plan_Name),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+  PRIMARY KEY (NutritionPlan_ID),
+  UNIQUE (NutritionPlan_ID),
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Meal (
+User_ID char(11),
+Meal_name varchar(20) UNIQUE,
+Calories numeric(5,1) NOT NULL,
+Description varchar(200) NOT NULL,
+PRIMARY KEY (Meal_name, User_ID),
+FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Diet (
+  Meal_name varchar(20),
+  NutritionPlan_ID varchar(11),
+  User_ID char(11),
+  Eaten boolean DEFAULT FALSE,
+  PRIMARY KEY (Meal_name, NutritionPlan_ID),
+  FOREIGN KEY (NutritionPlan_ID) REFERENCES nutrition_plan (NutritionPlan_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS fitnessgoal (
@@ -193,28 +208,6 @@ CREATE TABLE IF NOT EXISTS Forms (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Meal (
-User_ID char(11),
-Meal_name varchar(20) UNIQUE,
-Calories numeric(5,1) NOT NULL,
-Description varchar(200) NOT NULL,
-PRIMARY KEY (Meal_name, User_ID),
-FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
-
-CREATE TABLE IF NOT EXISTS Diet (
-  Meal_name varchar(20),
-  Nutrition_Plan_Name varchar(40),
-  Trainer_ID char(11),
-  User_ID char(11),
-  Eaten boolean DEFAULT FALSE,
-  PRIMARY KEY (Meal_name, Nutrition_Plan_Name, Trainer_ID, User_ID),
-  FOREIGN KEY (Nutrition_Plan_Name, Trainer_ID, User_ID) REFERENCES nutrition_plan (Nutrition_Plan_Name, Trainer_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
 -- 2.18 Has
 CREATE TABLE IF NOT EXISTS Has (
   Achievement_ID char(11),
@@ -237,13 +230,11 @@ CREATE TABLE IF NOT EXISTS takes_up (
 
 -- 2.20 follows
 CREATE TABLE IF NOT EXISTS follows (
-  Nutrition_plan_name varchar(40),
+  NutritionPlan_ID varchar(11),
   User_ID char(11),
-  Trainer_ID char(11),
-  PRIMARY KEY (Nutrition_plan_name, User_ID, Trainer_ID),
-  FOREIGN KEY (Nutrition_plan_name, User_ID, Trainer_ID) REFERENCES nutrition_plan (Nutrition_plan_name, User_ID, Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+  PRIMARY KEY (NutritionPlan_ID, User_ID),
+  FOREIGN KEY (NutritionPlan_ID, User_ID) REFERENCES nutrition_plan (NutritionPlan_ID, User_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
 -- 2.21 aims_to
@@ -348,13 +339,12 @@ CREATE TABLE IF NOT EXISTS contains (
 
 -- 2.31 adds
 CREATE TABLE IF NOT EXISTS adds (
-  Nutrition_plan_name varchar(40),
+  NutritionPlan_ID varchar(11),
   User_ID char(11),
   Trainer_ID char(11),
-  PRIMARY KEY (Nutrition_plan_name, User_ID, Trainer_ID),
-  FOREIGN KEY (Nutrition_plan_name, User_ID, Trainer_ID) REFERENCES nutrition_plan (Nutrition_plan_name, User_ID, Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+  PRIMARY KEY (NutritionPlan_ID, User_ID),
+  FOREIGN KEY (NutritionPlan_ID, User_ID) REFERENCES nutrition_plan (NutritionPlan_ID, User_ID) ON DELETE CASCADE,
+  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
 -- 2.32 plans
@@ -393,28 +383,6 @@ CREATE TABLE IF NOT EXISTS overview (
   PRIMARY KEY (User_ID, Report_ID),
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Report_ID) REFERENCES report (Report_ID) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS Meal (
-User_ID char(11),
-Meal_name varchar(20) UNIQUE,
-Calories numeric(5,1) NOT NULL,
-Description varchar(200) NOT NULL,
-PRIMARY KEY (Meal_name, User_ID),
-FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
-
-CREATE TABLE IF NOT EXISTS Diet (
-  Meal_name varchar(20),
-  Nutrition_Plan_Name varchar(40),
-  Trainer_ID char(11),
-  User_ID char(11),
-  Completed boolean DEFAULT FALSE,
-  PRIMARY KEY (Meal_name, Nutrition_Plan_Name, Trainer_ID, User_ID),
-  FOREIGN KEY (Nutrition_Plan_Name, Trainer_ID, User_ID) REFERENCES nutrition_plan (Nutrition_Plan_Name, Trainer_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE FUNCTION delete_related_data_function()
