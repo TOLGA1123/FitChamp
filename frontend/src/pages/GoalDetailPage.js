@@ -37,15 +37,6 @@ const GoalDetailPage = () => {
       });
   };
 
-  const calculateProgress = (start, end) => {
-    const startDate = moment(start);
-    const endDate = moment(end);
-    const today = moment();
-    const totalDuration = endDate.diff(startDate, 'days');
-    const daysPassed = today.diff(startDate, 'days');
-    const progress = Math.min((daysPassed / totalDuration) * 100, 100);
-    return Math.max(0, progress);
-  };
 
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>Error: {error}</Typography>;
@@ -84,8 +75,8 @@ const GoalDetailPage = () => {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">Completion:</Typography>
-          <LinearProgress variant="determinate" value={calculateProgress(goalDetails.start_date, goalDetails.end_date)} />
-          <Typography>{Math.round(calculateProgress(goalDetails.start_date, goalDetails.end_date))}%</Typography>
+          <LinearProgress variant="determinate" value={goalDetails.progress} />
+          <Typography>{Math.round(goalDetails.progress)}%</Typography>
         </Grid>
         <Grid item xs={12}>
           <Button variant="contained" color="secondary" onClick={handleDelete}>

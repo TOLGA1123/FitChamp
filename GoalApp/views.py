@@ -130,12 +130,13 @@ class NewGoalView(APIView):
         goal_id = generate_unique_id()
         goal_name = request.data.get('goal_name')
         goal_type = request.data.get('goal_type')
-        target_value = request.data.get('target_value')
+        target_value = int(request.data.get('target_value'))
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         achieved = request.data.get('achieved', False)
         current_value = 0
         initial_value = 0
+        progress = 0
 
         print(f"Received Data: goal_id={goal_id}, user_id={user_id}, goal_name={goal_name}, goal_type={goal_type}, target_value={target_value}, start_date={start_date}, end_date={end_date}, achieved={achieved}")
 
@@ -147,12 +148,12 @@ class NewGoalView(APIView):
                         cursor.execute("SELECT Weight FROM trainee WHERE User_ID = %s", [user_id])
                         result = cursor.fetchone()
                         if result:
-                            current_value = result[0]  # Set current_value to the user's weight
+                            current_value = int(result[0])   # Set current_value to the user's weight
                             initial_value = current_value
 
                     # Calculate progress
                     if target_value != initial_value:
-                        progress = abs(current_value - initial_value) / abs(target_value - initial_value) * 100
+                        progress = round(abs(current_value - initial_value))  / round(abs(target_value - initial_value)) * 100
                     else:
                         progress = 0
 
