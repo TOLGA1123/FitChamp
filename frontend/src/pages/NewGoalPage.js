@@ -93,6 +93,7 @@ const SetGoals = () => {
               <FormControlLabel value="Weight Loss" control={<Radio />} label="Weight Loss" />
               <FormControlLabel value="Muscle Gain" control={<Radio />} label="Muscle Gain" />
               <FormControlLabel value="Endurance Improvement" control={<Radio />} label="Endurance Improvement" />
+              <FormControlLabel value= "Nutritional" control={<Radio />} label="Nutritional" />
             </RadioGroup>
           </FormControl>
           <TextField
