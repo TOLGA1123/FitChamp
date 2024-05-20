@@ -10,6 +10,9 @@ import { useEffect, useState } from 'react';
 import LogoutButton from './LogoutButton';
 axios.defaults.withCredentials = true;
 
+const darkMintGreen = '#2E8B57'; // Define your dark mint green color
+const darkAshGrey = '#4B4B4B';
+
 const TraineesPage = () => {
   const [loading, setLoading] = useState(true);
   const history = useHistory();
@@ -31,7 +34,40 @@ const TraineesPage = () => {
       });
   }, [history]);
   if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
+
+    return ( <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static" >
+        <Tabs
+          sx={{ backgroundColor: 'black' }}
+          variant="fullWidth"
+        >
+          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: darkMintGreen }} />
+          <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
+          <LogoutButton />
+        </Tabs>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+          <IconButton >
+            <PersonIcon />
+          </IconButton>
+          <Typography variant="h6" color="inherit" component="div">
+            Your Trainees
+          </Typography>
+          <IconButton  color="inherit">
+            <AddCircleOutlineIcon />
+            <Typography variant="button">New Client</Typography>
+          </IconButton>
+          <IconButton >
+            <MessageIcon />
+          </IconButton>
+          <IconButton  color="inherit">
+          <AddCircleOutlineIcon />
+          <Typography variant="button">New Workout Plan</Typography>
+        </IconButton>
+        </Box>
+      </AppBar>
+
+    <div>Loading...</div>
+    </Box>); // Display a loading state while fetching user details
   }
 
   if (!Trainees) {
@@ -71,8 +107,8 @@ const TraineesPage = () => {
           sx={{ backgroundColor: 'black' }}
           variant="fullWidth"
         >
-          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: 'black' }} />
+          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: darkMintGreen }} />
+          <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
           <LogoutButton />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', height: '60px' }}>

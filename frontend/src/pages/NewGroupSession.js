@@ -243,6 +243,7 @@ const CreateGroupSession = () => {
     axios.post('http://localhost:8000/create-session/', data)
       .then(response => {
         console.log('Form submitted', response.data);
+        history.push('/group-sessions');
       })
       .catch(error => {
         console.error('Error submitting form:', error.response ? error.response.data : 'Server did not respond');
