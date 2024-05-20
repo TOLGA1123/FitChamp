@@ -16,7 +16,6 @@ from rest_framework.exceptions import NotFound
 from datetime import datetime
 
 
-
 # Create your views here.
 
 
@@ -30,11 +29,10 @@ def generate_unique_id():
 
 class GoalsView(APIView):
     def get(self, request):
-        print("GoalsView - Session Key:", request.session.session_key)
+        print("GoalsView - Session Key:")
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
-        print('Session data set:', request.session.items())
 
         if user_id and username and email:
             try:
@@ -121,7 +119,7 @@ class GoalDetailView(APIView):
 
 class NewGoalView(APIView):
     def post(self, request):
-        print("GoalDetailView - Session Key:", request.session.session_key)
+        print("NewGoalView - Session Key:")
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
@@ -151,9 +149,17 @@ class NewGoalView(APIView):
                             current_value = int(result[0])   # Set current_value to the user's weight
                             initial_value = current_value
 
+                    elif goal_type.lower() == 'nutritional':
+                        # Fetch the user's total calories from the nutrition plan
+                        cursor.execute("SELECT Total_Calories FROM nutrition_plan WHERE User_ID = %s", [user_id])
+                        result = cursor.fetchone()
+                        if result:
+                            initial_value = int(result[0])   # Set initial_value to the total calories
+                            current_value = initial_value
+                            print(current_value)
                     # Calculate progress
                     if target_value != initial_value:
-                        progress = round(abs(current_value - initial_value))  / round(abs(target_value - initial_value)) * 100
+                        progress = round(abs(current_value - initial_value) / abs(target_value - initial_value) * 100)
                     else:
                         progress = 0
 
@@ -171,15 +177,15 @@ class NewGoalView(APIView):
                 return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
                           
 class SortGoalsView(APIView):
     def get(self, request):
-        print("SortGoalsView - Session Key:", request.session.session_key)
+        print("SortGoalsView - Session Key:")
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
         sort_criteria = request.query_params.get('sort_by', 'value')
-        print('Session data set:', request.session.items())
 
         if user_id and username and email:
             try:
@@ -260,54 +266,6 @@ class DeleteGoalView(APIView):
 
             return Response({"message": "Goal deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-class AutoUpdateGoalsView(APIView):
-    def get(self, request):
-        user_id = request.session.get('user_id')
-        if not user_id:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            with connection.cursor() as cursor:
-                # Fetch user weight if needed
-                cursor.execute("SELECT Weight FROM trainee WHERE User_ID = %s", [user_id])
-                user_weight_result = cursor.fetchone()
-                user_weight = user_weight_result[0] if user_weight_result else None
-
-                # Fetch goals
-                cursor.execute("""
-                    SELECT Goal_ID, Goal_Type, initial_value, target_value
-                    FROM fitnessgoal
-                    WHERE User_ID = %s
-                """, [user_id])
-                goals = cursor.fetchall()
-
-                # Update current values and progress based on goal type
-                for goal in goals:
-                    goal_id, goal_type, initial_value, target_value = goal
-                    if goal_type.lower() in ['weight loss', 'muscle gain'] and user_weight is not None:
-                        current_value = user_weight
-                    else:
-                        current_value = current_value  # Default behavior for other types
-
-                    # Calculate progress
-                    if target_value != initial_value:
-                        progress = abs(current_value - initial_value) / abs(target_value - initial_value) * 100
-                    else:
-                        progress = 0
-
-                    cursor.execute("""
-                        UPDATE fitnessgoal
-                        SET current_value = %s, progress = %s
-                        WHERE Goal_ID = %s AND User_ID = %s
-                    """, [current_value, progress, goal_id, user_id])
-
-                connection.commit()
-
-            return Response({"message": "Goals updated successfully"}, status=status.HTTP_200_OK)
-        except Exception as e:
-            connection.rollback()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class SearchGoalView(APIView):
@@ -405,5 +363,139 @@ class FilterGoalsView(APIView):
                 return Response(goals_list, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'No goals found matching the specified criteria.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AutoUpdateGoalsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch user weight if needed
+                cursor.execute("SELECT Weight FROM trainee WHERE User_ID = %s", [user_id])
+                user_weight_result = cursor.fetchone()
+                user_weight = user_weight_result[0] if user_weight_result else None
+
+                # Fetch goals
+                cursor.execute("""
+                    SELECT Goal_ID, Goal_Type, initial_value, target_value
+                    FROM fitnessgoal
+                    WHERE User_ID = %s
+                """, [user_id])
+                goals = cursor.fetchall()
+
+                # Update current values and progress based on goal type
+                for goal in goals:
+                    goal_id, goal_type, initial_value, target_value = goal
+                    current_value = None
+
+                    if goal_type.lower() in ['weight loss', 'muscle gain'] and user_weight is not None:
+                        current_value = user_weight
+                    elif goal_type.lower() == 'nutritional':
+                        cursor.execute("SELECT Total_Calories FROM nutrition_plan WHERE User_ID = %s", [user_id])
+                        nutrition_plan_result = cursor.fetchone()
+                        if nutrition_plan_result:
+                            current_value = nutrition_plan_result[0]
+
+                    if current_value is not None:
+                        # Calculate progress
+                        if target_value != initial_value:
+                            print("Target Value: ", target_value)
+                            print("Initial Value: ", initial_value)
+                            print("Current Value: ", current_value)
+                            progress = abs(current_value - initial_value) / abs(target_value - initial_value) * 100
+                            print(progress)
+                        else:
+                            progress = 0
+
+                        cursor.execute("""
+                            UPDATE fitnessgoal
+                            SET current_value = %s, progress = %s
+                            WHERE Goal_ID = %s AND User_ID = %s
+                        """, [current_value, progress, goal_id, user_id])
+
+                connection.commit()
+                
+            IsAchievementView().post(request)
+
+            return Response({"message": "Goals updated successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class IsAchievementView(APIView):
+    def post(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch goals with progress 100% or more
+                cursor.execute("""
+                    SELECT Goal_ID, Goal_Name, Goal_Type, End_Date, target_value
+                    FROM fitnessgoal
+                    WHERE User_ID = %s AND progress >= 100
+                """, [user_id])
+                goals = cursor.fetchall()
+
+                for goal in goals:
+                    goal_id, goal_name, goal_type, end_date, target_value = goal
+                    achievement_id = generate_unique_id()
+                    achievement_date = datetime.now().strftime('%Y-%m-%d')
+
+                    # Insert into achievement table
+                    cursor.execute("""
+                        INSERT INTO achievement (Achievement_ID, User_ID, Achievement_Name, Achievement_Type, Achievement_Date, target_value)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, [achievement_id, user_id, goal_name, goal_type, achievement_date, target_value])
+
+                    delete_goal_view = DeleteGoalView()
+                    delete_goal_response = delete_goal_view.delete(request, goal_id)
+                    if delete_goal_response.status_code != 204:
+                        raise Exception("Error deleting goal: " + delete_goal_response.data.get('error', 'Unknown error'))
+
+                connection.commit()
+            return Response({"message": "Goals converted to achievements successfully"}, status=status.HTTP_200_OK)
+        except IntegrityError as e:
+            connection.rollback()
+            return Response({"error": "Database error: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AchievementsView(APIView):
+    def get(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            with connection.cursor() as cursor:
+                # Fetch achievements for the user
+                cursor.execute("""
+                    SELECT Achievement_ID, Achievement_Name, Achievement_Type, Achievement_Date, target_value
+                    FROM achievement
+                    WHERE User_ID = %s
+                """, [user_id])
+                achievements = cursor.fetchall()
+
+                # Prepare the data for the response
+                achievements_list = [
+                    {
+                        "achievement_id": achievement[0],
+                        "achievement_name": achievement[1],
+                        "achievement_type": achievement[2],
+                        "achievement_date": achievement[3],
+                        "target_value": achievement[4],
+                    }
+                    for achievement in achievements
+                ]
+
+            return Response({"achievements": achievements_list}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
