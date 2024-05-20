@@ -951,6 +951,7 @@ class JoinGroupSessionView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class GroupSessionsView(APIView):
     def get(self, request):
         user_id = request.session.get('user_id')
@@ -993,29 +994,6 @@ AND gs.Group_Session_ID NOT IN (
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
-
-def display_workouts(user_id):
-    try:
-        with connection.cursor() as cursor:
-            
-            cursor.execute("""
-                SELECT wp.Routine_Name, wp.Description, wp.Duration, wp.Difficulty_Level
-                FROM workout_plan wp
-                JOIN assigned a ON wp.Routine_Name = a.Routine_name AND wp.Trainer_ID = a.Trainer_ID AND wp.User_ID = a.User_ID
-                WHERE wp.User_ID = %s
-            """, [user_id])
-            
-            workouts = cursor.fetchall()
-            
-            if not workouts:
-                return {"error": "No current workouts found for the user."}
-            
-            return {"workouts": workouts}
-    except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
-
-
-
 class DeleteUserView(APIView):
     def delete(self, request, user_id):
         user_id = request.session.get('user_id')

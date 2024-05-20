@@ -46,34 +46,6 @@ CREATE TABLE IF NOT EXISTS report (
   Content varchar(400)
 );
 
-CREATE TABLE IF NOT EXISTS chat (
-  Trainer_ID char(11),
-  User_ID char(11),
-  Chat_ID char(11) PRIMARY KEY,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS message (
-  Message_ID char(11),
-  User_ID char(11),
-  Trainer_ID char(11),
-  Content varchar(400),
-  PRIMARY KEY (Message_ID, User_ID, Trainer_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS progress (
-  Progress_ID char(11),
-  User_ID char(11),
-  Date varchar(20),
-  Metric_Type varchar(20),
-  Metric_Value numeric(3,1),
-  PRIMARY KEY (Progress_ID, User_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS workout_plan (
   Routine_Name varchar(20),
   Trainer_ID char(11),
@@ -180,24 +152,6 @@ CREATE TABLE IF NOT EXISTS Exercise (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
 );
 
--- 2.15 Cardio
-CREATE TABLE IF NOT EXISTS Cardio (
-  User_ID char(11),
-  Exercise_name varchar(20),
-  Intensity_Level varchar(20) NOT NULL,
-  Cardio_Duration varchar(40) NOT NULL,
-  PRIMARY KEY (User_ID, Exercise_name),
-  FOREIGN KEY (User_ID, Exercise_name) REFERENCES Exercise (User_ID, Exercise_name) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS HyperTrophy (
-  User_ID char(11),
-  Exercise_name varchar(20) PRIMARY KEY,
-  Number_of_Sets varchar(40) NOT NULL,
-  Rest_Durations varchar(40) NOT NULL,
-  FOREIGN KEY (Exercise_name, User_ID) REFERENCES Exercise (Exercise_name, User_ID) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS Forms (
   Routine_name varchar(20),
   Trainer_ID char(11),
@@ -205,55 +159,6 @@ CREATE TABLE IF NOT EXISTS Forms (
   Start_time varchar(20),
   End_time varchar(20),
   Completed boolean DEFAULT FALSE,
-  PRIMARY KEY (Routine_name, Trainer_ID, User_ID),
-  FOREIGN KEY (Routine_name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.18 Has
-CREATE TABLE IF NOT EXISTS Has (
-  Achievement_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Achievement_ID, User_ID),
-  FOREIGN KEY (Achievement_ID, User_ID) REFERENCES achievement (Achievement_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.19 takes_up
-CREATE TABLE IF NOT EXISTS takes_up (
-  Routine_name varchar(20),
-  Trainer_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Routine_name, Trainer_ID, User_ID),
-  FOREIGN KEY (Routine_name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.20 follows
-CREATE TABLE IF NOT EXISTS follows (
-  NutritionPlan_ID varchar(11),
-  User_ID char(11),
-  PRIMARY KEY (NutritionPlan_ID, User_ID),
-  FOREIGN KEY (NutritionPlan_ID, User_ID) REFERENCES nutrition_plan (NutritionPlan_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.21 aims_to
-CREATE TABLE IF NOT EXISTS aims_to (
-  Goal_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Goal_ID, User_ID),
-  FOREIGN KEY (Goal_ID, User_ID) REFERENCES fitnessgoal (Goal_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.22 assigned
-CREATE TABLE IF NOT EXISTS assigned (
-  Routine_name varchar(20),
-  Trainer_ID char(11),
-  User_ID char(11),
   PRIMARY KEY (Routine_name, Trainer_ID, User_ID),
   FOREIGN KEY (Routine_name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
@@ -269,116 +174,6 @@ CREATE TABLE IF NOT EXISTS trains (
   FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
 );
 
--- 2.24 joins
-CREATE TABLE IF NOT EXISTS joins (
-  Trainer_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Trainer_ID, User_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.25 creates_session
-CREATE TABLE IF NOT EXISTS creates_session (
-  Trainer_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Trainer_ID, User_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.26 sends
-CREATE TABLE IF NOT EXISTS sends (
-  Trainer_ID char(11),
-  User_ID char(11),
-  Message_ID char(11),
-  PRIMARY KEY (Trainer_ID, User_ID, Message_ID),
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Message_ID, User_ID, Trainer_ID) REFERENCES message (Message_ID, User_ID, Trainer_ID) ON DELETE CASCADE
-);
-
--- 2.27 receives
-CREATE TABLE IF NOT EXISTS receives (
-  User_ID char(11),
-  Trainer_ID char(11),
-  Message_ID char(11),
-  PRIMARY KEY (User_ID, Trainer_ID, Message_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Message_ID, User_ID, Trainer_ID) REFERENCES message (Message_ID, User_ID, Trainer_ID) ON DELETE CASCADE
-);
-
--- 2.28 made
-CREATE TABLE IF NOT EXISTS made (
-  Progress_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Progress_ID, User_ID),
-  FOREIGN KEY (Progress_ID, User_ID) REFERENCES progress (Progress_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.29 monitor
-CREATE TABLE IF NOT EXISTS monitor (
-  Progress_ID char(11),
-  Trainer_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Progress_ID, Trainer_ID, User_ID),
-  FOREIGN KEY (Progress_ID, User_ID) REFERENCES progress (Progress_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.30 contains
-CREATE TABLE IF NOT EXISTS contains (
-  Message_ID char(11),
-  Trainer_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Message_ID, Trainer_ID, User_ID),
-  FOREIGN KEY (Message_ID, User_ID, Trainer_ID) REFERENCES message (Message_ID, User_ID, Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.31 adds
-CREATE TABLE IF NOT EXISTS adds (
-  NutritionPlan_ID varchar(11),
-  User_ID char(11),
-  Trainer_ID char(11),
-  PRIMARY KEY (NutritionPlan_ID, User_ID),
-  FOREIGN KEY (NutritionPlan_ID, User_ID) REFERENCES nutrition_plan (NutritionPlan_ID, User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.32 plans
-CREATE TABLE IF NOT EXISTS plans (
-  Exercise_name varchar(20),
-  Trainer_ID char(11),
-  PRIMARY KEY (Exercise_name, Trainer_ID),
-  FOREIGN KEY (Exercise_name) REFERENCES Exercise (Exercise_name) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
-);
-
--- 2.33 creates
-CREATE TABLE IF NOT EXISTS creates (
-  Routine_name varchar(20),
-  Trainer_ID char(11),
-  User_ID char(11),
-  PRIMARY KEY (Routine_name, Trainer_ID, User_ID),
-  FOREIGN KEY (Routine_name) REFERENCES workout_plan (Routine_Name) ON DELETE CASCADE,
-  FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE,
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE
-);
-
--- 2.34 creates_report
-CREATE TABLE IF NOT EXISTS creates_report (
-  User_ID char(11),
-  Report_ID char(11),
-  PRIMARY KEY (User_ID, Report_ID),
-  FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
-  FOREIGN KEY (Report_ID) REFERENCES report (Report_ID) ON DELETE CASCADE
-);
-
 -- 2.35 overview
 CREATE TABLE IF NOT EXISTS overview (
   User_ID char(11),
@@ -387,6 +182,8 @@ CREATE TABLE IF NOT EXISTS overview (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Report_ID) REFERENCES report (Report_ID) ON DELETE CASCADE
 );
+
+
 CREATE TABLE IF NOT EXISTS individual_session (
 Trainer_ID char(11),
 User_ID char(11),
@@ -398,6 +195,8 @@ Description varchar(200) NOT NULL,
 FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
 FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
 );
+
+
 CREATE OR REPLACE FUNCTION delete_related_data_function()
 RETURNS TRIGGER AS $$
 BEGIN
