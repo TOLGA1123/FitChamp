@@ -18,7 +18,6 @@ import TraineesPage from './pages/TraineesPage';
 import GoalDetailPage from './pages/GoalDetailPage';
 import NewGoalPage from './pages/NewGoalPage';
 import NewTrainerPage from './pages/NewTrainerPage';
-import CurrentNutritionPlans from './pages/CurrentNutritionPlans'
 import TraineeViewPage from './pages/TraineeViewPage'
 import NewTraineePage from './pages/NewTraineePage';
 import TrainerViewPage from './pages/TrainerViewPage';
@@ -26,11 +25,12 @@ import GroupSessions from './pages/GroupSessions';
 import CreateGroupSession from './pages/NewGroupSession';
 import AdminPage from './pages/AdminPage';
 import NewReportPage from './pages/NewReportPage';
-import NewNutritionPlanPage from './pages/NewNutritionPlanPage';
 import ChangeDetails from './pages/ChangeDetails';
 import TraineeGroupSessions from './pages/TraineeGroupSessions';
 import TrainerChangeDetails from './pages/TrainerChangeDetails';
 import AllWorkoutsPage from './pages/AllWorkoutsPage';
+import NutritionPlanView from './pages/NutritionPlanView';
+import NewMeal from './pages/NewMeal';
 
 const theme = createTheme({
   components: {
@@ -67,11 +67,11 @@ const App = () => {
           <Route path="/group-sessions" component={GroupSessions} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/create-sessions" component={CreateGroupSession} />
-          <Route path="/nutrition" component={CurrentNutritionPlans} />
+          <Route path="/nutrition" component={NutritionPlanView} />
+          <Route path="/addmeal" component={NewMeal} />
           <Route path="/trainee/:trainee_Id" component={TraineeViewPage} />
           <Route path = "/trainer/:trainer_Id" component={TrainerViewPage} />
           <Route path = "/new-report" component={NewReportPage} />
-          <Route path="/new-nutrition-plan/:trainee_Id" component={NewNutritionPlanPage} />
           <Route path="/change-details" component={ChangeDetails} />
           <Route path="/trainer-change-details" component={TrainerChangeDetails} />
           <Route path="/all-workouts" component={AllWorkoutsPage} />
