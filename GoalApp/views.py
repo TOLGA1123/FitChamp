@@ -199,7 +199,7 @@ class SortGoalsView(APIView):
                     elif sort_criteria == 'progress':
                         cursor.execute("""
                             SELECT Goal_ID, User_ID, Goal_Name, Goal_Type, initial_value, current_value, target_value, Start_Date, End_Date, achieved,
-                                   ABS(current_value - initial_value) / NULLIF(ABS(target_value - initial_value), 0) AS progress
+                                   ABS(current_value - initial_value) / NULLIF(ABS(target_value - initial_value), 0)*100 AS progress
                             FROM fitnessgoal
                             WHERE User_ID = %s
                             ORDER BY progress
