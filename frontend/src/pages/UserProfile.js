@@ -1,24 +1,22 @@
 // pages/UserProfile.js
 import React from 'react';
-import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText, Button } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Link } from 'react-router-dom';
+import { Box, Grid, Paper, Typography, Avatar, Button, Card, CardContent, CardActions } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import { AppBar, Tabs, Tab, IconButton} from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AppBar from '@mui/material/AppBar';
+import IconButton from '@mui/material/IconButton';
 import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import LogoutButton from './LogoutButton';
 import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import NavTabs from './NavTabs';
+import LogoutButton from './LogoutButton';
+
 axios.defaults.withCredentials = true;
 
 const UserProfile = () => {
     const history = useHistory();
     const [userDetails, setUserDetails] = useState(null);
+    const [achievements, setAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -34,6 +32,16 @@ const UserProfile = () => {
                     history.push('/');
                 }
             });
+
+        axios.get('http://localhost:8000/achievements/')
+            .then(response => {
+                setAchievements(response.data.achievements);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching achievements:', error.response ? error.response.data : 'Server did not respond');
+                setLoading(false);
+            });
     }, [history]);
 
     if (loading) {
@@ -47,20 +55,7 @@ const UserProfile = () => {
     const handleRouteChange = (event, newValue) => {
         history.push(`/${newValue}`);
     };
-    if (loading) {
-        return <div>Loading...</div>; // Display a loading state while fetching user details
-      }
-    
-      if (!userDetails) {
-        return <div>Error loading user details</div>; // Display an error message if user details couldn't be fetched
-      }
-      const handleNewWorkout = () => {
-        history.push('/new-workout');
-      };
-    
-      const handleGroupSession = () => {
-        history.push('/group-session');
-      };
+
     const handleDeleteUser = () => {
         axios.delete(`http://localhost:8000/delete-user/${userDetails.user_id}/`)
             .then(response => {
@@ -75,8 +70,8 @@ const UserProfile = () => {
     return (
         <Box sx={{ flexGrow: 1 }}>
             <Box sx={{ position: 'absolute', top: 40, right: 0, p: 2 }}>
-        <LogoutButton />
-    </Box>
+                <LogoutButton />
+            </Box>
             <AppBar position="static" sx={{ backgroundColor: green[500] }}>
                 <NavTabs activeTab="" />
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
@@ -180,35 +175,34 @@ const UserProfile = () => {
                                     </Grid>
                                 </Paper>
                             </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Paper elevation={3} sx={{ p: 2 }}>
-                                    <Typography variant="h6" gutterBottom>
-                                        Goals
-                                    </Typography>
-                                    <List>
-                                        <ListItem>
-                                            <ListItemText primary="Lose 10 lbs" />
-                                        </ListItem>
-                                        <ListItem>
-                                            <ListItemText primary="Run a marathon" />
-                                        </ListItem>
-                                    </List>
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Paper elevation={3} sx={{ p: 2 }}>
-                                    <Typography variant="h6" gutterBottom>
-                                        Progress
-                                    </Typography>
-                                    <List>
-                                        <ListItem>
-                                            <ListItemText primary="Lost 5 lbs" />
-                                        </ListItem>
-                                        <ListItem>
-                                            <ListItemText primary="Half marathon completed" />
-                                        </ListItem>
-                                    </List>
-                                </Paper>
+                            <Grid item xs={12}>
+                                <Typography variant="h6" gutterBottom>
+                                    Achievements
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    {achievements.map((achievement) => (
+                                        <Grid item xs={12} sm={6} md={4} key={achievement.achievement_id}>
+                                            <Card sx={{ maxWidth: 345 }}>
+                                                <CardContent>
+                                                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: green[700] }}>
+                                                        {achievement.achievement_name}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Type: {achievement.achievement_type}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Date: {achievement.achievement_date}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Achieved Value: {achievement.target_value}
+                                                    </Typography>
+                                                </CardContent>
+                                                <CardActions>
+                                                </CardActions>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>

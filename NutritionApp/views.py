@@ -32,73 +32,112 @@ class NutritionPlanView(APIView):
         if user_id and username and email:
             try:    
                 with connection.cursor() as cursor:
-                
+                    # Fetch nutrition plan details
                     cursor.execute("""
-                        SELECT *
+                        SELECT NutritionPlan_ID, User_ID, Total_Calories
                         FROM nutrition_plan
                         WHERE User_ID = %s
                     """, [user_id])
-                    nutrition_plans = cursor.fetchall()
+                    nutrition_plan = cursor.fetchone()
 
-                if nutrition_plans:
-                    nutrition_plans_list = [{'name': nutrition_plan[0],'user_id': nutrition_plan[1],'trainer_id': nutrition_plan[2], 'description': nutrition_plan[3], 'total_calories': nutrition_plan[4],'meal_schedule': nutrition_plan[5]} for nutrition_plan in nutrition_plans]
-                    return Response(nutrition_plans_list, status=status.HTTP_200_OK)
+                    if not nutrition_plan:
+                        return Response({'error':'Nutrition plan does not exist'},status=status.HTTP_404_NOT_FOUND)
+                    
+                    nutrition_plan_id, user_id, total_calories = nutrition_plan
+
+                    # Fetch all meals associated with the nutrition plan
+                    cursor.execute("""
+                        SELECT m.Meal_name, m.Calories, m.Description, d.Eaten
+                        FROM Meal m
+                        JOIN Diet d ON m.Meal_name = d.Meal_name
+                        WHERE d.NutritionPlan_ID = %s AND d.User_ID = %s
+                    """, [nutrition_plan_id, user_id])
+                    meals = cursor.fetchall()
+
+                if meals:
+                    meals_list = [
+                        {
+                            'meal_name': meal[0],
+                            'calories': meal[1],
+                            'description': meal[2],
+                        } 
+                        for meal in meals
+                    ]
+                    response_data = {
+                        'nutrition_plan_id': nutrition_plan_id,
+                        'user_id': user_id,
+                        'total_calories': total_calories,
+                        'meals': meals_list
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
                 else:
-                    return Response({'error':'Nutrition plan does not exist'},status=status.HTTP_404_NOT_FOUND)
+                    response_data = {
+                        'nutrition_plan_id': nutrition_plan_id,
+                        'user_id': user_id,
+                        'total_calories': total_calories,
+                        'meals': []
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)    
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)  
         
 
-
-class NewNutritionPlanView(APIView):
-    def post(self,request, trainee_Id):
-        print("NewNutritionPlanView - Session Key:", request.session.session_key)
+class AddMealView(APIView):
+    def post(self, request):
+        print("AddMealView - Session Key:", request.session.session_key)
         user_id = request.session.get('user_id')
         username = request.session.get('username')
         email = request.session.get('email')
-        print(trainee_Id)
-        print('Session data set:', request.session.items()) 
+        print('Session data set:', request.session.items())
 
-        user_id = str(user_id).strip()
+        if not user_id:
+            return Response({"error": "User not logged in."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM trainer WHERE user_id = %s", [user_id])
-            foundTrainer = cursor.fetchone()
-        
-        trainer_id = foundTrainer[1]
-        trainee_id = trainee_Id
-        nutrition_plan_name = request.data.get('name')
-        total_calories = request.data.get('total_calories')
-        meal_schedule = request.data.get('meal_schedule')
-        meals = request.data.get('meals')
+        meal_name = request.data.get('meal_name')
+        calories = request.data.get('calorie_count')
+        description = request.data.get('description')
 
-        meal_names = [meal['Meal_name'] for meal in meals]
+        if not meal_name or not calories or not description:
+            return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(f"Received Data: user_id={user_id}, trainee_id={trainee_id}, nutrition_plan_name={nutrition_plan_name}, nutrition_plan_description={nutrition_plan_description}, nutrition_plan_total_calories={nutrition_plan_total_calories}, meal_schedule={meal_schedule}")
+        try:
+            with connection.cursor() as cursor:
+                # Insert the new meal into the Meal table
+                cursor.execute("""
+                    INSERT INTO Meal (User_ID, Meal_name, Calories, Description)
+                    VALUES (%s, %s, %s, %s)
+                """, [user_id, meal_name, calories, description])
 
-        if user_id and username and email: 
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                    INSERT INTO nutrition_plan (nutrition_plan_name, user_id, trainer_id, Meals, total_calories, meal_schedule)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """,[nutrition_plan_name, trainee_id, trainer_id, meal_names, total_calories, meal_schedule])
-                    connection.commit()
+                # Fetch the user's nutrition plan ID
+                cursor.execute("SELECT NutritionPlan_ID FROM nutrition_plan WHERE User_ID = %s", [user_id])
+                nutrition_plan_id = cursor.fetchone()
 
-                print('BBBBBB')
+                if not nutrition_plan_id:
+                    return Response({"error": "Nutrition plan not found for the user."}, status=status.HTTP_404_NOT_FOUND)
 
-                for meal in meal_names:
-                    cursor.execute("""
-                        INSERT INTO Diet (Meal_name, Nutrition_Plan_Name, Trainer_ID, User_ID, Eaten)
-                        VALUES (%s, %s, %s, %s, %s)
-                    """, [meal, nutrition_plan_name, trainer_id, user_id, False])
+                nutrition_plan_id = nutrition_plan_id[0]
 
-                return Response({"message": "New Nutrition Plan Created"}, status=status.HTTP_201_CREATED)
-            except IntegrityError as e:
-                connection.rollback()
-                return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                connection.rollback()
-                return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                # Insert the new entry into the Diet table
+                cursor.execute("""
+                    INSERT INTO Diet (Meal_name, NutritionPlan_ID, User_ID, Eaten)
+                    VALUES (%s, %s, %s, %s)
+                """, [meal_name, nutrition_plan_id, user_id, True])
+
+                # Update the total calories in the nutrition_plan table
+                cursor.execute("""
+                    UPDATE nutrition_plan
+                    SET Total_Calories = Total_Calories + %s
+                    WHERE NutritionPlan_ID = %s
+                """, [calories, nutrition_plan_id])
+
+                connection.commit()
+                return Response({"message": "New meal added and linked to nutrition plan"}, status=status.HTTP_201_CREATED)
+
+        except IntegrityError as e:
+            connection.rollback()
+            return Response({"error": "Database error, possible duplicate entry: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            connection.rollback()
+            return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)

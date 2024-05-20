@@ -80,6 +80,9 @@ class RegisterView(APIView):
         weight = request.data.get('weight')
         height = request.data.get('height')
         past_achievements = request.data.get('past_achievements')
+        nutrition_plan_id = generate_unique_id()
+
+
         if not user_name or not email or not password or not date_of_birth or not gender or not weight or not height or not past_achievements:
             return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
         # Convert date_of_birth from string to datetime
@@ -102,6 +105,12 @@ class RegisterView(APIView):
                     INSERT INTO trainee (User_ID, User_name, Password, Age, Date_of_Birth, Gender, Weight, Height, Past_Achievements)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, [user_id, user_name, password, age, date_of_birth, gender, weight, height, past_achievements])
+
+                cursor.execute("""
+                    INSERT INTO nutrition_plan (NutritionPlan_ID, User_ID, Total_Calories)
+                    VALUES (%s, %s, %s)
+                """, [nutrition_plan_id, user_id, 0]) 
+                
                 connection.commit()
             return Response({"message": "Registration successful"}, status=status.HTTP_201_CREATED)
         except IntegrityError as e:
@@ -110,6 +119,8 @@ class RegisterView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
 class TrainerSignupView(APIView):
     def post(self, request):
         user_id = generate_unique_id()
@@ -144,6 +155,7 @@ class TrainerSignupView(APIView):
         except Exception as e:
             connection.rollback()
             return Response({"error": "An unexpected error occurred: " + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
@@ -232,6 +244,8 @@ class LoginView(APIView):
     def get(self, request):
         # Optionally provide a message for GET requests
         return Response({"message": "Please send POST request with username and password."})
+
+
 class UserProfileView(APIView):
     def get(self, request):
         if request.session.get('type') == 1:
