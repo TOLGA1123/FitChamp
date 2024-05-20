@@ -61,10 +61,7 @@ const NewMeal = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ position: 'absolute', top: 100, right: 0, p: 2 }}>
-        <LogoutButton />
-      </Box>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+      <AppBar position="static" >
         <NavTabs activeTab="nutrition" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}><PersonIcon /></IconButton>
@@ -76,9 +73,7 @@ const NewMeal = () => {
             <AddCircleOutlineIcon />
             <Typography variant="button">Add Meal</Typography>
           </IconButton>
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <LogoutButton/>
         </Box>
       </AppBar>
 

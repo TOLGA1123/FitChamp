@@ -69,15 +69,13 @@ const UserProfile = () => {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <Box sx={{ position: 'absolute', top: 40, right: 0, p: 2 }}>
-                <LogoutButton />
-            </Box>
-            <AppBar position="static" sx={{ backgroundColor: green[500] }}>
+            <AppBar position="static" >
                 <NavTabs activeTab="" />
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
                     <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
                         Your Profile
                     </Typography>
+                    <LogoutButton/>
                 </Box>
             </AppBar>
             <Box sx={{ p: 3 }}>

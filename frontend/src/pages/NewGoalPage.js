@@ -7,6 +7,7 @@ import MessageIcon from '@mui/icons-material/Message';
 import axios from 'axios';
 import moment from 'moment';
 import NavTabs from './NavTabs';
+import LogoutButton from './LogoutButton';
 
 const SetGoals = () => {
   const history = useHistory();
@@ -65,9 +66,7 @@ const SetGoals = () => {
             Create New Goal
           </Typography>
 
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <LogoutButton/>
         </Box>
         </AppBar>
     </Box>
@@ -92,7 +91,6 @@ const SetGoals = () => {
             >
               <FormControlLabel value="Weight Loss" control={<Radio />} label="Weight Loss" />
               <FormControlLabel value="Muscle Gain" control={<Radio />} label="Muscle Gain" />
-              <FormControlLabel value="Endurance Improvement" control={<Radio />} label="Endurance Improvement" />
               <FormControlLabel value= "Nutritional" control={<Radio />} label="Nutritional" />
             </RadioGroup>
           </FormControl>

@@ -4,6 +4,7 @@ import { Typography, Box, AppBar, Tabs, Tab, Grid, Card, CardContent, Button, Ci
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
 import LogoutButton from './LogoutButton';
+import NavTabs from './NavTabs';
 const darkMintGreen = '#2E8B57';
 const lightMintGreen = '#E0FFE0'; // Lighter mint green for reports
 const darkAshGrey = '#4B4B4B';

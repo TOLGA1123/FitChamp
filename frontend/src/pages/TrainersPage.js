@@ -1,13 +1,8 @@
 import React from 'react';
 import { Grid, Paper, Avatar, Button, AppBar, Tabs, Tab, Box, Typography, IconButton } from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import MessageIcon from '@mui/icons-material/Message';
 import { useHistory } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import LogoutButton from './LogoutButton';
@@ -66,9 +61,6 @@ const TrainersPage = () => {
           <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleNewTrainer}>
             <AddCircleOutlineIcon />
             <Typography variant="button">New Trainer</Typography>
-          </IconButton>
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
           </IconButton>
           <LogoutButton />
         </Box>

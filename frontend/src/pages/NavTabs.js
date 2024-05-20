@@ -1,4 +1,3 @@
-// NavTabs.js
 import React from 'react';
 import { AppBar, Tabs, Tab } from '@mui/material';
 import { useHistory } from 'react-router-dom';
@@ -11,6 +10,12 @@ const NavTabs = ({ activeTab }) => {
 
   const handleRouteChange = (event, newValue) => {
     history.push(`/${newValue}`);
+    if (activeTab === newValue) {
+      // Force navigation to the same route
+      history.replace(`/${newValue}`);
+    } else {
+      history.push(`/${newValue}`);
+    }
   };
 
   return (
@@ -32,14 +37,13 @@ const NavTabs = ({ activeTab }) => {
             '&:hover': {
               color: 'white', // Maintain white color on hover
             },
-          },
-          '& .Mui-selected': {
-            color: 'black', // Color for selected tab
-            backgroundColor: darkMintGreen, // Background for selected tab
+            '&.Mui-selected': {
+              color: 'black', // Color for selected tab
+              backgroundColor: darkMintGreen, // Background for selected tab
+            },
           },
           '& .MuiTabs-indicator': {
             backgroundColor: 'transparent', // Hide the default indicator
-            color: 'transparent',
           },
         }} 
         variant="fullWidth"
@@ -59,10 +63,6 @@ const NavTabs = ({ activeTab }) => {
         <Tab 
           label="Goals" 
           value="goals" 
-        />
-        <Tab 
-          label="Achievements" 
-          value="achievements" 
         />
       </Tabs>
     </AppBar>

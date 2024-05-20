@@ -43,9 +43,7 @@ const ProgressAchievements = () => {
           <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
           Your Achievements
           </Typography>
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <LogoutButton/>
         </Box>
       </AppBar>
       <Box sx={{ m: 3 }}>

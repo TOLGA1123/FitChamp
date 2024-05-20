@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, TextField, Button, Box } from '@mui/material';
 import axios from 'axios';
+import LogoutButton from './LogoutButton';
 
 const NewReportPage = () => {
   const [reportType, setReportType] = useState('');

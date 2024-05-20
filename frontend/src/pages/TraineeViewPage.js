@@ -2,18 +2,15 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Grid, Paper, Typography, Avatar, List, ListItem, ListItemText, Button } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useHistory } from 'react-router-dom';
 import { AppBar, Tabs, Tab, IconButton} from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LogoutButton from './LogoutButton';
-import { green } from '@mui/material/colors';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 axios.defaults.withCredentials = true;
+
+const darkMintGreen = '#2E8B57'; // Define your dark mint green color
+const darkAshGrey = '#4B4B4B';
 
 const TraineeViewPage = () => {
     const { trainee_Id } = useParams();
@@ -62,7 +59,25 @@ const TraineeViewPage = () => {
     }
     
   if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
+    return( <Box sx={{ flexGrow: 1 }}>
+    <AppBar position="static">
+        <Tabs
+            onChange={handleRouteChange}
+            sx={{ backgroundColor: 'black' }}
+            variant="fullWidth"
+        >
+            <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: darkMintGreen }} />
+            <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
+            <LogoutButton />
+        </Tabs>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+            <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+                Your Trainee's Profile
+            </Typography>
+            <Button variant="contained" onClick={handleScheduleSession}>Schedule Session</Button>
+        </Box>
+    </AppBar>
+    </Box>); // Display a loading state while fetching user details
   }
 
   if (!userDetails) {
@@ -77,8 +92,8 @@ const TraineeViewPage = () => {
                 sx={{ backgroundColor: 'black' }}
                 variant="fullWidth"
             >
-                <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
-                <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: 'black' }} />
+                <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: darkMintGreen }} />
+                <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
                 <LogoutButton />
             </Tabs>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>

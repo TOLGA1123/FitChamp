@@ -8,10 +8,12 @@ import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { green } from '@mui/material/colors';
+import NavTabs from './NavTabs';
 
 import LogoutButton from './LogoutButton';
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+
 
 const CurrentWorkoutPlans = () => {
   const history = useHistory();
@@ -198,49 +200,6 @@ const CurrentWorkoutPlans = () => {
     });
   };
 
-  /*const handleEndWorkout = (workout) => {
-    endTime = date.getMinutes()
-    console.log(endTime);
-    setSelectedWorkout(workout);
-    axios.post(`http://localhost:8000/add-end-time/${endTime}/${workout.Routine_Name}/`)
-    .then()
-    .catch(error => {
-      console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
-      if (error.response && error.response.status === 401) {
-        history.push('/login');
-      }
-    });
-
-    
-
-      axios.get('http://localhost:8000/completed-workouts/')
-      .then(response => {
-        setCompletedWorkouts(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching completed workout info:', error.response ? error.response.data : 'Server did not respond');
-        setLoading(false);
-        if (error.response && error.response.status === 401) {
-          history.push('/login');
-        }
-      });
-
-      axios.get('http://localhost:8000/workout-plans/')
-      .then(response => {
-        setWorkoutDetails(response.data);
-        setLoading(false);
-        history.push('/workout-plans')
-      })
-      .catch(error => {
-        console.error('Error fetching workout info:', error.response ? error.response.data : 'Server did not respond');
-        setLoading(false);
-        if (error.response && error.response.status === 401) {
-          history.push('/login');
-        }
-      });
-  }*/
-
   const handleEndWorkout = (workout) => {
     endTime = date.getMinutes();
     console.log(endTime);
@@ -261,27 +220,29 @@ const CurrentWorkoutPlans = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return(<Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+      <NavTabs activeTab="workout-plans" />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+          <IconButton sx={{ position: 'absolute', left: 16 }} ><PersonIcon /></IconButton>
+          <IconButton sx={{ position: 'absolute', left: 150 }}><GroupIcon /></IconButton>
+          <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
+            Current Workout Plans
+          </Typography>
+          <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleNewWorkout}>
+            <AddCircleOutlineIcon /><Typography variant="button">Pick Workout</Typography>
+          </IconButton>        
+          <LogoutButton />
+        </Box>
+      </AppBar>
+      <div>Loading...</div>
+      </Box>) ;
   }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ position: 'absolute', top: 100, right: 0, p: 2 }}>
-        <LogoutButton />
-    </Box>
-      <AppBar position="static" sx={{ backgroundColor: green[500] }}>
-        <Tabs 
-          value={selectedTab}
-          onChange={handleRouteChange} 
-          sx={{ display: 'flex', justifyContent: 'space-between', flexGrow: 1, backgroundColor: 'black' }} 
-          variant="fullWidth"
-        >
-          <Tab label="Workouts" value="workout-plans" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Trainers" value="trainers" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <Tab label="Nutrition Plans" value="nutrition" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <Tab label="Goals" value="goals" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
-        </Tabs>
+      <AppBar position="static">
+      <NavTabs activeTab="workout-plans" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}><PersonIcon /></IconButton>
           <IconButton sx={{ position: 'absolute', left: 150 }} onClick={handleGroupSession}><GroupIcon /></IconButton>
@@ -291,9 +252,7 @@ const CurrentWorkoutPlans = () => {
           <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleNewWorkout}>
             <AddCircleOutlineIcon /><Typography variant="button">Pick Workout</Typography>
           </IconButton>        
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <LogoutButton />
         </Box>
       </AppBar>
 

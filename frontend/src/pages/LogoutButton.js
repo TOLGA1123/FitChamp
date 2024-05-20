@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
-import { Button, Snackbar, Alert } from '@mui/material';
+import { IconButton,Button, Snackbar, Alert } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
+
+const darkAshGrey = '#4B4B4B';
 const LogoutButton = () => {
   const [successMessage, setSuccessMessage] = useState(false);
   const history = useHistory();
@@ -31,14 +33,9 @@ const LogoutButton = () => {
 
   return (
     <div>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleLogout}
-        startIcon={<ExitToAppIcon sx={{ color: 'gray' }} />}
-      >
-        Logout
-      </Button>
+      <IconButton onClick={handleLogout} aria-label="logout">
+        <ExitToAppIcon sx={{ color: darkAshGrey }} />
+      </IconButton>
       <Snackbar
         open={successMessage}
         autoHideDuration={1000}

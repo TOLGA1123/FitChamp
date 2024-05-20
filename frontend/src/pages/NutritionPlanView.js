@@ -69,9 +69,6 @@ const NutritionPlanView = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ position: 'absolute', top: 100, right: 0, p: 2 }}>
-        <LogoutButton />
-      </Box>
       <AppBar position="static">
         <NavTabs activeTab="nutrition" />
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
@@ -84,9 +81,7 @@ const NutritionPlanView = () => {
             <AddCircleOutlineIcon />
             <Typography variant="button">Add Meal</Typography>
           </IconButton>
-          <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <LogoutButton/>
         </Box>
       </AppBar>
 

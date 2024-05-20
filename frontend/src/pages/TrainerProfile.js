@@ -2,14 +2,10 @@ import React from 'react';
 import { List, ListItem, ListItemText } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { Grid, Paper, Avatar, Button, AppBar, Tabs, Tab, Box, Typography, IconButton } from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import MessageIcon from '@mui/icons-material/Message';
 import { useHistory } from 'react-router-dom';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import { green } from '@mui/material/colors';
+import NavTabs from './NavTabs';
+
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -51,7 +47,23 @@ const TrainerProfile = () => {
 
 
   if (loading) {
-    return <div>Loading...</div>; // Display a loading state while fetching user details
+    return <Box sx={{ flexGrow: 1 }}>
+      
+    <AppBar position="static" >
+      <NavTabs/>
+        
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
+        <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleBackClick}>
+          <ArrowBackIcon />
+        </IconButton>
+         <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }} gutterBottom>Trainer {trainerDetails.id} Profile </Typography>
+        <IconButton sx={{ position: 'absolute', right: 16 }} onClick={handleMSGClick}>
+          <MessageIcon />
+        </IconButton>
+        <LogoutButton />
+      </Box>
+    </AppBar><div>Loading...</div>
+    </Box>; // Display a loading state while fetching user details
   }
   
   if (!trainerDetails) return <Typography>Error loading data...</Typography>;
@@ -62,39 +74,7 @@ const TrainerProfile = () => {
     <Box sx={{ flexGrow: 1 }}>
       
     <AppBar position="static" >
-      <Tabs 
-          onChange={handleRouteChange} 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            flexGrow: 1, 
-            backgroundColor: 'black' // Set the background color for the whole tabs container
-          }} 
-          variant="fullWidth"
-        > 
-          <Tab 
-            label="Workouts" 
-            value="workout-plans" 
-            sx={{ color: 'white', backgroundColor: 'black' }}
-          />
-          <Tab 
-            label="Trainers" 
-            value="trainers" 
-            sx={{ color: 'black', backgroundColor: green[500]  }}
-          />
-          <Tab 
-            label="Nutrition Plans" 
-            value="nutrition" 
-            sx={{ color: 'white', backgroundColor: 'black' }}
-          />
-          <Tab 
-            label="Goals" 
-            value="goals" 
-            sx={{ color: 'white', backgroundColor: 'black' }}
-          />
-
-          <Tab label="Achievements" value="achievements" sx={{ color: 'white', backgroundColor: 'black' }} />
-        </Tabs>
+      <NavTabs/>
         
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
         <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleBackClick}>

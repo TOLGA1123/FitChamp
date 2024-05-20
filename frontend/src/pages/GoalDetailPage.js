@@ -4,6 +4,7 @@ import { Box, Typography, LinearProgress, Paper, Grid, Button } from '@mui/mater
 import moment from 'moment';
 import axios from 'axios';
 import NavTabs from './NavTabs';
+import LogoutButton from './LogoutButton';
 
 const GoalDetailPage = () => {
   const { goalId } = useParams();

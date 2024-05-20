@@ -5,6 +5,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MessageIcon from '@mui/icons-material/Message';
 import axios from 'axios';
 import NavTabs from './NavTabs';
+import LogoutButton from './LogoutButton';
 axios.defaults.withCredentials = true;
 
 const NewTrainerPage = () => {
@@ -79,9 +80,7 @@ const NewTrainerPage = () => {
           <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
             New Trainer
           </Typography>
-          <IconButton sx={{ position: 'absolute', right: 150 }} color="inherit" onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <LogoutButton/>
         </Box>
       </AppBar>
       <Box sx={{ p: 3 }}>

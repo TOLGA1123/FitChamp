@@ -14,6 +14,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
+import NavTabs from './NavTabs';
 
 import LogoutButton from './LogoutButton';
 const TrainerProfile = () => {
@@ -30,6 +31,7 @@ const TrainerProfile = () => {
   const handleBackClick = () => {
     history.push('/trainees');
   };
+  
 
   useEffect(() => {
       // Fetch user details from the backend
@@ -59,9 +61,7 @@ const TrainerProfile = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
     <AppBar position="static" >
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
-        <LogoutButton />
-      </Box>
+      <NavTabs activeTab="trainers"/>
     </AppBar>
      <Box sx={{ flexGrow: 1, p: 3 }}>
         <Grid container spacing={2}>

@@ -7,6 +7,8 @@ import { green } from '@mui/material/colors';
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 
+const darkMintGreen = '#2E8B57';
+const darkAshGrey = '#4B4B4B';
 const NewTraineePage = () => {
   const history = useHistory();
   const [selectedTrainee, setSelectedTrainee] = useState(null);
@@ -76,8 +78,8 @@ const NewTraineePage = () => {
           sx={{ backgroundColor: 'black' }}
           variant="fullWidth"
         >
-          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Group Sessions" value="groupsessions" sx={{ color: 'white' }} />
+          <Tab label="Trainees" value="trainees" sx={{ color: 'black', darkMintGreen }} />
+          <Tab label="Group Sessions" value="groupsessions" sx={{ color: 'white' ,darkAshGrey }} />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton sx={{ position: 'absolute', left: 16 }} onClick={handleProfileClick}>

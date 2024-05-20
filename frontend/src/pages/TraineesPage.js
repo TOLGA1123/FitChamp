@@ -10,6 +10,9 @@ import { useEffect, useState } from 'react';
 import LogoutButton from './LogoutButton';
 axios.defaults.withCredentials = true;
 
+const darkMintGreen = '#2E8B57'; // Define your dark mint green color
+const darkAshGrey = '#4B4B4B';
+
 const TraineesPage = () => {
   const [loading, setLoading] = useState(true);
   const history = useHistory();
@@ -71,24 +74,21 @@ const TraineesPage = () => {
           sx={{ backgroundColor: 'black' }}
           variant="fullWidth"
         >
-          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: green[500] }} />
-          <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: 'black' }} />
-          <LogoutButton />
+          <Tab label="Trainees" value="trainees" sx={{ color: 'black', backgroundColor: darkMintGreen }} />
+          <Tab label="Group Sessions" value="group-sessions" sx={{ color: 'white', backgroundColor: darkAshGrey }} />
         </Tabs>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', height: '60px' }}>
           <IconButton onClick={handleProfileClick}>
             <PersonIcon />
           </IconButton>
-          <Typography variant="h6" color="inherit" component="div">
-            Your Trainees
-          </Typography>
           <IconButton onClick={handleNewClient} color="inherit">
             <AddCircleOutlineIcon />
             <Typography variant="button">New Client</Typography>
           </IconButton>
-          <IconButton onClick={handleMSGClick}>
-            <MessageIcon />
-          </IconButton>
+          <Typography variant="h6" color="inherit" component="div">
+            Your Trainees
+          </Typography>
+          <LogoutButton/>
           <IconButton onClick={handleNewWorkoutPlan} color="inherit">
           <AddCircleOutlineIcon />
           <Typography variant="button">New Workout Plan</Typography>
