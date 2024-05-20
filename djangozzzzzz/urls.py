@@ -69,4 +69,6 @@ urlpatterns = [
     path('filter-goals/', FilterGoalsView.as_view(), name='filter-goals'),
     path('is-achievement/', IsAchievementView.as_view(), name='is-achievement'),
     path('achievements/', AchievementsView.as_view(), name='achievements'),
+    path('schedule-session/<str:user_id>/', TrainerScheduleSessionView.as_view(), name='schedule-session'),
+    path('trainee-sessions/<str:trainee_id>/', TraineeSessionView.as_view(), name='trainee-sessions'),
 ]

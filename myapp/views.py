@@ -13,7 +13,7 @@ from rest_framework.views import APIView, status
 from .models import *
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
-from datetime import datetime
+from datetime import datetime, time
 
 
 # Create your views here.
@@ -1569,3 +1569,96 @@ class DeleteWorkoutView(APIView):
 
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class TrainerScheduleSessionView(APIView):
+    def post(self, request, user_id):
+        trainer_id = request.session.get('trainer_id')
+        if not trainer_id:
+            return Response({'error': 'Trainer not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        session_id = generate_unique_id()
+        session_date = request.data.get('session_date')
+        session_time = request.data.get('session_time')
+        location = request.data.get('location')
+        description = request.data.get('description')
+
+        print(user_id,trainer_id, session_id, session_date, session_time, location, description)
+
+        if not self.is_trainer_available(trainer_id, session_date, session_time):
+            return Response({'error': 'Trainer is not available'}, status=status.HTTP_400_BAD_REQUEST)
+        print("Yo")
+        
+        # Insert session details into the database
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO individual_session (Trainer_ID, User_ID, Session_ID, Session_Date, Session_Time, Location, Description)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, [trainer_id, user_id, session_id, session_date, session_time, location, description])
+                print("a")
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': 'Session scheduled successfully'}, status=status.HTTP_201_CREATED)
+    
+    def is_trainer_available(self, trainer_id, session_date_str, session_time_str):
+        # Parse the input strings to datetime objects
+        session_date = datetime.strptime(session_date_str, '%Y-%m-%d').date()
+
+        # Handle time string that might not include seconds
+        try:
+            session_time = datetime.strptime(session_time_str, '%H:%M:%S').time()
+        except ValueError:
+            session_time = datetime.strptime(session_time_str, '%H:%M').time()
+
+        # Format the session_date as a string to match the database format
+        session_date_formatted = session_date.strftime('%Y-%m-%d')
+
+        # Calculate the start and end times for the one-day range
+        start_time_str = '00:00:00'
+        end_time_str = '23:59:59'
+        
+        # Query to check if trainer has any conflicting sessions within the one-day range
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM individual_session 
+                WHERE Trainer_ID = %s 
+                AND Session_Date = %s 
+                AND Session_Time BETWEEN %s AND %s
+                """, [trainer_id, session_date_formatted, start_time_str, end_time_str])
+            session_count = cursor.fetchone()[0]
+        
+        print('session_count = ', session_count)
+        return session_count == 0
+
+
+
+class TraineeSessionView(APIView):
+    def get(self, request, trainee_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT session_id, session_date, session_time, location, description
+                    FROM individual_session
+                    WHERE user_id = %s
+                """, [trainee_id])
+                sessions = cursor.fetchall()
+            
+            serialized_sessions = []
+            for session in sessions:
+                serialized_session = {
+                    'session_id': session[0],
+                    'session_date': session[1],
+                    'session_time': session[2],
+                    'location': session[3],
+                    'description': session[4],
+                    # Add more fields as needed
+                }
+                serialized_sessions.append(serialized_session)
+            
+            return Response(serialized_sessions, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    

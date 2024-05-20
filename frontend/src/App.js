@@ -31,7 +31,7 @@ import TrainerChangeDetails from './pages/TrainerChangeDetails';
 import AllWorkoutsPage from './pages/AllWorkoutsPage';
 import NutritionPlanView from './pages/NutritionPlanView';
 import NewMeal from './pages/NewMeal';
-
+import ScheduleSessionPage from './pages/ScheduleSessionPage';
 const theme = createTheme({
   components: {
     MuiAppBar: {
@@ -76,6 +76,7 @@ const App = () => {
           <Route path="/trainer-change-details" component={TrainerChangeDetails} />
           <Route path="/all-workouts" component={AllWorkoutsPage} />
           <Route path="/group-session" component={TraineeGroupSessions} />
+          <Route path="/schedule-session/:user_id" component={ScheduleSessionPage} />
           {/*
            You can add more routes here if you have other pages */}
         </Switch>

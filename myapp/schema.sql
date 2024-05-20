@@ -385,7 +385,17 @@ CREATE TABLE IF NOT EXISTS overview (
   FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
   FOREIGN KEY (Report_ID) REFERENCES report (Report_ID) ON DELETE CASCADE
 );
-
+CREATE TABLE IF NOT EXISTS individual_session (
+Trainer_ID char(11),
+User_ID char(11),
+Session_ID char(11) PRIMARY KEY,
+Session_Date varchar(20) NOT NULL,
+Session_Time varchar(20) NOT NULL,
+Location varchar(20) NOT NULL,
+Description varchar(200) NOT NULL,
+FOREIGN KEY (User_ID) REFERENCES userf (User_ID) ON DELETE CASCADE,
+FOREIGN KEY (Trainer_ID) REFERENCES trainer (Trainer_ID) ON DELETE CASCADE
+);
 CREATE OR REPLACE FUNCTION delete_related_data_function()
 RETURNS TRIGGER AS $$
 BEGIN
